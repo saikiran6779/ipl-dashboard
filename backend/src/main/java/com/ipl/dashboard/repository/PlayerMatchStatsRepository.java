@@ -67,5 +67,5 @@ public interface PlayerMatchStatsRepository extends JpaRepository<PlayerMatchSta
         FROM PlayerMatchStats s
         WHERE s.player.id = :playerId
         """)
-    Object[] findCareerAggregates(@Param("playerId") Long playerId);
+    List<Object[]> findCareerAggregates(@Param("playerId") Long playerId);
 }

@@ -5,7 +5,7 @@ import Dashboard from './pages/Dashboard'
 import Matches from './pages/Matches'
 import MatchForm from './pages/MatchForm'
 import Players from './pages/Players'
-import PlayerProfile from './pages/PlayerProfile'
+import PlayerProfile from './pages/PlayerProfile.jsx'
 import { getMatches, getStats, createMatch, updateMatch, deleteMatch } from './services/api'
 
 export default function App() {

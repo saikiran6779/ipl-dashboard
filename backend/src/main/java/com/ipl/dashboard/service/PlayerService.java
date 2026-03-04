@@ -69,15 +69,18 @@ public class PlayerService {
         Player p = playerRepo.findById(playerId)
                 .orElseThrow(() -> new NoSuchElementException("Player not found: " + playerId));
 
-        Object[] agg = statsRepo.findCareerAggregates(playerId);
+        List<Object[]> aggList = statsRepo.findCareerAggregates(playerId);
 
-        if (agg == null || agg[0] == null) {
+        // No stats yet — return empty profile
+        if (aggList == null || aggList.isEmpty() || aggList.get(0) == null || aggList.get(0)[0] == null) {
             return PlayerDTO.Profile.builder()
                     .id(p.getId()).name(p.getName())
                     .teamId(p.getTeamId()).role(p.getRole())
                     .matches(0).matchLog(List.of())
                     .build();
         }
+
+        Object[] agg = aggList.get(0);
 
         List<PlayerMatchStats> logs = statsRepo.findByPlayerId(playerId);
 
