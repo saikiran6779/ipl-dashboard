@@ -22,7 +22,13 @@ public class Player {
     private String name;
 
     @NotBlank
+    @Column(name = "team_id")
     private String teamId;   // MI, CSK, RCB …
+
+    // FK constraint — insertable/updatable=false keeps teamId as the writable field
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "team_id", insertable = false, updatable = false)
+    private Team teamRef;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

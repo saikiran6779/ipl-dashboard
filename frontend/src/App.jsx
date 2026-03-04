@@ -116,10 +116,10 @@ export default function App() {
               <MatchForm editMatch={editMatch} onSubmit={handleSubmit} onCancel={handleCancel} loading={saving} />
           )}
           {view === 'players' && (
-              <Players onOpenProfile={handleOpenProfile} />
+              <Players onOpenProfile={handleOpenProfile} onOpenTeam={handleOpenTeam} />
           )}
           {view === 'profile' && profileId && (
-              <PlayerProfile playerId={profileId} onBack={handleBackFromProfile} />
+              <PlayerProfile playerId={profileId} onBack={handleBackFromProfile} onOpenTeam={handleOpenTeam} />
           )}
           {view === 'teams' && (
               <Teams onOpenTeam={handleOpenTeam} />

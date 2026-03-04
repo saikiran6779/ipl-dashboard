@@ -90,7 +90,7 @@ function AddPlayerModal({ onClose, onSaved }) {
 }
 
 // ── Player Card ───────────────────────────────────────────────────────────
-function PlayerCard({ player, onOpenProfile, onDelete }) {
+function PlayerCard({ player, onOpenProfile, onDelete, onOpenTeam }) {
     const team = getTeam(player.teamId)
     const [hover, setHover] = useState(false)
 
@@ -137,8 +137,16 @@ function PlayerCard({ player, onOpenProfile, onDelete }) {
                         {player.name}
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <div style={{ fontSize: 10, fontWeight: 700, color: team.color,
-                            background: team.color + '22', borderRadius: 4, padding: '2px 6px' }}>
+                        <div
+                            onClick={e => { e.stopPropagation(); onOpenTeam && onOpenTeam(player.teamId) }}
+                            style={{
+                              fontSize: 10, fontWeight: 700, color: team.color,
+                              background: team.color + '22', borderRadius: 4, padding: '2px 6px',
+                              cursor: onOpenTeam ? 'pointer' : 'default',
+                              border: `1px solid ${team.color}33`,
+                            }}
+                            title={onOpenTeam ? `View ${team.name}` : undefined}
+                        >
                             {player.teamId}
                         </div>
                         <div style={{ fontSize: 10, fontWeight: 600,
@@ -165,7 +173,7 @@ function PlayerCard({ player, onOpenProfile, onDelete }) {
 }
 
 // ── Main Players Page ─────────────────────────────────────────────────────
-export default function Players({ onOpenProfile }) {
+export default function Players({ onOpenProfile, onOpenTeam }) {
     const [players,     setPlayers]     = useState([])
     const [loading,     setLoading]     = useState(true)
     const [filterTeam,  setFilterTeam]  = useState('ALL')
@@ -268,7 +276,14 @@ export default function Players({ onOpenProfile }) {
                     <div key={teamId} style={{ marginBottom: 28 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
                             <div style={{ width: 4, height: 20, borderRadius: 2, background: team.color }} />
-                            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, letterSpacing: 1.5, color: team.color }}>
+                            <div
+                                onClick={() => onOpenTeam && onOpenTeam(teamId)}
+                                style={{
+                                  fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, letterSpacing: 1.5, color: team.color,
+                                  cursor: onOpenTeam ? 'pointer' : 'default',
+                                }}
+                                title={onOpenTeam ? `View ${team.name}` : undefined}
+                            >
                                 {teamId}
                             </div>
                             <div style={{ fontSize: 11, color: '#8b949e' }}>— {team.name}</div>
@@ -283,6 +298,7 @@ export default function Players({ onOpenProfile }) {
                                     player={p}
                                     onOpenProfile={onOpenProfile}
                                     onDelete={handleDelete}
+                                    onOpenTeam={onOpenTeam}
                                 />
                             ))}
                         </div>
