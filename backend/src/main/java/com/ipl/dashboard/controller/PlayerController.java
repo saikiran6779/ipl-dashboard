@@ -7,6 +7,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 import java.util.List;
 
@@ -52,6 +55,14 @@ public class PlayerController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deletePlayer(@PathVariable Long id) {
         playerService.deletePlayer(id);
+    }
+
+    /** POST /api/players/{id}/picture  — upload profile picture */
+    @PostMapping("/players/{id}/picture")
+    public ResponseEntity<PlayerDTO.Summary> uploadPicture(
+            @PathVariable Long id,
+            @RequestParam("file") MultipartFile file) throws IOException {
+        return ResponseEntity.ok(playerService.uploadProfilePicture(id, file));
     }
 
     /** GET /api/players/{id}/profile  — career stats + match log */

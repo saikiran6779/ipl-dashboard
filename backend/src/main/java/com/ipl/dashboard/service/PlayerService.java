@@ -8,9 +8,13 @@ import com.ipl.dashboard.repository.MatchRepository;
 import com.ipl.dashboard.repository.PlayerMatchStatsRepository;
 import com.ipl.dashboard.repository.PlayerRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -21,6 +25,9 @@ public class PlayerService {
     private final PlayerRepository            playerRepo;
     private final PlayerMatchStatsRepository  statsRepo;
     private final MatchRepository             matchRepo;
+
+    @Value("${file.upload-dir:uploads}")
+    private String uploadDir;
 
     // ── Player CRUD ───────────────────────────────────────────────────────
 
@@ -63,6 +70,24 @@ public class PlayerService {
         playerRepo.deleteById(id);
     }
 
+    public PlayerDTO.Summary uploadProfilePicture(Long id, MultipartFile file) throws IOException {
+        Player p = playerRepo.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Player not found: " + id));
+
+        String originalFilename = file.getOriginalFilename();
+        String ext = (originalFilename != null && originalFilename.contains("."))
+                ? originalFilename.substring(originalFilename.lastIndexOf('.'))
+                : ".jpg";
+        String filename = "player_" + id + "_" + System.currentTimeMillis() + ext;
+
+        Path dir = Paths.get(uploadDir, "profile-pictures");
+        Files.createDirectories(dir);
+        Files.copy(file.getInputStream(), dir.resolve(filename), StandardCopyOption.REPLACE_EXISTING);
+
+        p.setProfilePictureUrl("/uploads/profile-pictures/" + filename);
+        return toSummary(playerRepo.save(p));
+    }
+
     // ── Player Profile (career stats + match log) ─────────────────────────
     @Transactional(readOnly = true)
     public PlayerDTO.Profile getProfile(Long playerId) {
@@ -76,6 +101,7 @@ public class PlayerService {
             return PlayerDTO.Profile.builder()
                     .id(p.getId()).name(p.getName())
                     .teamId(p.getTeamId()).role(p.getRole())
+                    .profilePictureUrl(p.getProfilePictureUrl())
                     .matches(0).matchLog(List.of())
                     .build();
         }
@@ -117,6 +143,7 @@ public class PlayerService {
 
         return PlayerDTO.Profile.builder()
                 .id(p.getId()).name(p.getName()).teamId(p.getTeamId()).role(p.getRole())
+                .profilePictureUrl(p.getProfilePictureUrl())
                 .matches(matches)
                 .totalRuns(totalRuns).highScore(highScore)
                 .totalBalls(totalBalls).totalFours(totalFours).totalSixes(totalSixes)
@@ -211,6 +238,7 @@ public class PlayerService {
         return PlayerDTO.Summary.builder()
                 .id(p.getId()).name(p.getName())
                 .teamId(p.getTeamId()).role(p.getRole())
+                .profilePictureUrl(p.getProfilePictureUrl())
                 .build();
     }
 

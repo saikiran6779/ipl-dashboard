@@ -99,6 +99,23 @@ function PlayerCard({ player, onOpenProfile, onDelete }) {
             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: team.color }} />
 
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginTop: 6 }}>
+                {/* avatar */}
+                <div style={{
+                    width: 40, height: 40, borderRadius: '50%', flexShrink: 0, marginRight: 10,
+                    background: `linear-gradient(135deg, ${team.color}44, ${team.color}11)`,
+                    border: `1.5px solid ${team.color}66`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    overflow: 'hidden',
+                }}>
+                    {player.profilePictureUrl
+                        ? <img src={player.profilePictureUrl} alt={player.name}
+                               style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        : <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: team.color }}>
+                            {player.name.charAt(0)}
+                          </span>
+                    }
+                </div>
+
                 <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontWeight: 700, fontSize: 14, color: '#e6edf3', marginBottom: 4,
                         whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>

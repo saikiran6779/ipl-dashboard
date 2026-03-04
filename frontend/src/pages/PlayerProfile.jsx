@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import toast from 'react-hot-toast'
 import { Spinner, Button } from '../components/UI'
-import { getProfile } from '../services/api'
+import { getProfile, uploadProfilePicture } from '../services/api'
 import { getTeam } from '../services/constants'
 
 const ROLE_LABELS = { BAT: 'Batter', BOWL: 'Bowler', ALL: 'All-rounder', WK: 'Wicket-keeper' }
@@ -248,6 +248,8 @@ function MatchLog({ log }) {
 export default function PlayerProfile({ playerId, onBack }) {
     const [profile, setProfile] = useState(null)
     const [loading, setLoading] = useState(true)
+    const [uploading, setUploading] = useState(false)
+    const fileInputRef = useRef(null)
 
     useEffect(() => {
         setLoading(true)
@@ -256,6 +258,22 @@ export default function PlayerProfile({ playerId, onBack }) {
             .catch(() => toast.error('Failed to load player profile'))
             .finally(() => setLoading(false))
     }, [playerId])
+
+    const handlePictureUpload = async (e) => {
+        const file = e.target.files?.[0]
+        if (!file) return
+        setUploading(true)
+        try {
+            const updated = await uploadProfilePicture(playerId, file)
+            setProfile(prev => ({ ...prev, profilePictureUrl: updated.profilePictureUrl }))
+            toast.success('Profile picture updated!')
+        } catch {
+            toast.error('Failed to upload picture')
+        } finally {
+            setUploading(false)
+            e.target.value = ''
+        }
+    }
 
     if (loading) return <Spinner />
     if (!profile) return null
@@ -291,15 +309,44 @@ export default function PlayerProfile({ playerId, onBack }) {
                 }} />
 
                 <div style={{ padding: '24px 28px', display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
-                    {/* avatar */}
-                    <div style={{
-                        width: 64, height: 64, borderRadius: '50%', flexShrink: 0,
-                        background: `linear-gradient(135deg, ${team.color}44, ${team.color}11)`,
-                        border: `2px solid ${team.color}66`,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: team.color, letterSpacing: 1,
-                    }}>
-                        {profile.name.charAt(0)}
+                    {/* avatar with upload */}
+                    <div style={{ position: 'relative', flexShrink: 0 }}>
+                        <div style={{
+                            width: 80, height: 80, borderRadius: '50%',
+                            background: `linear-gradient(135deg, ${team.color}44, ${team.color}11)`,
+                            border: `2px solid ${team.color}66`,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            overflow: 'hidden',
+                        }}>
+                            {profile.profilePictureUrl
+                                ? <img src={profile.profilePictureUrl} alt={profile.name}
+                                       style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                : <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 32, color: team.color, letterSpacing: 1 }}>
+                                    {profile.name.charAt(0)}
+                                  </span>
+                            }
+                        </div>
+                        {/* upload overlay */}
+                        <button
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={uploading}
+                            title="Change profile picture"
+                            style={{
+                                position: 'absolute', bottom: 0, right: 0,
+                                width: 26, height: 26, borderRadius: '50%',
+                                background: team.color, border: '2px solid #161b22',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                cursor: 'pointer', fontSize: 12, color: '#fff',
+                                opacity: uploading ? 0.6 : 1,
+                            }}
+                        >{uploading ? '…' : '📷'}</button>
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/*"
+                            style={{ display: 'none' }}
+                            onChange={handlePictureUpload}
+                        />
                     </div>
 
                     <div style={{ flex: 1, minWidth: 0 }}>
