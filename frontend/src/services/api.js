@@ -28,4 +28,9 @@ export const saveScorecard = (matchId, data) => api.post(`/matches/${matchId}/sc
 export const getTopBatters = ()              => api.get('/leaderboard/batting').then(r => r.data)
 export const getTopBowlers = ()              => api.get('/leaderboard/bowling').then(r => r.data)
 
+// ── Teams ───────────────────────────────────────────────────────────────────
+export const getTeams      = ()              => api.get('/teams').then(r => r.data)
+export const getTeam       = (id)            => api.get(`/teams/${id}`).then(r => r.data)
+export const updateTeam    = (id, data)      => api.put(`/teams/${id}`, data).then(r => r.data)
+
 export default api

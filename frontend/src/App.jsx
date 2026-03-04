@@ -6,6 +6,8 @@ import Matches from './pages/Matches'
 import MatchForm from './pages/MatchForm'
 import Players from './pages/Players'
 import PlayerProfile from './pages/PlayerProfile.jsx'
+import Teams from './pages/Teams'
+import TeamProfile from './pages/TeamProfile'
 import { getMatches, getStats, createMatch, updateMatch, deleteMatch } from './services/api'
 
 export default function App() {
@@ -16,6 +18,7 @@ export default function App() {
   const [loading,     setLoading]     = useState(true)
   const [saving,      setSaving]      = useState(false)
   const [profileId,   setProfileId]   = useState(null)   // player id to show profile for
+  const [teamId,      setTeamId]      = useState(null)   // team id to show profile for
 
   // ── Data fetching ─────────────────────────────────────────────────────────
 
@@ -86,6 +89,16 @@ export default function App() {
     setProfileId(null)
   }
 
+  const handleOpenTeam = (id) => {
+    setTeamId(id)
+    setView('team-profile')
+  }
+
+  const handleBackFromTeam = () => {
+    setView('teams')
+    setTeamId(null)
+  }
+
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
@@ -107,6 +120,18 @@ export default function App() {
           )}
           {view === 'profile' && profileId && (
               <PlayerProfile playerId={profileId} onBack={handleBackFromProfile} />
+          )}
+          {view === 'teams' && (
+              <Teams onOpenTeam={handleOpenTeam} />
+          )}
+          {view === 'team-profile' && teamId && (
+              <TeamProfile
+                  teamId={teamId}
+                  onBack={handleBackFromTeam}
+                  stats={stats}
+                  matches={matches}
+                  onOpenProfile={handleOpenProfile}
+              />
           )}
         </main>
       </div>

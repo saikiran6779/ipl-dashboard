@@ -40,6 +40,11 @@ export default function Header({ view, setView, onAddClick }) {
                 onClick={() => setView('players')}
             >👤 Players</Button>
 
+            <Button
+                variant={view === 'teams' || view === 'team-profile' ? 'active' : 'inactive'}
+                onClick={() => setView('teams')}
+            >🏆 Teams</Button>
+
             <Button variant="primary" onClick={onAddClick}>＋ Add Match</Button>
           </div>
         </div>
