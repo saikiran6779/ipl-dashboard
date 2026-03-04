@@ -28,6 +28,8 @@ public class Player {
     @Column(nullable = false)
     private Role role;
 
+    private String profilePictureUrl;
+
     @OneToMany(mappedBy = "player", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PlayerMatchStats> stats;
 

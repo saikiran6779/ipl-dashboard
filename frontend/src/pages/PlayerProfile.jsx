@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import toast from 'react-hot-toast'
 import { Spinner, Button } from '../components/UI'
-import { getProfile } from '../services/api'
+import { getProfile, updatePlayer } from '../services/api'
 import { getTeam } from '../services/constants'
 
 const ROLE_LABELS = { BAT: 'Batter', BOWL: 'Bowler', ALL: 'All-rounder', WK: 'Wicket-keeper' }
@@ -246,8 +246,11 @@ function MatchLog({ log }) {
 
 // ── Main Profile Page ─────────────────────────────────────────────────────
 export default function PlayerProfile({ playerId, onBack }) {
-    const [profile, setProfile] = useState(null)
-    const [loading, setLoading] = useState(true)
+    const [profile, setProfile]       = useState(null)
+    const [loading, setLoading]       = useState(true)
+    const [editingUrl, setEditingUrl] = useState(false)
+    const [urlInput, setUrlInput]     = useState('')
+    const [saving, setSaving]         = useState(false)
 
     useEffect(() => {
         setLoading(true)
@@ -256,6 +259,30 @@ export default function PlayerProfile({ playerId, onBack }) {
             .catch(() => toast.error('Failed to load player profile'))
             .finally(() => setLoading(false))
     }, [playerId])
+
+    const openUrlEdit = () => {
+        setUrlInput(profile.profilePictureUrl || '')
+        setEditingUrl(true)
+    }
+
+    const saveUrl = async () => {
+        setSaving(true)
+        try {
+            await updatePlayer(playerId, {
+                name: profile.name,
+                teamId: profile.teamId,
+                role: profile.role,
+                profilePictureUrl: urlInput.trim() || null,
+            })
+            setProfile(prev => ({ ...prev, profilePictureUrl: urlInput.trim() || null }))
+            setEditingUrl(false)
+            toast.success('Profile picture updated!')
+        } catch {
+            toast.error('Failed to update picture')
+        } finally {
+            setSaving(false)
+        }
+    }
 
     if (loading) return <Spinner />
     if (!profile) return null
@@ -291,15 +318,38 @@ export default function PlayerProfile({ playerId, onBack }) {
                 }} />
 
                 <div style={{ padding: '24px 28px', display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
-                    {/* avatar */}
-                    <div style={{
-                        width: 64, height: 64, borderRadius: '50%', flexShrink: 0,
-                        background: `linear-gradient(135deg, ${team.color}44, ${team.color}11)`,
-                        border: `2px solid ${team.color}66`,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: team.color, letterSpacing: 1,
-                    }}>
-                        {profile.name.charAt(0)}
+                    {/* avatar + URL edit */}
+                    <div style={{ flexShrink: 0 }}>
+                        <div style={{ position: 'relative', display: 'inline-block' }}>
+                            <div style={{
+                                width: 80, height: 80, borderRadius: '50%',
+                                background: `linear-gradient(135deg, ${team.color}44, ${team.color}11)`,
+                                border: `2px solid ${team.color}66`,
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                overflow: 'hidden',
+                            }}>
+                                {profile.profilePictureUrl
+                                    ? <img src={profile.profilePictureUrl} alt={profile.name}
+                                           style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    : <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 32, color: team.color, letterSpacing: 1 }}>
+                                        {profile.name.charAt(0)}
+                                      </span>
+                                }
+                            </div>
+                            <button
+                                onClick={openUrlEdit}
+                                title="Set photo URL"
+                                style={{
+                                    position: 'absolute', bottom: 0, right: 0,
+                                    width: 26, height: 26, borderRadius: '50%',
+                                    background: team.color, border: '2px solid #161b22',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    cursor: 'pointer', fontSize: 12, color: '#fff',
+                                }}
+                            >✎</button>
+                        </div>
+
+                        {/* inline URL editor — moved outside hero card to avoid overflow:hidden clipping */}
                     </div>
 
                     <div style={{ flex: 1, minWidth: 0 }}>
@@ -325,6 +375,65 @@ export default function PlayerProfile({ playerId, onBack }) {
                     </div>
                 </div>
             </div>
+
+            {/* Photo URL editor modal — outside hero card so overflow:hidden doesn't clip it */}
+            {editingUrl && (
+                <div style={{
+                    position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)',
+                    zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20,
+                }} onClick={() => setEditingUrl(false)}>
+                    <div style={{
+                        background: '#161b22', border: '1px solid #30363d', borderRadius: 14,
+                        padding: 24, width: '100%', maxWidth: 400,
+                        animation: 'fadeUp 0.2s ease',
+                    }} onClick={e => e.stopPropagation()}>
+                        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, letterSpacing: 1,
+                            color: team.color, marginBottom: 16 }}>
+                            Set Profile Picture
+                        </div>
+                        <input
+                            autoFocus
+                            value={urlInput}
+                            onChange={e => setUrlInput(e.target.value)}
+                            onKeyDown={e => { if (e.key === 'Enter') saveUrl(); if (e.key === 'Escape') setEditingUrl(false) }}
+                            placeholder="https://example.com/photo.jpg"
+                            style={{
+                                width: '100%', boxSizing: 'border-box',
+                                background: '#0d1117', border: '1px solid #30363d',
+                                borderRadius: 8, padding: '10px 12px',
+                                color: '#e6edf3', fontSize: 13, outline: 'none',
+                                fontFamily: 'DM Sans, sans-serif',
+                            }}
+                        />
+                        {urlInput && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 12 }}>
+                                <img src={urlInput} alt="preview"
+                                     style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover',
+                                         border: `2px solid ${team.color}66` }}
+                                     onError={e => { e.target.style.opacity = 0 }}
+                                     onLoad={e => { e.target.style.opacity = 1 }} />
+                                <span style={{ fontSize: 12, color: '#8b949e' }}>Preview</span>
+                            </div>
+                        )}
+                        <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
+                            <button onClick={() => setEditingUrl(false)} style={{
+                                flex: 1, padding: '9px 0', background: 'transparent',
+                                border: '1px solid #30363d', borderRadius: 8,
+                                color: '#8b949e', cursor: 'pointer', fontSize: 13,
+                                fontFamily: 'DM Sans, sans-serif',
+                            }}>Cancel</button>
+                            <button onClick={saveUrl} disabled={saving} style={{
+                                flex: 2, padding: '9px 0',
+                                background: `linear-gradient(135deg, ${team.color}, ${team.color}cc)`,
+                                border: 'none', borderRadius: 8,
+                                color: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 700,
+                                opacity: saving ? 0.7 : 1,
+                                fontFamily: 'DM Sans, sans-serif',
+                            }}>{saving ? 'Saving…' : 'Save'}</button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Career stats */}
             <div style={{ background: '#161b22', border: '1px solid #21262d', borderRadius: 16, padding: '24px 28px', marginBottom: 20 }}>

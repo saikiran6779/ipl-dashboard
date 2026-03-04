@@ -15,6 +15,7 @@ public class PlayerDTO {
         @NotBlank private String name;
         @NotBlank private String teamId;
         @NotNull  private Player.Role role;
+        private String profilePictureUrl;
     }
 
     // ── Player list item ───────────────────────────────────────────────────
@@ -24,6 +25,7 @@ public class PlayerDTO {
         private String      name;
         private String      teamId;
         private Player.Role role;
+        private String      profilePictureUrl;
     }
 
     // ── Full player profile (career stats + match history) ─────────────────
@@ -33,6 +35,7 @@ public class PlayerDTO {
         private String      name;
         private String      teamId;
         private Player.Role role;
+        private String      profilePictureUrl;
 
         // Career batting
         private int    matches;

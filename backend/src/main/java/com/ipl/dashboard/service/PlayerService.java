@@ -10,7 +10,6 @@ import com.ipl.dashboard.repository.PlayerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -43,6 +42,7 @@ public class PlayerService {
                 .name(req.getName())
                 .teamId(req.getTeamId())
                 .role(req.getRole())
+                .profilePictureUrl(req.getProfilePictureUrl())
                 .build());
         return toSummary(saved);
     }
@@ -53,6 +53,7 @@ public class PlayerService {
         p.setName(req.getName());
         p.setTeamId(req.getTeamId());
         p.setRole(req.getRole());
+        p.setProfilePictureUrl(req.getProfilePictureUrl());
         return toSummary(playerRepo.save(p));
     }
 
@@ -76,6 +77,7 @@ public class PlayerService {
             return PlayerDTO.Profile.builder()
                     .id(p.getId()).name(p.getName())
                     .teamId(p.getTeamId()).role(p.getRole())
+                    .profilePictureUrl(p.getProfilePictureUrl())
                     .matches(0).matchLog(List.of())
                     .build();
         }
@@ -117,6 +119,7 @@ public class PlayerService {
 
         return PlayerDTO.Profile.builder()
                 .id(p.getId()).name(p.getName()).teamId(p.getTeamId()).role(p.getRole())
+                .profilePictureUrl(p.getProfilePictureUrl())
                 .matches(matches)
                 .totalRuns(totalRuns).highScore(highScore)
                 .totalBalls(totalBalls).totalFours(totalFours).totalSixes(totalSixes)
@@ -211,6 +214,7 @@ public class PlayerService {
         return PlayerDTO.Summary.builder()
                 .id(p.getId()).name(p.getName())
                 .teamId(p.getTeamId()).role(p.getRole())
+                .profilePictureUrl(p.getProfilePictureUrl())
                 .build();
     }
 
