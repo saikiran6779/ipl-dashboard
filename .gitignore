@@ -1,0 +1,49 @@
+# ── Backend ────────────────────────────────────────────────────────────────
+
+# Maven build output
+backend/target/
+
+# Maven wrapper
+!backend/.mvn/wrapper/maven-wrapper.jar
+!backend/.mvn/wrapper/maven-wrapper.properties
+
+# Logs
+*.log
+logs/
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment / secrets — NEVER commit these
+backend/src/main/resources/application-local.properties
+*.env
+
+# ── Frontend ───────────────────────────────────────────────────────────────
+
+# Dependencies
+frontend/node_modules/
+
+# Build output
+frontend/dist/
+frontend/.vite/
+
+# Local env files
+frontend/.env
+frontend/.env.local
+frontend/.env.*.local
+
+# Editor
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
