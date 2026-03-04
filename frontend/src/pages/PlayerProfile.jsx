@@ -349,53 +349,7 @@ export default function PlayerProfile({ playerId, onBack }) {
                             >✎</button>
                         </div>
 
-                        {/* inline URL editor */}
-                        {editingUrl && (
-                            <div style={{
-                                position: 'absolute', zIndex: 50,
-                                background: '#21262d', border: '1px solid #30363d',
-                                borderRadius: 10, padding: 14, marginTop: 8, width: 300,
-                                boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
-                            }}>
-                                <div style={{ fontSize: 11, color: '#8b949e', marginBottom: 8, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1 }}>
-                                    Photo URL
-                                </div>
-                                <input
-                                    autoFocus
-                                    value={urlInput}
-                                    onChange={e => setUrlInput(e.target.value)}
-                                    onKeyDown={e => { if (e.key === 'Enter') saveUrl(); if (e.key === 'Escape') setEditingUrl(false) }}
-                                    placeholder="https://example.com/photo.jpg"
-                                    style={{
-                                        width: '100%', boxSizing: 'border-box',
-                                        background: '#0d1117', border: '1px solid #30363d',
-                                        borderRadius: 6, padding: '8px 10px',
-                                        color: '#e6edf3', fontSize: 13, outline: 'none',
-                                        fontFamily: 'DM Sans, sans-serif',
-                                    }}
-                                />
-                                {urlInput && (
-                                    <img src={urlInput} alt="preview"
-                                         style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover',
-                                             marginTop: 8, border: '1px solid #30363d' }}
-                                         onError={e => { e.target.style.opacity = 0 }}
-                                         onLoad={e => { e.target.style.opacity = 1 }} />
-                                )}
-                                <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
-                                    <button onClick={() => setEditingUrl(false)} style={{
-                                        flex: 1, padding: '6px 0', background: 'transparent',
-                                        border: '1px solid #30363d', borderRadius: 6,
-                                        color: '#8b949e', cursor: 'pointer', fontSize: 12,
-                                    }}>Cancel</button>
-                                    <button onClick={saveUrl} disabled={saving} style={{
-                                        flex: 2, padding: '6px 0', background: team.color,
-                                        border: 'none', borderRadius: 6,
-                                        color: '#fff', cursor: 'pointer', fontSize: 12, fontWeight: 700,
-                                        opacity: saving ? 0.7 : 1,
-                                    }}>{saving ? 'Saving…' : 'Save'}</button>
-                                </div>
-                            </div>
-                        )}
+                        {/* inline URL editor — moved outside hero card to avoid overflow:hidden clipping */}
                     </div>
 
                     <div style={{ flex: 1, minWidth: 0 }}>
@@ -421,6 +375,65 @@ export default function PlayerProfile({ playerId, onBack }) {
                     </div>
                 </div>
             </div>
+
+            {/* Photo URL editor modal — outside hero card so overflow:hidden doesn't clip it */}
+            {editingUrl && (
+                <div style={{
+                    position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)',
+                    zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20,
+                }} onClick={() => setEditingUrl(false)}>
+                    <div style={{
+                        background: '#161b22', border: '1px solid #30363d', borderRadius: 14,
+                        padding: 24, width: '100%', maxWidth: 400,
+                        animation: 'fadeUp 0.2s ease',
+                    }} onClick={e => e.stopPropagation()}>
+                        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, letterSpacing: 1,
+                            color: team.color, marginBottom: 16 }}>
+                            Set Profile Picture
+                        </div>
+                        <input
+                            autoFocus
+                            value={urlInput}
+                            onChange={e => setUrlInput(e.target.value)}
+                            onKeyDown={e => { if (e.key === 'Enter') saveUrl(); if (e.key === 'Escape') setEditingUrl(false) }}
+                            placeholder="https://example.com/photo.jpg"
+                            style={{
+                                width: '100%', boxSizing: 'border-box',
+                                background: '#0d1117', border: '1px solid #30363d',
+                                borderRadius: 8, padding: '10px 12px',
+                                color: '#e6edf3', fontSize: 13, outline: 'none',
+                                fontFamily: 'DM Sans, sans-serif',
+                            }}
+                        />
+                        {urlInput && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 12 }}>
+                                <img src={urlInput} alt="preview"
+                                     style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover',
+                                         border: `2px solid ${team.color}66` }}
+                                     onError={e => { e.target.style.opacity = 0 }}
+                                     onLoad={e => { e.target.style.opacity = 1 }} />
+                                <span style={{ fontSize: 12, color: '#8b949e' }}>Preview</span>
+                            </div>
+                        )}
+                        <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
+                            <button onClick={() => setEditingUrl(false)} style={{
+                                flex: 1, padding: '9px 0', background: 'transparent',
+                                border: '1px solid #30363d', borderRadius: 8,
+                                color: '#8b949e', cursor: 'pointer', fontSize: 13,
+                                fontFamily: 'DM Sans, sans-serif',
+                            }}>Cancel</button>
+                            <button onClick={saveUrl} disabled={saving} style={{
+                                flex: 2, padding: '9px 0',
+                                background: `linear-gradient(135deg, ${team.color}, ${team.color}cc)`,
+                                border: 'none', borderRadius: 8,
+                                color: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 700,
+                                opacity: saving ? 0.7 : 1,
+                                fontFamily: 'DM Sans, sans-serif',
+                            }}>{saving ? 'Saving…' : 'Save'}</button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Career stats */}
             <div style={{ background: '#161b22', border: '1px solid #21262d', borderRadius: 16, padding: '24px 28px', marginBottom: 20 }}>
