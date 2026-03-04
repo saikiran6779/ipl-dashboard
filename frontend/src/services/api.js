@@ -13,19 +13,12 @@ export const deleteMatch = (id)         => api.delete(`/matches/${id}`)
 export const getStats = ()              => api.get('/stats').then(r => r.data)
 
 // ── Players ────────────────────────────────────────────────────────────────
-export const getPlayers    = ()              => api.get('/players').then(r => r.data)
-export const getSquad      = (teamId)        => api.get(`/teams/${teamId}/squad`).then(r => r.data)
-export const createPlayer  = (data)          => api.post('/players', data).then(r => r.data)
-export const updatePlayer  = (id, data)      => api.put(`/players/${id}`, data).then(r => r.data)
-export const deletePlayer  = (id)            => api.delete(`/players/${id}`)
-export const getProfile    = (id)            => api.get(`/players/${id}/profile`).then(r => r.data)
-export const uploadProfilePicture = (id, file) => {
-    const form = new FormData()
-    form.append('file', file)
-    return api.post(`/players/${id}/picture`, form, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-    }).then(r => r.data)
-}
+export const getPlayers   = ()         => api.get('/players').then(r => r.data)
+export const getSquad     = (teamId)   => api.get(`/teams/${teamId}/squad`).then(r => r.data)
+export const createPlayer = (data)     => api.post('/players', data).then(r => r.data)
+export const updatePlayer = (id, data) => api.put(`/players/${id}`, data).then(r => r.data)
+export const deletePlayer = (id)       => api.delete(`/players/${id}`)
+export const getProfile   = (id)       => api.get(`/players/${id}/profile`).then(r => r.data)
 
 // ── Scorecards ─────────────────────────────────────────────────────────────
 export const getScorecard  = (matchId)       => api.get(`/matches/${matchId}/scorecard`).then(r => r.data)

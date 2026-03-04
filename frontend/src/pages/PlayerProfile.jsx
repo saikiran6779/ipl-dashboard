@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import toast from 'react-hot-toast'
 import { Spinner, Button } from '../components/UI'
-import { getProfile, uploadProfilePicture } from '../services/api'
+import { getProfile, updatePlayer } from '../services/api'
 import { getTeam } from '../services/constants'
 
 const ROLE_LABELS = { BAT: 'Batter', BOWL: 'Bowler', ALL: 'All-rounder', WK: 'Wicket-keeper' }
@@ -246,10 +246,11 @@ function MatchLog({ log }) {
 
 // ── Main Profile Page ─────────────────────────────────────────────────────
 export default function PlayerProfile({ playerId, onBack }) {
-    const [profile, setProfile] = useState(null)
-    const [loading, setLoading] = useState(true)
-    const [uploading, setUploading] = useState(false)
-    const fileInputRef = useRef(null)
+    const [profile, setProfile]       = useState(null)
+    const [loading, setLoading]       = useState(true)
+    const [editingUrl, setEditingUrl] = useState(false)
+    const [urlInput, setUrlInput]     = useState('')
+    const [saving, setSaving]         = useState(false)
 
     useEffect(() => {
         setLoading(true)
@@ -259,19 +260,27 @@ export default function PlayerProfile({ playerId, onBack }) {
             .finally(() => setLoading(false))
     }, [playerId])
 
-    const handlePictureUpload = async (e) => {
-        const file = e.target.files?.[0]
-        if (!file) return
-        setUploading(true)
+    const openUrlEdit = () => {
+        setUrlInput(profile.profilePictureUrl || '')
+        setEditingUrl(true)
+    }
+
+    const saveUrl = async () => {
+        setSaving(true)
         try {
-            const updated = await uploadProfilePicture(playerId, file)
-            setProfile(prev => ({ ...prev, profilePictureUrl: updated.profilePictureUrl }))
+            await updatePlayer(playerId, {
+                name: profile.name,
+                teamId: profile.teamId,
+                role: profile.role,
+                profilePictureUrl: urlInput.trim() || null,
+            })
+            setProfile(prev => ({ ...prev, profilePictureUrl: urlInput.trim() || null }))
+            setEditingUrl(false)
             toast.success('Profile picture updated!')
         } catch {
-            toast.error('Failed to upload picture')
+            toast.error('Failed to update picture')
         } finally {
-            setUploading(false)
-            e.target.value = ''
+            setSaving(false)
         }
     }
 
@@ -309,44 +318,84 @@ export default function PlayerProfile({ playerId, onBack }) {
                 }} />
 
                 <div style={{ padding: '24px 28px', display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
-                    {/* avatar with upload */}
-                    <div style={{ position: 'relative', flexShrink: 0 }}>
-                        <div style={{
-                            width: 80, height: 80, borderRadius: '50%',
-                            background: `linear-gradient(135deg, ${team.color}44, ${team.color}11)`,
-                            border: `2px solid ${team.color}66`,
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            overflow: 'hidden',
-                        }}>
-                            {profile.profilePictureUrl
-                                ? <img src={profile.profilePictureUrl} alt={profile.name}
-                                       style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                : <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 32, color: team.color, letterSpacing: 1 }}>
-                                    {profile.name.charAt(0)}
-                                  </span>
-                            }
-                        </div>
-                        {/* upload overlay */}
-                        <button
-                            onClick={() => fileInputRef.current?.click()}
-                            disabled={uploading}
-                            title="Change profile picture"
-                            style={{
-                                position: 'absolute', bottom: 0, right: 0,
-                                width: 26, height: 26, borderRadius: '50%',
-                                background: team.color, border: '2px solid #161b22',
+                    {/* avatar + URL edit */}
+                    <div style={{ flexShrink: 0 }}>
+                        <div style={{ position: 'relative', display: 'inline-block' }}>
+                            <div style={{
+                                width: 80, height: 80, borderRadius: '50%',
+                                background: `linear-gradient(135deg, ${team.color}44, ${team.color}11)`,
+                                border: `2px solid ${team.color}66`,
                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                cursor: 'pointer', fontSize: 12, color: '#fff',
-                                opacity: uploading ? 0.6 : 1,
-                            }}
-                        >{uploading ? '…' : '📷'}</button>
-                        <input
-                            ref={fileInputRef}
-                            type="file"
-                            accept="image/*"
-                            style={{ display: 'none' }}
-                            onChange={handlePictureUpload}
-                        />
+                                overflow: 'hidden',
+                            }}>
+                                {profile.profilePictureUrl
+                                    ? <img src={profile.profilePictureUrl} alt={profile.name}
+                                           style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    : <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 32, color: team.color, letterSpacing: 1 }}>
+                                        {profile.name.charAt(0)}
+                                      </span>
+                                }
+                            </div>
+                            <button
+                                onClick={openUrlEdit}
+                                title="Set photo URL"
+                                style={{
+                                    position: 'absolute', bottom: 0, right: 0,
+                                    width: 26, height: 26, borderRadius: '50%',
+                                    background: team.color, border: '2px solid #161b22',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    cursor: 'pointer', fontSize: 12, color: '#fff',
+                                }}
+                            >✎</button>
+                        </div>
+
+                        {/* inline URL editor */}
+                        {editingUrl && (
+                            <div style={{
+                                position: 'absolute', zIndex: 50,
+                                background: '#21262d', border: '1px solid #30363d',
+                                borderRadius: 10, padding: 14, marginTop: 8, width: 300,
+                                boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+                            }}>
+                                <div style={{ fontSize: 11, color: '#8b949e', marginBottom: 8, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1 }}>
+                                    Photo URL
+                                </div>
+                                <input
+                                    autoFocus
+                                    value={urlInput}
+                                    onChange={e => setUrlInput(e.target.value)}
+                                    onKeyDown={e => { if (e.key === 'Enter') saveUrl(); if (e.key === 'Escape') setEditingUrl(false) }}
+                                    placeholder="https://example.com/photo.jpg"
+                                    style={{
+                                        width: '100%', boxSizing: 'border-box',
+                                        background: '#0d1117', border: '1px solid #30363d',
+                                        borderRadius: 6, padding: '8px 10px',
+                                        color: '#e6edf3', fontSize: 13, outline: 'none',
+                                        fontFamily: 'DM Sans, sans-serif',
+                                    }}
+                                />
+                                {urlInput && (
+                                    <img src={urlInput} alt="preview"
+                                         style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover',
+                                             marginTop: 8, border: '1px solid #30363d' }}
+                                         onError={e => { e.target.style.opacity = 0 }}
+                                         onLoad={e => { e.target.style.opacity = 1 }} />
+                                )}
+                                <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+                                    <button onClick={() => setEditingUrl(false)} style={{
+                                        flex: 1, padding: '6px 0', background: 'transparent',
+                                        border: '1px solid #30363d', borderRadius: 6,
+                                        color: '#8b949e', cursor: 'pointer', fontSize: 12,
+                                    }}>Cancel</button>
+                                    <button onClick={saveUrl} disabled={saving} style={{
+                                        flex: 2, padding: '6px 0', background: team.color,
+                                        border: 'none', borderRadius: 6,
+                                        color: '#fff', cursor: 'pointer', fontSize: 12, fontWeight: 700,
+                                        opacity: saving ? 0.7 : 1,
+                                    }}>{saving ? 'Saving…' : 'Save'}</button>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     <div style={{ flex: 1, minWidth: 0 }}>

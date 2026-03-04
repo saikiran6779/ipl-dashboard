@@ -15,6 +15,7 @@ public class PlayerDTO {
         @NotBlank private String name;
         @NotBlank private String teamId;
         @NotNull  private Player.Role role;
+        private String profilePictureUrl;
     }
 
     // ── Player list item ───────────────────────────────────────────────────

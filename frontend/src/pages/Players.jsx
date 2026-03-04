@@ -10,7 +10,7 @@ const ROLE_COLORS = { BAT: '#f97316', BOWL: '#8b5cf6', ALL: '#22c55e', WK: '#3b8
 
 // ── Add Player Modal ──────────────────────────────────────────────────────
 function AddPlayerModal({ onClose, onSaved }) {
-    const [form, setForm] = useState({ name: '', teamId: 'MI', role: 'BAT' })
+    const [form, setForm] = useState({ name: '', teamId: 'MI', role: 'BAT', profilePictureUrl: '' })
     const [saving, setSaving] = useState(false)
 
     const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
@@ -61,6 +61,21 @@ function AddPlayerModal({ onClose, onSaved }) {
                     <Select label="Role" value={form.role} onChange={e => set('role', e.target.value)}>
                         {ROLES.map(r => <option key={r} value={r}>{ROLE_LABELS[r]}</option>)}
                     </Select>
+                    <Input
+                        label="Photo URL (optional)"
+                        placeholder="https://example.com/photo.jpg"
+                        value={form.profilePictureUrl}
+                        onChange={e => set('profilePictureUrl', e.target.value)}
+                    />
+                    {form.profilePictureUrl && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                            <img src={form.profilePictureUrl} alt="preview"
+                                 style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover',
+                                     border: '2px solid #30363d' }}
+                                 onError={e => { e.target.style.display = 'none' }} />
+                            <span style={{ fontSize: 12, color: '#8b949e' }}>Preview</span>
+                        </div>
+                    )}
                 </div>
 
                 <div style={{ display: 'flex', gap: 10, marginTop: 24 }}>
