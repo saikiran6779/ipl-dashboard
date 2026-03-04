@@ -4,17 +4,20 @@ import Header from './components/Header'
 import Dashboard from './pages/Dashboard'
 import Matches from './pages/Matches'
 import MatchForm from './pages/MatchForm'
+import Players from './pages/Players'
+import PlayerProfile from './pages/PlayerProfile'
 import { getMatches, getStats, createMatch, updateMatch, deleteMatch } from './services/api'
 
 export default function App() {
-  const [view,      setView]      = useState('dashboard')
-  const [matches,   setMatches]   = useState([])
-  const [stats,     setStats]     = useState(null)
-  const [editMatch, setEditMatch] = useState(null)
-  const [loading,   setLoading]   = useState(true)
-  const [saving,    setSaving]    = useState(false)
+  const [view,        setView]        = useState('dashboard')
+  const [matches,     setMatches]     = useState([])
+  const [stats,       setStats]       = useState(null)
+  const [editMatch,   setEditMatch]   = useState(null)
+  const [loading,     setLoading]     = useState(true)
+  const [saving,      setSaving]      = useState(false)
+  const [profileId,   setProfileId]   = useState(null)   // player id to show profile for
 
-  // ── Data fetching ────────────────────────────────────────────────────────
+  // ── Data fetching ─────────────────────────────────────────────────────────
 
   const fetchAll = useCallback(async () => {
     setLoading(true)
@@ -32,17 +35,11 @@ export default function App() {
 
   useEffect(() => { fetchAll() }, [fetchAll])
 
-  // ── Handlers ─────────────────────────────────────────────────────────────
+  // ── Handlers ──────────────────────────────────────────────────────────────
 
-  const handleAddClick = () => {
-    setEditMatch(null)
-    setView('add')
-  }
+  const handleAddClick = () => { setEditMatch(null); setView('add') }
 
-  const handleEdit = (match) => {
-    setEditMatch(match)
-    setView('add')
-  }
+  const handleEdit = (match) => { setEditMatch(match); setView('add') }
 
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this match?')) return
@@ -76,28 +73,42 @@ export default function App() {
     }
   }
 
-  const handleCancel = () => {
-    setEditMatch(null)
-    setView('dashboard')
+  const handleCancel = () => { setEditMatch(null); setView('dashboard') }
+
+  // Navigate to a player profile from anywhere
+  const handleOpenProfile = (playerId) => {
+    setProfileId(playerId)
+    setView('profile')
   }
 
-  // ── Render ───────────────────────────────────────────────────────────────
+  const handleBackFromProfile = () => {
+    setView('players')
+    setProfileId(null)
+  }
+
+  // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div style={{ minHeight: '100vh' }}>
-      <Header view={view} setView={setView} onAddClick={handleAddClick} />
+      <div style={{ minHeight: '100vh' }}>
+        <Header view={view} setView={setView} onAddClick={handleAddClick} />
 
-      <main style={{ maxWidth: 1200, margin: '0 auto', padding: '28px 20px' }}>
-        {view === 'dashboard' && (
-          <Dashboard stats={stats} matches={matches} loading={loading} />
-        )}
-        {view === 'matches' && (
-          <Matches matches={matches} loading={loading} onEdit={handleEdit} onDelete={handleDelete} />
-        )}
-        {view === 'add' && (
-          <MatchForm editMatch={editMatch} onSubmit={handleSubmit} onCancel={handleCancel} loading={saving} />
-        )}
-      </main>
-    </div>
+        <main style={{ maxWidth: 1200, margin: '0 auto', padding: '28px 20px' }}>
+          {view === 'dashboard' && (
+              <Dashboard stats={stats} matches={matches} loading={loading} onOpenProfile={handleOpenProfile} />
+          )}
+          {view === 'matches' && (
+              <Matches matches={matches} loading={loading} onEdit={handleEdit} onDelete={handleDelete} />
+          )}
+          {view === 'add' && (
+              <MatchForm editMatch={editMatch} onSubmit={handleSubmit} onCancel={handleCancel} loading={saving} />
+          )}
+          {view === 'players' && (
+              <Players onOpenProfile={handleOpenProfile} />
+          )}
+          {view === 'profile' && profileId && (
+              <PlayerProfile playerId={profileId} onBack={handleBackFromProfile} />
+          )}
+        </main>
+      </div>
   )
 }
