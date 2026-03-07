@@ -1,6 +1,8 @@
 import axios from 'axios'
 
-const api = axios.create({ baseURL: '/api' })
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8080'
+
+const api = axios.create({ baseURL: `${API_BASE}/api` })
 
 // ── Matches ────────────────────────────────────────────────────────────────
 export const getMatches  = ()           => api.get('/matches').then(r => r.data)
