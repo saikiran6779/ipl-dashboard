@@ -24,6 +24,8 @@ Thumbs.db
 
 # Environment / secrets — NEVER commit these
 backend/src/main/resources/application-local.properties
+backend/src/main/resources/application-prod.properties
+
 *.env
 
 # ── Frontend ───────────────────────────────────────────────────────────────
