@@ -6,18 +6,32 @@ import Matches from './pages/Matches'
 import MatchForm from './pages/MatchForm'
 import Players from './pages/Players'
 import PlayerProfile from './pages/PlayerProfile.jsx'
+import Login from './pages/Login'
+import Register from './pages/Register'
+import ForgotPassword from './pages/ForgotPassword'
+import ResetPassword from './pages/ResetPassword'
+import SuperAdminUsers from './pages/SuperAdminUsers'
 import { getMatches, getStats, createMatch, updateMatch, deleteMatch } from './services/api'
+import { useAuth } from './context/AuthContext'
+
+// Detect /reset-password?token=... on initial page load
+function getInitialView() {
+  if (window.location.search.includes('token=')) return 'reset-password'
+  return 'dashboard'
+}
 
 export default function App() {
-  const [view,        setView]        = useState('dashboard')
-  const [matches,     setMatches]     = useState([])
-  const [stats,       setStats]       = useState(null)
-  const [editMatch,   setEditMatch]   = useState(null)
-  const [loading,     setLoading]     = useState(true)
-  const [saving,      setSaving]      = useState(false)
-  const [profileId,   setProfileId]   = useState(null)   // player id to show profile for
+  const { isAdmin, isSuperAdmin } = useAuth()
 
-  // ── Data fetching ─────────────────────────────────────────────────────────
+  const [view,      setView]      = useState(getInitialView)
+  const [matches,   setMatches]   = useState([])
+  const [stats,     setStats]     = useState(null)
+  const [editMatch, setEditMatch] = useState(null)
+  const [loading,   setLoading]   = useState(true)
+  const [saving,    setSaving]    = useState(false)
+  const [profileId, setProfileId] = useState(null)
+
+  // ── Data fetching ──────────────────────────────────────────────────────────
 
   const fetchAll = useCallback(async () => {
     setLoading(true)
@@ -35,13 +49,30 @@ export default function App() {
 
   useEffect(() => { fetchAll() }, [fetchAll])
 
-  // ── Handlers ──────────────────────────────────────────────────────────────
+  // ── Navigation with guards ─────────────────────────────────────────────────
 
-  const handleAddClick = () => { setEditMatch(null); setView('add') }
+  const navigate = useCallback((target) => {
+    if (target === 'super-admin' && !isSuperAdmin) { setView('dashboard'); return }
+    if (target === 'add'         && !isAdmin)       { return }
+    setView(target)
+  }, [isAdmin, isSuperAdmin])
 
-  const handleEdit = (match) => { setEditMatch(match); setView('add') }
+  // ── Handlers ───────────────────────────────────────────────────────────────
+
+  const handleAddClick = () => {
+    if (!isAdmin) return
+    setEditMatch(null)
+    setView('add')
+  }
+
+  const handleEdit = (match) => {
+    if (!isAdmin) return
+    setEditMatch(match)
+    setView('add')
+  }
 
   const handleDelete = async (id) => {
+    if (!isAdmin) return
     if (!window.confirm('Delete this match?')) return
     try {
       await deleteMatch(id)
@@ -53,6 +84,7 @@ export default function App() {
   }
 
   const handleSubmit = async (payload) => {
+    if (!isAdmin) return
     setSaving(true)
     try {
       if (editMatch) {
@@ -75,40 +107,43 @@ export default function App() {
 
   const handleCancel = () => { setEditMatch(null); setView('dashboard') }
 
-  // Navigate to a player profile from anywhere
-  const handleOpenProfile = (playerId) => {
-    setProfileId(playerId)
-    setView('profile')
-  }
+  const handleOpenProfile = (playerId) => { setProfileId(playerId); setView('profile') }
+  const handleBackFromProfile = () => { setView('players'); setProfileId(null) }
 
-  const handleBackFromProfile = () => {
-    setView('players')
-    setProfileId(null)
-  }
-
-  // ── Render ────────────────────────────────────────────────────────────────
+  // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
-      <div style={{ minHeight: '100vh' }}>
-        <Header view={view} setView={setView} onAddClick={handleAddClick} />
+    <div style={{ minHeight: '100vh' }}>
+      <Header view={view} setView={navigate} onAddClick={handleAddClick} />
 
-        <main className="page-main" style={{ maxWidth: 1200, margin: '0 auto', padding: '28px 20px' }}>
-          {view === 'dashboard' && (
-              <Dashboard stats={stats} matches={matches} loading={loading} onOpenProfile={handleOpenProfile} />
-          )}
-          {view === 'matches' && (
-              <Matches matches={matches} loading={loading} onEdit={handleEdit} onDelete={handleDelete} />
-          )}
-          {view === 'add' && (
-              <MatchForm editMatch={editMatch} onSubmit={handleSubmit} onCancel={handleCancel} loading={saving} />
-          )}
-          {view === 'players' && (
-              <Players onOpenProfile={handleOpenProfile} />
-          )}
-          {view === 'profile' && profileId && (
-              <PlayerProfile playerId={profileId} onBack={handleBackFromProfile} />
-          )}
-        </main>
-      </div>
+      <main className="page-main" style={{ maxWidth: 1200, margin: '0 auto', padding: '28px 20px' }}>
+
+        {/* Auth pages */}
+        {view === 'login'           && <Login           onNavigate={navigate} />}
+        {view === 'register'        && <Register        onNavigate={navigate} />}
+        {view === 'forgot-password' && <ForgotPassword  onNavigate={navigate} />}
+        {view === 'reset-password'  && <ResetPassword   onNavigate={navigate} />}
+
+        {/* Super-admin panel — guarded */}
+        {view === 'super-admin' && isSuperAdmin && <SuperAdminUsers />}
+
+        {/* Main app views */}
+        {view === 'dashboard' && (
+          <Dashboard stats={stats} matches={matches} loading={loading} onOpenProfile={handleOpenProfile} />
+        )}
+        {view === 'matches' && (
+          <Matches matches={matches} loading={loading} onEdit={handleEdit} onDelete={handleDelete} />
+        )}
+        {view === 'add' && isAdmin && (
+          <MatchForm editMatch={editMatch} onSubmit={handleSubmit} onCancel={handleCancel} loading={saving} />
+        )}
+        {view === 'players' && (
+          <Players onOpenProfile={handleOpenProfile} />
+        )}
+        {view === 'profile' && profileId && (
+          <PlayerProfile playerId={profileId} onBack={handleBackFromProfile} />
+        )}
+      </main>
+    </div>
   )
 }
