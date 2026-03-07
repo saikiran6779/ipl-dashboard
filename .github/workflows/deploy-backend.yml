@@ -22,9 +22,7 @@ jobs:
 
       - name: Build jar
         working-directory: backend
-        run: |
-          chmod +x mvnw
-          ./mvnw clean package -DskipTests
+        run: ./mvnw clean package -DskipTests
 
       - name: Copy jar to EC2
         uses: appleboy/scp-action@v0.1.7
