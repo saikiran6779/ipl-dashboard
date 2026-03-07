@@ -41,7 +41,7 @@ export default function Matches({ matches, loading, onEdit, onDelete }) {
                              onMouseLeave={e => e.currentTarget.style.borderColor = '#21262d'}
                         >
                             {/* Meta row */}
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+                            <div className="match-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
                                 <div style={{ fontSize: 11, color: '#8b949e' }}>
                                     {m.matchNo ? `Match ${m.matchNo} · ` : ''}{m.date}{m.venue ? ` · ${m.venue}` : ''}
                                 </div>

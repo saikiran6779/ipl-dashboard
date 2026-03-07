@@ -188,12 +188,12 @@ export default function Dashboard({ stats, matches, loading }) {
     return (
         <div>
             {/* Summary cards */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: 14, marginBottom: 28 }}>
+            <div className="summary-cards-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: 14, marginBottom: 28 }}>
                 {summaryCards.map((s, i) => <SummaryCard key={i} {...s} delay={i * 0.07} />)}
             </div>
 
             {/* Tabs */}
-            <div style={{ display: 'flex', gap: 4, marginBottom: 20, background: '#161b22',
+            <div className="tabs-scroll" style={{ display: 'flex', gap: 4, marginBottom: 20, background: '#161b22',
                 borderRadius: 12, padding: 4, width: 'fit-content', border: '1px solid #21262d' }}>
                 {TABS.map(t => (
                     <button key={t.id} onClick={() => handleTab(t.id)} style={{
@@ -397,25 +397,25 @@ export default function Dashboard({ stats, matches, loading }) {
                         {matches.slice(0, 5).map((m, i) => {
                             const winnerTeam = getTeam(m.winner)
                             return (
-                                <div key={m.id} style={{ padding: '14px 20px', borderTop: i > 0 ? '1px solid #21262d' : 'none',
+                                <div key={m.id} className="result-row-stack" style={{ padding: '14px 20px', borderTop: i > 0 ? '1px solid #21262d' : 'none',
                                     display: 'flex', alignItems: 'center', gap: 16, transition: 'background 0.15s', cursor: 'default' }}
                                      onMouseEnter={e => e.currentTarget.style.background = '#1c2128'}
                                      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                                 >
                                     {/* match meta */}
-                                    <div style={{ fontSize: 11, color: '#8b949e', minWidth: 54, textAlign: 'center', flexShrink: 0 }}>
+                                    <div className="result-meta-cell" style={{ fontSize: 11, color: '#8b949e', minWidth: 54, textAlign: 'center', flexShrink: 0 }}>
                                         {m.matchNo && <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#f97316' }}>M{m.matchNo}</div>}
                                         <div>{m.date}</div>
                                     </div>
                                     {/* teams */}
-                                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'center' }}>
+                                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
                                         <TeamChip teamId={m.team1} score={m.team1Score} wickets={m.team1Wickets} overs={m.team1Overs} won={m.winner === m.team1} />
                                         <div style={{ padding: '3px 8px', borderRadius: 6, background: '#0d1117', border: '1px solid #21262d',
                                             color: '#8b949e', fontWeight: 800, fontSize: 11 }}>VS</div>
                                         <TeamChip teamId={m.team2} score={m.team2Score} wickets={m.team2Wickets} overs={m.team2Overs} won={m.winner === m.team2} />
                                     </div>
                                     {/* result */}
-                                    <div style={{ fontSize: 11, textAlign: 'right', minWidth: 100, flexShrink: 0 }}>
+                                    <div className="result-outcome-cell" style={{ fontSize: 11, textAlign: 'right', minWidth: 100, flexShrink: 0 }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'flex-end' }}>
                                             <div style={{ width: 3, height: 12, borderRadius: 2, background: winnerTeam.color }} />
                                             <span style={{ fontWeight: 700, color: '#f97316' }}>{m.winner} won</span>
