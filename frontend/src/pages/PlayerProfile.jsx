@@ -317,7 +317,7 @@ export default function PlayerProfile({ playerId, onBack }) {
                     borderRadius: '50%', background: team.color, opacity: 0.05, filter: 'blur(40px)', pointerEvents: 'none',
                 }} />
 
-                <div style={{ padding: '24px 28px', display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
+                <div className="profile-hero-inner" style={{ padding: '24px 28px', display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
                     {/* avatar + URL edit */}
                     <div style={{ flexShrink: 0 }}>
                         <div style={{ position: 'relative', display: 'inline-block' }}>

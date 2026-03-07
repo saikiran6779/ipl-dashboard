@@ -27,3 +27,58 @@ input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
 
 .fade-up  { animation: fadeUp  0.4s ease both; }
 .slide-in { animation: slideIn 0.3s ease both; }
+
+/* ── Responsive ────────────────────────────────────────────────────────── */
+
+/* Desktop nav shown by default; hamburger hidden */
+.nav-mobile-btn { display: none; }
+
+/* Tablet & below (≤768px): hide desktop nav, show hamburger */
+@media (max-width: 768px) {
+  .nav-desktop    { display: none !important; }
+  .nav-mobile-btn { display: flex !important; align-items: center; justify-content: center; }
+}
+
+/* Mobile (≤640px): layout adjustments */
+@media (max-width: 640px) {
+  /* Reduce page padding */
+  .page-main { padding: 16px 12px !important; }
+
+  /* Dashboard tabs: full-width + horizontal scroll */
+  .tabs-scroll {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Form grids collapse to single column */
+  .rg-2col  { grid-template-columns: 1fr !important; }
+  .rg-1-1-2 { grid-template-columns: 1fr !important; }
+  /* 3-col (runs/wkts/overs) → 2-col on mobile */
+  .rg-3col  { grid-template-columns: 1fr 1fr !important; }
+
+  /* Recent results: stack vertically */
+  .result-row-stack {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+  }
+  .result-meta-cell    { min-width: unset !important; text-align: left !important; }
+  .result-outcome-cell { min-width: unset !important; text-align: left !important; }
+
+  /* Match card header: stack actions below meta */
+  .match-header-row {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+  }
+
+  /* Player profile hero: tighter padding */
+  .profile-hero-inner { padding: 16px !important; gap: 14px !important; }
+}
+
+/* Small mobile (≤480px): summary cards in 2-column grid */
+@media (max-width: 480px) {
+  .summary-cards-grid { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+}

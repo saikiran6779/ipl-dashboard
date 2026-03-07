@@ -92,7 +92,7 @@ export default function App() {
       <div style={{ minHeight: '100vh' }}>
         <Header view={view} setView={setView} onAddClick={handleAddClick} />
 
-        <main style={{ maxWidth: 1200, margin: '0 auto', padding: '28px 20px' }}>
+        <main className="page-main" style={{ maxWidth: 1200, margin: '0 auto', padding: '28px 20px' }}>
           {view === 'dashboard' && (
               <Dashboard stats={stats} matches={matches} loading={loading} onOpenProfile={handleOpenProfile} />
           )}

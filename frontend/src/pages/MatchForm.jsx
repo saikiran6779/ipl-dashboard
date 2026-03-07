@@ -69,7 +69,7 @@ export default function MatchForm({ editMatch, onSubmit, onCancel, loading }) {
       <form onSubmit={handleSubmit}>
         {/* Match Info */}
         <SectionLabel>Match Info</SectionLabel>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 2fr', gap: 12, marginBottom: 24 }}>
+        <div className="rg-1-1-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 2fr', gap: 12, marginBottom: 24 }}>
           <Input label="Match No." name="matchNo" type="number" value={form.matchNo} onChange={handle} placeholder="e.g. 1" />
           <Input label="Date *"    name="date"    type="date"   value={form.date}    onChange={handle} required />
           <Select label="Venue" name="venue" value={form.venue} onChange={handle}>
@@ -80,7 +80,7 @@ export default function MatchForm({ editMatch, onSubmit, onCancel, loading }) {
 
         {/* Teams & Scores */}
         <SectionLabel>Teams & Scores</SectionLabel>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 24 }}>
+        <div className="rg-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 24 }}>
           {[
             { label: 'Team 1', prefix: 'team1' },
             { label: 'Team 2', prefix: 'team2' },
@@ -93,7 +93,7 @@ export default function MatchForm({ editMatch, onSubmit, onCancel, loading }) {
                   {TEAMS.map(t => <option key={t.id} value={t.id}>{t.id} – {t.name}</option>)}
                 </Select>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+              <div className="rg-3col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
                 <Input label="Runs"  name={`${prefix}Score`}   type="number" value={form[`${prefix}Score`]}   onChange={handle} placeholder="0" />
                 <Input label="Wkts"  name={`${prefix}Wickets`} type="number" value={form[`${prefix}Wickets`]} onChange={handle} placeholder="0" />
                 <Input label="Overs" name={`${prefix}Overs`}   type="number" step="0.1" value={form[`${prefix}Overs`]} onChange={handle} placeholder="20" />
@@ -104,7 +104,7 @@ export default function MatchForm({ editMatch, onSubmit, onCancel, loading }) {
 
         {/* Result */}
         <SectionLabel>Result</SectionLabel>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 24 }}>
+        <div className="rg-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 24 }}>
           <Select label="Winner *" name="winner" value={form.winner} onChange={handle} required>
             <option value="">Select winner</option>
             {teamOptions.map(t => <option key={t} value={t}>{t}</option>)}
@@ -127,7 +127,7 @@ export default function MatchForm({ editMatch, onSubmit, onCancel, loading }) {
 
         {/* Player Stats */}
         <SectionLabel>Player Stats</SectionLabel>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 28 }}>
+        <div className="rg-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 28 }}>
           <Input label="Player of the Match" name="playerOfMatch" value={form.playerOfMatch} onChange={handle} placeholder="Name" />
           <div /> {/* spacer */}
           <Input label="Top Scorer"  name="topScorer"    value={form.topScorer}    onChange={handle} placeholder="Name" />
