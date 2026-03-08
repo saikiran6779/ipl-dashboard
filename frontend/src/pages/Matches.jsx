@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { TeamChip, EmptyState, Spinner } from '../components/UI'
 import ScorecardModal from './Scorecard'
+import { useAuth } from '../context/AuthContext'
 
 export default function Matches({ matches, loading, onEdit, onDelete }) {
+  const { isAdmin } = useAuth()
     const [scorecardMatch, setScorecardMatch] = useState(null)
 
     if (loading) return <Spinner />
@@ -58,14 +60,16 @@ export default function Matches({ matches, loading, onEdit, onDelete }) {
                                     >
                                         📋 Scorecard
                                     </button>
-                                    <button
-                                        onClick={() => onEdit(m)}
-                                        style={{ padding: '4px 10px', background: '#21262d', border: '1px solid #30363d', borderRadius: 6, color: '#8b949e', cursor: 'pointer', fontSize: 12 }}
-                                    >✏️ Edit</button>
-                                    <button
-                                        onClick={() => onDelete(m.id)}
-                                        style={{ padding: '4px 10px', background: '#21262d', border: '1px solid #30363d', borderRadius: 6, color: '#ef4444', cursor: 'pointer', fontSize: 12 }}
-                                    >🗑️</button>
+                                    {isAdmin && <>
+                                      <button
+                                          onClick={() => onEdit(m)}
+                                          style={{ padding: '4px 10px', background: '#21262d', border: '1px solid #30363d', borderRadius: 6, color: '#8b949e', cursor: 'pointer', fontSize: 12 }}
+                                      >✏️ Edit</button>
+                                      <button
+                                          onClick={() => onDelete(m.id)}
+                                          style={{ padding: '4px 10px', background: '#21262d', border: '1px solid #30363d', borderRadius: 6, color: '#ef4444', cursor: 'pointer', fontSize: 12 }}
+                                      >🗑️</button>
+                                    </>}
                                 </div>
                             </div>
 

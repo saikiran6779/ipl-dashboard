@@ -3,6 +3,7 @@ import toast from 'react-hot-toast'
 import { Card, Spinner, EmptyState, Button, Input, Select } from '../components/UI'
 import { getPlayers, createPlayer, deletePlayer } from '../services/api'
 import { TEAMS, getTeam } from '../services/constants'
+import { useAuth } from '../context/AuthContext'
 
 const ROLES = ['BAT', 'BOWL', 'ALL', 'WK']
 const ROLE_LABELS = { BAT: 'Batter', BOWL: 'Bowler', ALL: 'All-rounder', WK: 'Wicket-keeper' }
@@ -90,7 +91,7 @@ function AddPlayerModal({ onClose, onSaved }) {
 }
 
 // ── Player Card ───────────────────────────────────────────────────────────
-function PlayerCard({ player, onOpenProfile, onDelete }) {
+function PlayerCard({ player, onOpenProfile, onDelete, canDelete }) {
     const team = getTeam(player.teamId)
     const [hover, setHover] = useState(false)
 
@@ -149,16 +150,18 @@ function PlayerCard({ player, onOpenProfile, onDelete }) {
                     </div>
                 </div>
 
-                {/* delete button */}
-                <button
-                    onClick={e => { e.stopPropagation(); onDelete(player) }}
-                    style={{
-                        background: 'none', border: 'none', color: '#8b949e', cursor: 'pointer',
-                        fontSize: 14, padding: '2px 4px', borderRadius: 4, marginLeft: 8,
-                        opacity: hover ? 1 : 0, transition: 'opacity 0.2s',
-                    }}
-                    title="Remove player"
-                >✕</button>
+                {/* delete button — admins only */}
+                {canDelete && (
+                  <button
+                      onClick={e => { e.stopPropagation(); onDelete(player) }}
+                      style={{
+                          background: 'none', border: 'none', color: '#8b949e', cursor: 'pointer',
+                          fontSize: 14, padding: '2px 4px', borderRadius: 4, marginLeft: 8,
+                          opacity: hover ? 1 : 0, transition: 'opacity 0.2s',
+                      }}
+                      title="Remove player"
+                  >✕</button>
+                )}
             </div>
         </div>
     )
@@ -166,6 +169,7 @@ function PlayerCard({ player, onOpenProfile, onDelete }) {
 
 // ── Main Players Page ─────────────────────────────────────────────────────
 export default function Players({ onOpenProfile }) {
+    const { isAdmin } = useAuth()
     const [players,     setPlayers]     = useState([])
     const [loading,     setLoading]     = useState(true)
     const [filterTeam,  setFilterTeam]  = useState('ALL')
@@ -216,7 +220,7 @@ export default function Players({ onOpenProfile }) {
 
     return (
         <div>
-            {showModal && (
+            {showModal && isAdmin && (
                 <AddPlayerModal onClose={() => setShowModal(false)} onSaved={fetchPlayers} />
             )}
 
@@ -230,7 +234,7 @@ export default function Players({ onOpenProfile }) {
                         {players.length} player{players.length !== 1 ? 's' : ''} across {new Set(players.map(p => p.teamId)).size} teams
                     </div>
                 </div>
-                <Button variant="primary" onClick={() => setShowModal(true)}>＋ Add Player</Button>
+                {isAdmin && <Button variant="primary" onClick={() => setShowModal(true)}>＋ Add Player</Button>}
             </div>
 
             {/* Filters */}
@@ -283,6 +287,7 @@ export default function Players({ onOpenProfile }) {
                                     player={p}
                                     onOpenProfile={onOpenProfile}
                                     onDelete={handleDelete}
+                                    canDelete={isAdmin}
                                 />
                             ))}
                         </div>
