@@ -1,32 +1,26 @@
 -- ============================================================
 -- Initial SUPER_ADMIN Setup Script
 -- ============================================================
--- Run this script against your ipl_dashboard database ONCE
--- after the application has started (so tables are created).
+-- Run this script AFTER:
+--   1. The application has started (so the `users` table exists)
+--   2. You have registered your account via the /register page
 --
--- Plain-text password for first login: IPL@SuperAdmin2025
--- (change it immediately via the Reset Password flow)
---
--- BCrypt hash of: IPL@SuperAdmin2025
--- Generated with BCrypt cost factor 10
+-- This script promotes an existing user to SUPER_ADMIN.
+-- It does NOT insert a new user — register via the UI first.
 -- ============================================================
 
-INSERT INTO users (name, email, password, role, created_at)
-VALUES (
-    'Sai Kiran',
-    'saikiranmadhavaram@gmail.com',
-    '$2a$10$xn3LI/AjqicFYZFruSwve.681477XaVNaUQbr1gioaWPn4t1KiLai',
-    'SUPER_ADMIN',
-    NOW()
-)
-ON DUPLICATE KEY UPDATE
-    role = 'SUPER_ADMIN';  -- Safe to re-run: keeps role as SUPER_ADMIN
+-- Replace the email below with the one you registered with
+UPDATE users
+SET role = 'SUPER_ADMIN'
+WHERE email = 'saikiranmadhavaram@gmail.com';
 
 -- ============================================================
--- IMPORTANT NOTES:
--- 1. This is the ONLY way to create/set a SUPER_ADMIN.
---    The application API cannot create or demote SUPER_ADMINs.
--- 2. Change the password immediately after first login via:
---    Settings → Forgot Password → reset via email link
--- 3. The ON DUPLICATE KEY UPDATE ensures this is idempotent.
+-- WORKFLOW:
+-- 1. Start the backend (tables auto-created by Hibernate)
+-- 2. Open http://localhost:5173 → Register with your email
+-- 3. Run this SQL script in MySQL
+-- 4. Log out and log back in — JWT will now carry SUPER_ADMIN role
+-- 5. The "👑 Users" nav item will appear in the header
+--
+-- To promote a different email, edit the WHERE clause above.
 -- ============================================================
