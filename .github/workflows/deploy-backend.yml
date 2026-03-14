@@ -45,5 +45,20 @@ jobs:
           script: |
             mv /home/ec2-user/*.jar /home/ec2-user/app.jar
             sudo systemctl restart ipl
-            sleep 15
-            sudo systemctl status ipl
+            sleep 20
+            sudo systemctl is-active --quiet ipl || (sudo journalctl -u ipl -n 50 && exit 1)
+
+      - name: Verify deployed commit matches HEAD
+        run: |
+          sleep 5
+          EXPECTED=$(git rev-parse --short HEAD)
+          DEPLOYED=$(curl -sf http://${{ secrets.EC2_HOST }}:8080/actuator/info \
+            | python3 -c "import sys,json; print(json.load(sys.stdin)['git']['commit']['id']['abbrev'])")
+          echo "Expected : $EXPECTED"
+          echo "Deployed : $DEPLOYED"
+          if [ "$DEPLOYED" = "$EXPECTED" ]; then
+            echo "Deployment verified — correct commit is live."
+          else
+            echo "ERROR: deployed commit does not match HEAD!"
+            exit 1
+          fi
