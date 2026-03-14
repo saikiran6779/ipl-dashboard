@@ -382,6 +382,232 @@ function PhaseAnalysis({ entries, teams }) {
   )
 }
 
+// ── Head-to-Head ───────────────────────────────────────────────────────────
+function HeadToHead({ match, allMatches }) {
+  const { team1, team2, id } = match
+  const t1 = getTeam(team1)
+  const t2 = getTeam(team2)
+
+  const h2h = allMatches
+    .filter(m =>
+      m.id !== id &&
+      ((m.team1 === team1 && m.team2 === team2) ||
+       (m.team1 === team2 && m.team2 === team1))
+    )
+    .sort((a, b) => new Date(b.date) - new Date(a.date))
+
+  if (h2h.length === 0) return null
+
+  const t1Wins  = h2h.filter(m => m.winner === team1).length
+  const t2Wins  = h2h.filter(m => m.winner === team2).length
+  const noRes   = h2h.filter(m => m.noResult).length
+  const decided = h2h.length - noRes
+  const t1Pct   = decided > 0 ? (t1Wins / decided) * 100 : 50
+  const t2Pct   = 100 - t1Pct
+  const recent5 = h2h.slice(0, 5)
+
+  return (
+    <div style={{ marginBottom: 28 }}>
+      <SectionHeader title="Head to Head" />
+      <div style={{
+        background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)',
+        borderRadius: 14, padding: '24px 28px',
+      }}>
+        {/* Win counts */}
+        <div style={{
+          display: 'grid', gridTemplateColumns: '1fr auto 1fr',
+          alignItems: 'center', gap: 16, marginBottom: 20,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <TeamLogo teamId={team1} size={42} />
+            <div>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 44, lineHeight: 1, color: t1.color }}>{t1Wins}</div>
+              <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8 }}>Wins</div>
+            </div>
+          </div>
+
+          <div style={{ textAlign: 'center', padding: '0 8px' }}>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, letterSpacing: 2, color: 'var(--text-secondary)' }}>
+              {h2h.length}
+            </div>
+            <div style={{ fontSize: 9, color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>Matches</div>
+            {noRes > 0 && <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 2 }}>{noRes} NR</div>}
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14, justifyContent: 'flex-end' }}>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 44, lineHeight: 1, color: t2.color }}>{t2Wins}</div>
+              <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8 }}>Wins</div>
+            </div>
+            <TeamLogo teamId={team2} size={42} />
+          </div>
+        </div>
+
+        {/* Win ratio bar */}
+        {decided > 0 && (
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ height: 9, borderRadius: 5, overflow: 'hidden', display: 'flex' }}>
+              <div style={{
+                width: `${t1Pct}%`,
+                background: `linear-gradient(90deg, ${t1.color}, ${t1.color}bb)`,
+                transition: 'width 0.8s cubic-bezier(0.4,0,0.2,1)',
+              }} />
+              <div style={{ flex: 1, background: `linear-gradient(90deg, ${t2.color}bb, ${t2.color})` }} />
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
+              <span style={{ fontSize: 11, color: t1.color, fontWeight: 700 }}>{team1} {t1Pct.toFixed(0)}%</span>
+              <span style={{ fontSize: 11, color: t2.color, fontWeight: 700 }}>{t2Pct.toFixed(0)}% {team2}</span>
+            </div>
+          </div>
+        )}
+
+        {/* Recent meetings */}
+        {recent5.length > 0 && (
+          <div>
+            <div style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.3, color: 'var(--text-muted)', marginBottom: 10 }}>
+              Recent Meetings
+            </div>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              {recent5.map(m => {
+                const wTeam = m.noResult ? null : m.winner ? getTeam(m.winner) : null
+                return (
+                  <div key={m.id} style={{
+                    background: wTeam ? wTeam.color + '14' : 'var(--bg-subtle)',
+                    border: `1px solid ${wTeam ? wTeam.color + '44' : 'var(--border-subtle)'}`,
+                    borderRadius: 10, padding: '8px 13px', textAlign: 'center', minWidth: 76,
+                  }}>
+                    <div style={{
+                      fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, letterSpacing: 1,
+                      color: wTeam?.color ?? 'var(--text-muted)',
+                    }}>
+                      {m.noResult ? 'NR' : m.winner ?? '—'}
+                    </div>
+                    {m.winMargin && (
+                      <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 1 }}>
+                        by {m.winMargin}
+                      </div>
+                    )}
+                    <div style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 2 }}>{formatDate(m.date)}</div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ── Venue Stats ────────────────────────────────────────────────────────────
+function VenueStats({ match, allMatches }) {
+  const { team1, team2, venueName, id } = match
+  if (!venueName) return null
+
+  const venueMs = allMatches.filter(m => m.id !== id && m.venueName === venueName)
+  if (venueMs.length === 0) return null
+
+  const t1 = getTeam(team1)
+  const t2 = getTeam(team2)
+
+  const batFirst = (m) => {
+    if (!m.tossWinner || !m.tossDecision) return m.team1
+    return m.tossDecision === 'bat'
+      ? m.tossWinner
+      : m.tossWinner === m.team1 ? m.team2 : m.team1
+  }
+
+  const decided     = venueMs.filter(m => !m.noResult && m.winner)
+  const bf1stWins   = decided.filter(m => m.winner === batFirst(m)).length
+  const bf2ndWins   = decided.length - bf1stWins
+  const firstScores = venueMs.map(m => batFirst(m) === m.team1 ? m.team1Score : m.team2Score).filter(s => s != null)
+  const secScores   = venueMs.map(m => batFirst(m) === m.team1 ? m.team2Score : m.team1Score).filter(s => s != null)
+  const avg         = arr => arr.length ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : null
+
+  const teamRecord = (tid) => {
+    const ms     = venueMs.filter(m => m.team1 === tid || m.team2 === tid)
+    const wins   = ms.filter(m => m.winner === tid).length
+    const losses = ms.filter(m => !m.noResult && m.winner && m.winner !== tid).length
+    const nr     = ms.filter(m => m.noResult).length
+    const pct    = (wins + losses) > 0 ? Math.round(wins / (wins + losses) * 100) : 0
+    return { played: ms.length, wins, losses, nr, pct }
+  }
+
+  const r1 = teamRecord(team1)
+  const r2 = teamRecord(team2)
+  const avgFirst  = avg(firstScores)
+  const avgSecond = avg(secScores)
+
+  const statCards = [
+    { label: 'Matches',        value: venueMs.length,                                                          color: 'var(--text-primary)' },
+    { label: 'Bat First Wins', value: `${bf1stWins}/${decided.length}`,                                         color: '#f97316' },
+    { label: 'Chase Wins',     value: `${bf2ndWins}/${decided.length}`,                                         color: '#8b5cf6' },
+    avgFirst  != null && { label: 'Avg 1st Inn.', value: avgFirst,  color: '#22c55e' },
+    avgSecond != null && { label: 'Avg 2nd Inn.', value: avgSecond, color: '#3b82f6' },
+  ].filter(Boolean)
+
+  return (
+    <div style={{ marginBottom: 28 }}>
+      <SectionHeader title={`At ${venueName}`} />
+      <div style={{
+        background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)',
+        borderRadius: 14, padding: '20px 24px',
+      }}>
+        {/* Stat cards */}
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 20 }}>
+          {statCards.map((s, i) => (
+            <div key={i} style={{
+              flex: '1 1 100px', background: 'var(--bg-subtle)',
+              border: '1px solid var(--border-subtle)', borderRadius: 10,
+              padding: '12px 16px', textAlign: 'center',
+            }}>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: s.color, lineHeight: 1 }}>{s.value}</div>
+              <div style={{ fontSize: 9, color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8, marginTop: 5 }}>{s.label}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Team records at venue */}
+        {(r1.played > 0 || r2.played > 0) && (
+          <>
+            <div style={{ fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.3, color: 'var(--text-muted)', marginBottom: 10 }}>
+              Team Record at Venue
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              {[{ teamId: team1, rec: r1, info: t1 }, { teamId: team2, rec: r2, info: t2 }].map(({ teamId, rec, info }) => (
+                <div key={teamId} style={{
+                  background: info.color + '0c', border: `1px solid ${info.color}33`,
+                  borderRadius: 10, padding: '14px 16px',
+                  display: 'flex', alignItems: 'center', gap: 12,
+                }}>
+                  <TeamLogo teamId={teamId} size={34} />
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--text-primary)' }}>{teamId}</div>
+                    <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 3, display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
+                      <span style={{ color: '#22c55e', fontWeight: 700 }}>{rec.wins}W</span>
+                      <span style={{ color: 'var(--text-muted)' }}>·</span>
+                      <span style={{ color: '#ef4444', fontWeight: 700 }}>{rec.losses}L</span>
+                      {rec.nr > 0 && <>
+                        <span style={{ color: 'var(--text-muted)' }}>·</span>
+                        <span style={{ fontWeight: 700 }}>{rec.nr}NR</span>
+                      </>}
+                      <span style={{
+                        background: info.color + '22', border: `1px solid ${info.color}44`,
+                        borderRadius: 4, padding: '1px 5px',
+                        fontSize: 10, color: info.color, fontWeight: 700,
+                      }}>{rec.pct}%</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
 // ── Shared section header ──────────────────────────────────────────────────
 function SectionHeader({ title, actions }) {
   return (
@@ -413,7 +639,7 @@ function ActionBtn({ onClick, color = 'var(--text-secondary)', bg = 'var(--bg-ho
 }
 
 // ── Main page ──────────────────────────────────────────────────────────────
-export default function MatchPage({ match, onBack, onEdit, onDelete, isAdmin, onOpenProfile }) {
+export default function MatchPage({ match, allMatches = [], onBack, onEdit, onDelete, isAdmin, onOpenProfile }) {
   const [entries,     setEntries]     = useState([])
   const [loading,     setLoading]     = useState(true)
   const [editModal,   setEditModal]   = useState(false)
@@ -478,6 +704,10 @@ export default function MatchPage({ match, onBack, onEdit, onDelete, isAdmin, on
 
         {/* Performer spotlight */}
         <PerformerSpotlight match={match} onOpenProfile={onOpenProfile} />
+
+        {/* Cross-match context */}
+        <HeadToHead match={match} allMatches={allMatches} />
+        <VenueStats match={match} allMatches={allMatches} />
 
         {loading ? (
           <div style={{ display: 'flex', justifyContent: 'center', padding: '60px 0' }}>

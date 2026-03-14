@@ -198,6 +198,7 @@ export default function App() {
         {view === 'match' && matchObj && (
           <MatchPage
             match={matchObj}
+            allMatches={matches}
             onBack={handleBackFromMatch}
             onEdit={() => handleEdit(matchObj)}
             onDelete={() => handleDeleteFromMatchPage(matchObj.id)}
