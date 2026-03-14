@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Button } from './UI'
 import { useAuth } from '../context/AuthContext'
+import { useTheme } from '../context/ThemeContext'
 import toast from 'react-hot-toast'
 
 const NAV_ITEMS = [
@@ -9,6 +10,26 @@ const NAV_ITEMS = [
   { id: 'matches',   label: '📋 Matches',   activeFor: ['matches'] },
   { id: 'players',   label: '👤 Players',   activeFor: ['players', 'profile'] },
 ]
+
+function ThemeToggle() {
+  const { isDark, toggleTheme } = useTheme()
+  return (
+    <button
+      onClick={toggleTheme}
+      title={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
+      style={{
+        width: 36, height: 36, borderRadius: 8, border: '1px solid var(--border-input)',
+        background: 'var(--bg-hover)', color: 'var(--text-secondary)',
+        cursor: 'pointer', fontSize: 16, display: 'flex', alignItems: 'center',
+        justifyContent: 'center', transition: 'all 0.2s', flexShrink: 0,
+      }}
+      onMouseEnter={e => { e.currentTarget.style.borderColor = '#f97316'; e.currentTarget.style.color = '#f97316' }}
+      onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-input)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
+    >
+      {isDark ? '☀️' : '🌙'}
+    </button>
+  )
+}
 
 export default function Header({ view, setView, onAddClick }) {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -34,10 +55,11 @@ export default function Header({ view, setView, onAddClick }) {
 
       {/* ── Main navbar ── */}
       <div style={{
-        background: 'rgba(8, 12, 18, 0.95)',
+        background: 'var(--bg-header)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
-        borderBottom: '1px solid rgba(48, 54, 61, 0.6)',
+        borderBottom: '1px solid var(--border)',
+        boxShadow: 'var(--shadow-card)',
       }}>
         <div style={{
           maxWidth: 1280, margin: '0 auto', padding: '0 20px',
@@ -63,7 +85,7 @@ export default function Header({ view, setView, onAddClick }) {
                 WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text', lineHeight: 1,
               }}>IPL 2025</div>
-              <div style={{ fontSize: 9, color: '#8b949e', letterSpacing: 3, textTransform: 'uppercase' }}>Season Dashboard</div>
+              <div style={{ fontSize: 9, color: 'var(--text-muted)', letterSpacing: 3, textTransform: 'uppercase' }}>Season Dashboard</div>
             </div>
           </div>
 
@@ -79,14 +101,14 @@ export default function Header({ view, setView, onAddClick }) {
                     padding: '7px 14px', borderRadius: 8,
                     border: active ? '1px solid rgba(249,115,22,0.4)' : '1px solid transparent',
                     background: active ? 'rgba(249,115,22,0.1)' : 'transparent',
-                    color: active ? '#f97316' : '#8b949e',
+                    color: active ? '#f97316' : 'var(--text-secondary)',
                     cursor: 'pointer', fontWeight: 600, fontSize: 13,
                     fontFamily: 'DM Sans, sans-serif',
                     transition: 'all 0.2s',
                     whiteSpace: 'nowrap',
                   }}
-                  onMouseEnter={e => { if (!active) { e.currentTarget.style.color = '#e6edf3'; e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}}
-                  onMouseLeave={e => { if (!active) { e.currentTarget.style.color = '#8b949e'; e.currentTarget.style.background = 'transparent' }}}
+                  onMouseEnter={e => { if (!active) { e.currentTarget.style.color = 'var(--text-primary)'; e.currentTarget.style.background = 'var(--bg-hover)' }}}
+                  onMouseLeave={e => { if (!active) { e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.background = 'transparent' }}}
                 >
                   {item.label}
                 </button>
@@ -100,7 +122,7 @@ export default function Header({ view, setView, onAddClick }) {
                   padding: '7px 14px', borderRadius: 8,
                   border: view === 'super-admin' ? '1px solid rgba(249,115,22,0.4)' : '1px solid transparent',
                   background: view === 'super-admin' ? 'rgba(249,115,22,0.1)' : 'transparent',
-                  color: view === 'super-admin' ? '#f97316' : '#8b949e',
+                  color: view === 'super-admin' ? '#f97316' : 'var(--text-secondary)',
                   cursor: 'pointer', fontWeight: 600, fontSize: 13,
                   fontFamily: 'DM Sans, sans-serif', transition: 'all 0.2s',
                 }}
@@ -123,14 +145,17 @@ export default function Header({ view, setView, onAddClick }) {
               >＋ Add Match</button>
             )}
 
+            {/* Theme toggle */}
+            <ThemeToggle />
+
             {/* Auth section */}
-            <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginLeft: 6, paddingLeft: 10, borderLeft: '1px solid rgba(48,54,61,0.6)' }}>
+            <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginLeft: 2, paddingLeft: 10, borderLeft: '1px solid var(--border)' }}>
               {user ? (
                 <>
                   <div style={{
                     display: 'flex', alignItems: 'center', gap: 8,
-                    background: 'rgba(255,255,255,0.04)', borderRadius: 8,
-                    padding: '5px 12px', border: '1px solid rgba(48,54,61,0.6)',
+                    background: 'var(--bg-hover)', borderRadius: 8,
+                    padding: '5px 12px', border: '1px solid var(--border)',
                   }}>
                     <div style={{
                       width: 24, height: 24, borderRadius: '50%',
@@ -138,7 +163,7 @@ export default function Header({ view, setView, onAddClick }) {
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontSize: 12, fontWeight: 800, color: '#fff', flexShrink: 0,
                     }}>{user.name?.[0]?.toUpperCase() || 'U'}</div>
-                    <span style={{ fontSize: 12, color: '#e6edf3', maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <span style={{ fontSize: 12, color: 'var(--text-primary)', maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {user.name}
                     </span>
                     {user.role !== 'USER' && (
@@ -169,13 +194,13 @@ export default function Header({ view, setView, onAddClick }) {
                     onClick={() => setView('login')}
                     style={{
                       padding: '6px 14px', borderRadius: 8,
-                      border: '1px solid rgba(48,54,61,0.8)',
-                      background: 'transparent', color: '#e6edf3',
+                      border: '1px solid var(--border-input)',
+                      background: 'transparent', color: 'var(--text-primary)',
                       cursor: 'pointer', fontWeight: 600, fontSize: 12,
                       fontFamily: 'DM Sans, sans-serif', transition: 'all 0.2s',
                     }}
-                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.borderColor = '#8b949e' }}
-                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'rgba(48,54,61,0.8)' }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-hover)'; e.currentTarget.style.borderColor = 'var(--text-secondary)' }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'var(--border-input)' }}
                   >Login</button>
                   <button
                     onClick={() => setView('register')}
@@ -192,30 +217,32 @@ export default function Header({ view, setView, onAddClick }) {
             </div>
           </nav>
 
-          {/* Mobile Hamburger */}
-          <button
-            className="nav-mobile-btn"
-            onClick={() => setMenuOpen(o => !o)}
-            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-            style={{
-              background: menuOpen ? 'rgba(249,115,22,0.1)' : 'rgba(255,255,255,0.05)',
-              border: `1px solid ${menuOpen ? 'rgba(249,115,22,0.5)' : 'rgba(48,54,61,0.6)'}`,
-              borderRadius: 8, color: menuOpen ? '#f97316' : '#e6edf3',
-              cursor: 'pointer', fontSize: 18, width: 38, height: 38,
-              transition: 'all 0.2s', flexShrink: 0,
-            }}
-          >
-            {menuOpen ? '✕' : '☰'}
-          </button>
+          {/* Mobile right side: theme + hamburger */}
+          <div className="nav-mobile-btn" style={{ display: 'none', gap: 8, alignItems: 'center' }}>
+            <ThemeToggle />
+            <button
+              onClick={() => setMenuOpen(o => !o)}
+              aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+              style={{
+                background: menuOpen ? 'rgba(249,115,22,0.1)' : 'var(--bg-hover)',
+                border: `1px solid ${menuOpen ? 'rgba(249,115,22,0.5)' : 'var(--border-input)'}`,
+                borderRadius: 8, color: menuOpen ? '#f97316' : 'var(--text-primary)',
+                cursor: 'pointer', fontSize: 18, width: 38, height: 38,
+                transition: 'all 0.2s', flexShrink: 0,
+              }}
+            >
+              {menuOpen ? '✕' : '☰'}
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Mobile Dropdown Menu */}
       {menuOpen && (
         <div style={{
-          background: 'rgba(8, 12, 18, 0.98)',
+          background: 'var(--bg-header)',
           backdropFilter: 'blur(20px)',
-          borderBottom: '1px solid rgba(48, 54, 61, 0.6)',
+          borderBottom: '1px solid var(--border)',
           padding: '12px 16px 16px',
           display: 'flex', flexDirection: 'column', gap: 4,
           animation: 'fadeUp 0.2s ease both',
@@ -227,7 +254,7 @@ export default function Header({ view, setView, onAddClick }) {
                 padding: '12px 16px', borderRadius: 10, border: 'none', cursor: 'pointer',
                 fontWeight: 600, fontSize: 14, fontFamily: 'DM Sans, sans-serif', textAlign: 'left',
                 background: active ? 'rgba(249,115,22,0.1)' : 'transparent',
-                color: active ? '#f97316' : '#e6edf3',
+                color: active ? '#f97316' : 'var(--text-primary)',
                 transition: 'all 0.2s',
               }}>{item.label}</button>
             )
@@ -238,7 +265,7 @@ export default function Header({ view, setView, onAddClick }) {
               padding: '12px 16px', borderRadius: 10, border: 'none', cursor: 'pointer',
               fontWeight: 600, fontSize: 14, fontFamily: 'DM Sans, sans-serif', textAlign: 'left',
               background: view === 'super-admin' ? 'rgba(249,115,22,0.1)' : 'transparent',
-              color: view === 'super-admin' ? '#f97316' : '#e6edf3',
+              color: view === 'super-admin' ? '#f97316' : 'var(--text-primary)',
             }}>👑 Users</button>
           )}
 
@@ -251,10 +278,10 @@ export default function Header({ view, setView, onAddClick }) {
             }}>＋ Add Match</button>
           )}
 
-          <div style={{ borderTop: '1px solid rgba(48,54,61,0.6)', marginTop: 8, paddingTop: 12 }}>
+          <div style={{ borderTop: '1px solid var(--border-subtle)', marginTop: 8, paddingTop: 12 }}>
             {user ? (
               <>
-                <div style={{ padding: '4px 16px 10px', fontSize: 13, color: '#8b949e', display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ padding: '4px 16px 10px', fontSize: 13, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 8 }}>
                   <div style={{
                     width: 28, height: 28, borderRadius: '50%',
                     background: 'linear-gradient(135deg, #f97316, #dc2626)',
@@ -262,7 +289,7 @@ export default function Header({ view, setView, onAddClick }) {
                     fontSize: 13, fontWeight: 800, color: '#fff', flexShrink: 0,
                   }}>{user.name?.[0]?.toUpperCase() || 'U'}</div>
                   <div>
-                    <strong style={{ color: '#e6edf3', fontSize: 13 }}>{user.name}</strong>
+                    <strong style={{ color: 'var(--text-primary)', fontSize: 13 }}>{user.name}</strong>
                     <div style={{ fontSize: 10, color: '#f97316', marginTop: 1 }}>{user.role}</div>
                   </div>
                 </div>
@@ -276,9 +303,9 @@ export default function Header({ view, setView, onAddClick }) {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 <button onClick={() => handleNav('login')} style={{
                   padding: '12px 16px', borderRadius: 10,
-                  border: '1px solid rgba(48,54,61,0.8)', cursor: 'pointer',
+                  border: '1px solid var(--border-input)', cursor: 'pointer',
                   fontWeight: 600, fontSize: 14, fontFamily: 'DM Sans, sans-serif', textAlign: 'left',
-                  background: 'transparent', color: '#e6edf3',
+                  background: 'transparent', color: 'var(--text-primary)',
                 }}>Login</button>
                 <button onClick={() => handleNav('register')} style={{
                   padding: '12px 16px', borderRadius: 10, border: 'none', cursor: 'pointer',
