@@ -86,7 +86,7 @@ export default function Matches({ matches, loading, onEdit, onDelete }) {
                                         <div style={{ fontWeight: 700, color: '#f97316', fontSize: 13 }}>{m.winner} won</div>
                                     )}
                                     {!m.noResult && m.winMargin && <div style={{ fontSize: 12, color: '#8b949e' }}>by {m.winMargin} {m.winType}</div>}
-                                    {m.playerOfMatch && <div style={{ fontSize: 11, color: '#8b949e', marginTop: 4 }}>⭐ {m.playerOfMatch}</div>}
+                                    {m.playerOfMatchName && <div style={{ fontSize: 11, color: '#8b949e', marginTop: 4 }}>⭐ {m.playerOfMatchName}</div>}
                                 </div>
                             </div>
 

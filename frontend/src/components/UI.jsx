@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { getTeam } from '../services/constants'
 
 // ── Layout ─────────────────────────────────────────────────────────────────
@@ -113,6 +114,98 @@ export function Button({ children, variant = 'primary', onClick, type = 'button'
     >
       {children}
     </button>
+  )
+}
+
+// ── Player Combobox ──────────────────────────────────────────────────────────
+// Searchable dropdown bound to player IDs. players = [{id, name, teamId, role}]
+// value = selected player id (Long), onChange(id | null)
+
+export function PlayerCombobox({ label, players = [], value, onChange }) {
+  const [query,  setQuery]  = useState('')
+  const [open,   setOpen]   = useState(false)
+
+  const selectedName = value != null ? (players.find(p => p.id === value)?.name ?? '') : ''
+
+  const filtered = players.filter(p =>
+    p.name.toLowerCase().includes(query.toLowerCase())
+  )
+
+  const handleSelect = (player) => {
+    onChange(player.id)
+    setQuery('')
+    setOpen(false)
+  }
+
+  const handleClear = (e) => {
+    e.stopPropagation()
+    onChange(null)
+    setQuery('')
+  }
+
+  return (
+    <div style={{ position: 'relative' }}>
+      {label && <Label>{label}</Label>}
+      <div style={{ position: 'relative' }}>
+        <input
+          value={open ? query : selectedName}
+          onChange={e => { setQuery(e.target.value); setOpen(true) }}
+          onFocus={() => { setQuery(''); setOpen(true) }}
+          onBlur={() => setTimeout(() => setOpen(false), 150)}
+          placeholder={players.length ? 'Type to search…' : 'Select teams first'}
+          disabled={!players.length}
+          style={{ ...baseInput, paddingRight: value != null ? 30 : 12 }}
+          onFocusCapture={e => (e.target.style.borderColor = '#f97316')}
+          onBlurCapture={e  => (e.target.style.borderColor = '#30363d')}
+        />
+        {value != null && (
+          <button
+            type="button"
+            onMouseDown={handleClear}
+            style={{
+              position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
+              background: 'none', border: 'none', color: '#8b949e',
+              cursor: 'pointer', fontSize: 14, padding: 0, lineHeight: 1,
+            }}
+          >✕</button>
+        )}
+      </div>
+      {open && filtered.length > 0 && (
+        <div style={{
+          position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 200,
+          background: '#161b22', border: '1px solid #30363d', borderRadius: 8,
+          marginTop: 4, maxHeight: 200, overflowY: 'auto', boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+        }}>
+          {filtered.map((p, i) => (
+            <div
+              key={p.id}
+              onMouseDown={() => handleSelect(p)}
+              style={{
+                padding: '8px 12px', cursor: 'pointer', fontSize: 13,
+                borderTop: i > 0 ? '1px solid #21262d' : 'none',
+                display: 'flex', gap: 8, alignItems: 'center',
+                background: p.id === value ? 'rgba(249,115,22,0.08)' : 'transparent',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.background = '#21262d')}
+              onMouseLeave={e => (e.currentTarget.style.background = p.id === value ? 'rgba(249,115,22,0.08)' : 'transparent')}
+            >
+              <span style={{ fontWeight: 600, color: '#e6edf3', flex: 1 }}>{p.name}</span>
+              <span style={{ fontSize: 11, color: '#8b949e', flexShrink: 0 }}>{p.teamId} · {p.role}</span>
+            </div>
+          ))}
+        </div>
+      )}
+      {open && players.length > 0 && filtered.length === 0 && (
+        <div style={{
+          position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 200,
+          background: '#161b22', border: '1px solid #30363d', borderRadius: 8,
+          marginTop: 4, padding: '10px 12px', fontSize: 12, color: '#8b949e',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+        }}>
+          No players match "{query}"
+        </div>
+      )}
+    </div>
   )
 }
 

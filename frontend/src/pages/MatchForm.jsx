@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
-import { Input, Select, SectionLabel, Button } from '../components/UI'
+import { Input, Select, SectionLabel, Button, PlayerCombobox } from '../components/UI'
 import { TEAMS, VENUES } from '../services/constants'
+import { getSquad } from '../services/api'
 
 const EMPTY = {
   matchNo: '', date: '', venue: '',
@@ -10,33 +11,50 @@ const EMPTY = {
   tossWinner: '', tossDecision: '',
   noResult: false,
   winner: '', winMargin: '', winType: 'runs',
-  playerOfMatch: '',
-  topScorer: '', topScorerRuns: '',
-  topWicketTaker: '', topWicketTakerWickets: '',
+  playerOfMatchId: null,
+  topScorerId: null,
+  topScorerRuns: '',
+  topWicketTakerId: null,
+  topWicketTakerWickets: '',
 }
 
 export default function MatchForm({ editMatch, onSubmit, onCancel, loading }) {
-  const [form, setForm] = useState(EMPTY)
+  const [form,    setForm]    = useState(EMPTY)
+  const [players, setPlayers] = useState([])
 
+  // Populate form when editing an existing match
   useEffect(() => {
     if (editMatch) {
       setForm({
         ...EMPTY,
         ...editMatch,
-        matchNo: editMatch.matchNo ?? '',
-        team1Score: editMatch.team1Score ?? '',
-        team1Wickets: editMatch.team1Wickets ?? '',
-        team1Overs: editMatch.team1Overs ?? '',
-        team2Score: editMatch.team2Score ?? '',
-        team2Wickets: editMatch.team2Wickets ?? '',
-        team2Overs: editMatch.team2Overs ?? '',
-        topScorerRuns: editMatch.topScorerRuns ?? '',
-        topWicketTakerWickets: editMatch.topWicketTakerWickets ?? '',
+        matchNo:              editMatch.matchNo              ?? '',
+        team1Score:           editMatch.team1Score           ?? '',
+        team1Wickets:         editMatch.team1Wickets         ?? '',
+        team1Overs:           editMatch.team1Overs           ?? '',
+        team2Score:           editMatch.team2Score           ?? '',
+        team2Wickets:         editMatch.team2Wickets         ?? '',
+        team2Overs:           editMatch.team2Overs           ?? '',
+        playerOfMatchId:      editMatch.playerOfMatchId      ?? null,
+        topScorerId:          editMatch.topScorerId          ?? null,
+        topScorerRuns:        editMatch.topScorerRuns        ?? '',
+        topWicketTakerId:     editMatch.topWicketTakerId     ?? null,
+        topWicketTakerWickets:editMatch.topWicketTakerWickets ?? '',
       })
     } else {
       setForm(EMPTY)
     }
   }, [editMatch])
+
+  // Fetch combined squad whenever team selection changes
+  useEffect(() => {
+    const teams = [form.team1, form.team2].filter(Boolean)
+    if (!teams.length) { setPlayers([]); return }
+
+    Promise.all(teams.map(t => getSquad(t)))
+      .then(results => setPlayers(results.flat()))
+      .catch(() => setPlayers([]))
+  }, [form.team1, form.team2])
 
   const set = (name, value) => setForm(prev => ({ ...prev, [name]: value }))
   const handle = e => set(e.target.name, e.target.value)
@@ -44,23 +62,22 @@ export default function MatchForm({ editMatch, onSubmit, onCancel, loading }) {
 
   const handleSubmit = e => {
     e.preventDefault()
-    // Build payload with proper types
     const payload = {
       ...form,
-      matchNo:              form.matchNo       ? parseInt(form.matchNo)               : null,
-      team1Score:           form.team1Score    ? parseInt(form.team1Score)             : null,
-      team1Wickets:         form.team1Wickets  ? parseInt(form.team1Wickets)           : null,
-      team1Overs:           form.team1Overs    ? parseFloat(form.team1Overs)           : null,
-      team2Score:           form.team2Score    ? parseInt(form.team2Score)             : null,
-      team2Wickets:         form.team2Wickets  ? parseInt(form.team2Wickets)           : null,
-      team2Overs:           form.team2Overs    ? parseFloat(form.team2Overs)           : null,
-      topScorerRuns:        form.topScorerRuns ? parseInt(form.topScorerRuns)          : null,
-      topWicketTakerWickets:form.topWicketTakerWickets ? parseInt(form.topWicketTakerWickets) : null,
+      matchNo:               form.matchNo       ? parseInt(form.matchNo)               : null,
+      team1Score:            form.team1Score     ? parseInt(form.team1Score)            : null,
+      team1Wickets:          form.team1Wickets   ? parseInt(form.team1Wickets)          : null,
+      team1Overs:            form.team1Overs     ? parseFloat(form.team1Overs)          : null,
+      team2Score:            form.team2Score     ? parseInt(form.team2Score)            : null,
+      team2Wickets:          form.team2Wickets   ? parseInt(form.team2Wickets)          : null,
+      team2Overs:            form.team2Overs     ? parseFloat(form.team2Overs)          : null,
+      topScorerRuns:         form.topScorerRuns  ? parseInt(form.topScorerRuns)         : null,
+      topWicketTakerWickets: form.topWicketTakerWickets ? parseInt(form.topWicketTakerWickets) : null,
     }
     if (payload.noResult) {
-      payload.winner = null
+      payload.winner    = null
       payload.winMargin = null
-      payload.winType = null
+      payload.winType   = null
     }
     onSubmit(payload)
   }
@@ -148,13 +165,33 @@ export default function MatchForm({ editMatch, onSubmit, onCancel, loading }) {
 
         {/* Player Stats */}
         <SectionLabel>Player Stats</SectionLabel>
+        {!form.team1 && !form.team2 && (
+          <div style={{ fontSize: 12, color: '#8b949e', marginBottom: 12 }}>
+            Select teams above to enable player search
+          </div>
+        )}
         <div className="rg-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 28 }}>
-          <Input label="Player of the Match" name="playerOfMatch" value={form.playerOfMatch} onChange={handle} placeholder="Name" />
+          <PlayerCombobox
+            label="Player of the Match"
+            players={players}
+            value={form.playerOfMatchId}
+            onChange={id => set('playerOfMatchId', id)}
+          />
           <div /> {/* spacer */}
-          <Input label="Top Scorer"  name="topScorer"    value={form.topScorer}    onChange={handle} placeholder="Name" />
+          <PlayerCombobox
+            label="Top Scorer"
+            players={players}
+            value={form.topScorerId}
+            onChange={id => set('topScorerId', id)}
+          />
           <Input label="Runs Scored" name="topScorerRuns" type="number" value={form.topScorerRuns} onChange={handle} placeholder="e.g. 82" />
-          <Input label="Top Wicket Taker"  name="topWicketTaker"         value={form.topWicketTaker}         onChange={handle} placeholder="Name" />
-          <Input label="Wickets Taken"     name="topWicketTakerWickets"  type="number" value={form.topWicketTakerWickets} onChange={handle} placeholder="e.g. 3" />
+          <PlayerCombobox
+            label="Top Wicket Taker"
+            players={players}
+            value={form.topWicketTakerId}
+            onChange={id => set('topWicketTakerId', id)}
+          />
+          <Input label="Wickets Taken" name="topWicketTakerWickets" type="number" value={form.topWicketTakerWickets} onChange={handle} placeholder="e.g. 3" />
         </div>
 
         {/* Actions */}

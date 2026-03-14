@@ -22,6 +22,7 @@ public class StatsDTO {
 
     @Data @AllArgsConstructor @NoArgsConstructor @Builder
     public static class BatterStat {
+        private Long playerId;
         private String name;
         private int totalRuns;
         private int innings;
@@ -29,6 +30,7 @@ public class StatsDTO {
 
     @Data @AllArgsConstructor @NoArgsConstructor @Builder
     public static class BowlerStat {
+        private Long playerId;
         private String name;
         private int totalWickets;
         private int innings;
@@ -36,6 +38,7 @@ public class StatsDTO {
 
     @Data @AllArgsConstructor @NoArgsConstructor @Builder
     public static class MomStat {
+        private Long playerId;
         private String name;
         private int awards;
     }
