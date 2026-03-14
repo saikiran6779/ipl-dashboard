@@ -183,19 +183,32 @@ function PlayerCard({ player, onOpenProfile, onOpenTeam, onDelete, canDelete }) 
             {/* player info */}
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginTop: 6, gap: 12 }}>
                 {/* avatar */}
-                <div style={{
-                    width: 56, height: 56, borderRadius: '50%', flexShrink: 0,
-                    border: `2px solid ${team.color}55`,
-                    boxShadow: hover ? `0 0 12px ${team.color}44` : 'none',
-                    transition: 'box-shadow 0.2s',
-                    overflow: 'hidden', background: `${team.color}11`,
-                }}>
-                    <img
-                        src={player.profilePictureUrl || IPL_PLACEHOLDER}
-                        alt={player.name}
-                        onError={e => { e.target.src = IPL_PLACEHOLDER }}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    />
+                <div style={{ flexShrink: 0, position: 'relative' }}>
+                    <div style={{
+                        width: 56, height: 56, borderRadius: '50%',
+                        border: `2px solid ${team.color}55`,
+                        boxShadow: hover ? `0 0 12px ${team.color}44` : 'none',
+                        transition: 'box-shadow 0.2s',
+                        overflow: 'hidden', background: `${team.color}11`,
+                    }}>
+                        <img
+                            src={player.profilePictureUrl || IPL_PLACEHOLDER}
+                            alt={player.name}
+                            onError={e => { e.target.src = IPL_PLACEHOLDER }}
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
+                    </div>
+                    {/* overseas badge */}
+                    {player.nationality && player.nationality !== 'Indian' && (
+                        <div title={`Overseas · ${player.nationality}`} style={{
+                            position: 'absolute', top: -2, right: -2,
+                            width: 18, height: 18, borderRadius: '50%',
+                            background: 'linear-gradient(135deg,#f97316,#dc2626)',
+                            border: '2px solid var(--bg-elevated)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontSize: 9, lineHeight: 1,
+                        }}>✈️</div>
+                    )}
                 </div>
 
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -250,12 +263,13 @@ function PlayerCard({ player, onOpenProfile, onOpenTeam, onDelete, canDelete }) 
 // ── Main Players Page ─────────────────────────────────────────────────────
 export default function Players({ onOpenProfile, onOpenTeam }) {
     const { isAdmin } = useAuth()
-    const [players,     setPlayers]     = useState([])
-    const [loading,     setLoading]     = useState(true)
-    const [filterTeam,  setFilterTeam]  = useState('ALL')
-    const [filterRole,  setFilterRole]  = useState('ALL')
-    const [search,      setSearch]      = useState('')
-    const [showModal,   setShowModal]   = useState(false)
+    const [players,      setPlayers]      = useState([])
+    const [loading,      setLoading]      = useState(true)
+    const [filterTeam,   setFilterTeam]   = useState('ALL')
+    const [filterRole,   setFilterRole]   = useState('ALL')
+    const [filterOrigin, setFilterOrigin] = useState('ALL') // ALL | INDIAN | OVERSEAS
+    const [search,       setSearch]       = useState('')
+    const [showModal,    setShowModal]    = useState(false)
 
     const fetchPlayers = async () => {
         setLoading(true)
@@ -282,12 +296,20 @@ export default function Players({ onOpenProfile, onOpenTeam }) {
         }
     }
 
+    const isOverseas = (p) => p.nationality && p.nationality !== 'Indian'
+
     const filtered = players.filter(p => {
-        const teamOk = filterTeam === 'ALL' || p.teamId === filterTeam
-        const roleOk = filterRole === 'ALL' || p.role === filterRole
+        const teamOk   = filterTeam   === 'ALL' || p.teamId === filterTeam
+        const roleOk   = filterRole   === 'ALL' || p.role === filterRole
         const searchOk = p.name.toLowerCase().includes(search.toLowerCase())
-        return teamOk && roleOk && searchOk
+        const originOk = filterOrigin === 'ALL'
+            || (filterOrigin === 'INDIAN'   && p.nationality === 'Indian')
+            || (filterOrigin === 'OVERSEAS' && isOverseas(p))
+        return teamOk && roleOk && searchOk && originOk
     })
+
+    const overseasTotal  = players.filter(isOverseas).length
+    const indianTotal    = players.filter(p => p.nationality === 'Indian').length
 
     // Group by team for display
     const grouped = filtered.reduce((acc, p) => {
@@ -318,7 +340,7 @@ export default function Players({ onOpenProfile, onOpenTeam }) {
             </div>
 
             {/* Filters */}
-            <div style={{ display: 'flex', gap: 10, marginBottom: 24, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
                 <div style={{ flex: '1 1 180px' }}>
                     <Input
                         placeholder="🔍 Search players…"
@@ -338,6 +360,40 @@ export default function Players({ onOpenProfile, onOpenTeam }) {
                         {ROLES.map(r => <option key={r} value={r}>{ROLE_LABELS[r]}</option>)}
                     </Select>
                 </div>
+            </div>
+
+            {/* Indian / Overseas toggle */}
+            <div style={{ display: 'flex', gap: 8, marginBottom: 24, alignItems: 'center', flexWrap: 'wrap' }}>
+                {[
+                    { key: 'ALL',      label: 'All Players',       count: players.length },
+                    { key: 'INDIAN',   label: '🇮🇳 Indian',        count: indianTotal },
+                    { key: 'OVERSEAS', label: '✈️ Overseas',       count: overseasTotal },
+                ].map(opt => (
+                    <button key={opt.key} onClick={() => setFilterOrigin(opt.key)} style={{
+                        padding: '6px 14px', borderRadius: 20, border: 'none', cursor: 'pointer',
+                        fontSize: 12, fontWeight: 600, fontFamily: 'Rajdhani, sans-serif',
+                        background: filterOrigin === opt.key
+                            ? 'linear-gradient(135deg,#f97316,#dc2626)'
+                            : 'var(--bg-elevated)',
+                        color: filterOrigin === opt.key ? '#fff' : 'var(--text-secondary)',
+                        border: filterOrigin === opt.key ? 'none' : '1px solid var(--border-subtle)',
+                        transition: 'all 0.2s',
+                        display: 'flex', alignItems: 'center', gap: 6,
+                    }}>
+                        {opt.label}
+                        <span style={{
+                            fontSize: 10, fontWeight: 700,
+                            background: filterOrigin === opt.key ? 'rgba(255,255,255,0.25)' : 'var(--bg-subtle)',
+                            color: filterOrigin === opt.key ? '#fff' : 'var(--text-muted)',
+                            borderRadius: 8, padding: '1px 6px',
+                        }}>{opt.count}</span>
+                    </button>
+                ))}
+                {filterOrigin === 'OVERSEAS' && (
+                    <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 4 }}>
+                        · IPL allows max 4 overseas per XI
+                    </span>
+                )}
             </div>
 
             {/* Empty state */}

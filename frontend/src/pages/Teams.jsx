@@ -157,12 +157,15 @@ function TeamCard({ team, standing, rank, onClick }) {
   )
 }
 
+const IPL_PLACEHOLDER = 'https://documents.iplt20.com/ipl/assets/images/Default-Men.png'
+
 // ── Player Row ─────────────────────────────────────────────────────────────
 function PlayerRow({ player, index, onOpenProfile }) {
   const [hovered, setHovered] = useState(false)
   const roleColors = { BAT: '#f97316', BOWL: '#8b5cf6', ALL: '#22c55e', WK: '#3b82f6' }
   const roleLabels = { BAT: 'Batter', BOWL: 'Bowler', ALL: 'All-rounder', WK: 'Wicket-keeper' }
   const color = roleColors[player.role] || 'var(--text-secondary)'
+  const overseas = player.nationality && player.nationality !== 'Indian'
 
   return (
     <div
@@ -178,15 +181,49 @@ function PlayerRow({ player, index, onOpenProfile }) {
         transition: 'background 0.15s',
       }}
     >
-      <div style={{
-        width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
-        background: `${color}22`, border: `1px solid ${color}44`,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: 12, fontWeight: 800, color,
-      }}>{index + 1}</div>
+      {/* avatar with overseas badge */}
+      <div style={{ position: 'relative', flexShrink: 0 }}>
+        <div style={{
+          width: 36, height: 36, borderRadius: '50%',
+          border: `1.5px solid ${color}55`,
+          overflow: 'hidden', background: `${color}11`,
+        }}>
+          <img
+            src={player.profilePictureUrl || IPL_PLACEHOLDER}
+            alt={player.name}
+            onError={e => { e.target.src = IPL_PLACEHOLDER }}
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          />
+        </div>
+        {overseas && (
+          <div title={`Overseas · ${player.nationality}`} style={{
+            position: 'absolute', top: -2, right: -2,
+            width: 14, height: 14, borderRadius: '50%',
+            background: 'linear-gradient(135deg,#f97316,#dc2626)',
+            border: '1.5px solid var(--bg-elevated)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 7, lineHeight: 1,
+          }}>✈️</div>
+        )}
+      </div>
+
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--text-primary)' }}>{player.name}</div>
-        <div title={roleLabels[player.role]} style={{ fontSize: 9, fontWeight: 700, letterSpacing: 0.5, color, marginTop: 2 }}>{player.role}</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ fontWeight: 600, fontSize: 13, color: 'var(--text-primary)' }}>{player.name}</span>
+          {overseas && (
+            <span style={{
+              fontSize: 9, fontWeight: 700, letterSpacing: 0.4,
+              color: '#f97316', background: 'rgba(249,115,22,0.12)',
+              borderRadius: 6, padding: '1px 5px', border: '1px solid rgba(249,115,22,0.25)',
+            }}>OVS</span>
+          )}
+        </div>
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginTop: 2 }}>
+          <span title={roleLabels[player.role]} style={{ fontSize: 9, fontWeight: 700, letterSpacing: 0.5, color }}>{player.role}</span>
+          {player.nationality && (
+            <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>{player.nationality}</span>
+          )}
+        </div>
       </div>
     </div>
   )
@@ -213,6 +250,16 @@ function TeamDetail({ teamId, standing, rank, allMatches, onBack, onOpenProfile 
   ).slice(0, 10)
 
   const isQualified = rank !== null && rank < 4
+
+  const [squadOrigin, setSquadOrigin] = useState('ALL') // ALL | INDIAN | OVERSEAS
+
+  const overseasInSquad = squad.filter(p => p.nationality && p.nationality !== 'Indian')
+  const indianInSquad   = squad.filter(p => p.nationality === 'Indian')
+  const visibleSquad    = squad.filter(p => {
+    if (squadOrigin === 'INDIAN')   return p.nationality === 'Indian'
+    if (squadOrigin === 'OVERSEAS') return p.nationality && p.nationality !== 'Indian'
+    return true
+  })
 
   const tabs = [
     { id: 'overview', label: 'Overview' },
@@ -395,16 +442,54 @@ function TeamDetail({ teamId, standing, rank, allMatches, onBack, onOpenProfile 
             <EmptyState text="No players registered" sub="Add players to this team from the Players page" />
           ) : (
             <>
-              <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ fontWeight: 700, fontSize: 14 }}>Squad</div>
-                <div style={{
-                  background: `${team.color}22`, border: `1px solid ${team.color}44`,
-                  borderRadius: 12, padding: '2px 10px', fontSize: 12, color: team.color, fontWeight: 600,
-                }}>{squad.length} players</div>
+              {/* Squad header */}
+              <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border-subtle)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                  <div style={{ fontWeight: 700, fontSize: 14 }}>Squad</div>
+                  <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                    <span style={{
+                      background: `${team.color}22`, border: `1px solid ${team.color}44`,
+                      borderRadius: 12, padding: '2px 10px', fontSize: 11, color: team.color, fontWeight: 600,
+                    }}>{squad.length} players</span>
+                    {overseasInSquad.length > 0 && (
+                      <span style={{
+                        background: 'rgba(249,115,22,0.12)', border: '1px solid rgba(249,115,22,0.3)',
+                        borderRadius: 12, padding: '2px 10px', fontSize: 11, color: '#f97316', fontWeight: 600,
+                        display: 'inline-flex', alignItems: 'center', gap: 4,
+                      }}>✈️ {overseasInSquad.length} Overseas</span>
+                    )}
+                  </div>
+                </div>
+                {/* Indian / Overseas filter tabs */}
+                <div style={{ display: 'flex', gap: 6 }}>
+                  {[
+                    { key: 'ALL',      label: 'All',          count: squad.length },
+                    { key: 'INDIAN',   label: '🇮🇳 Indian',   count: indianInSquad.length },
+                    { key: 'OVERSEAS', label: '✈️ Overseas',  count: overseasInSquad.length },
+                  ].map(opt => (
+                    <button key={opt.key} onClick={() => setSquadOrigin(opt.key)} style={{
+                      padding: '4px 12px', borderRadius: 16, border: 'none', cursor: 'pointer',
+                      fontSize: 11, fontWeight: 600, fontFamily: 'Rajdhani, sans-serif',
+                      background: squadOrigin === opt.key
+                        ? `linear-gradient(135deg, ${team.color}, ${team.color}99)`
+                        : 'var(--bg-subtle)',
+                      color: squadOrigin === opt.key ? '#fff' : 'var(--text-secondary)',
+                      border: squadOrigin === opt.key ? 'none' : '1px solid var(--border-subtle)',
+                      transition: 'all 0.2s',
+                    }}>
+                      {opt.label} <span style={{ opacity: 0.75 }}>({opt.count})</span>
+                    </button>
+                  ))}
+                </div>
               </div>
-              {squad.map((p, i) => (
+              {visibleSquad.map((p, i) => (
                 <PlayerRow key={p.id} player={p} index={i} onOpenProfile={onOpenProfile} />
               ))}
+              {visibleSquad.length === 0 && (
+                <div style={{ padding: '24px 16px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: 13 }}>
+                  No {squadOrigin === 'OVERSEAS' ? 'overseas' : 'Indian'} players in squad
+                </div>
+              )}
             </>
           )}
         </div>

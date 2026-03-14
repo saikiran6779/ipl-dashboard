@@ -505,6 +505,17 @@ export default function PlayerProfile({ playerId, onBack, onOpenTeam }) {
                                 cursor: 'pointer', fontSize: 12, color: '#fff',
                             }}
                         >✎</button>
+                        {/* overseas badge */}
+                        {profile.nationality && profile.nationality !== 'Indian' && (
+                            <div title={`Overseas · ${profile.nationality}`} style={{
+                                position: 'absolute', top: 2, right: 2,
+                                width: 26, height: 26, borderRadius: '50%',
+                                background: 'linear-gradient(135deg,#f97316,#dc2626)',
+                                border: '2px solid var(--bg-base)',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                fontSize: 12, lineHeight: 1,
+                            }}>✈️</div>
+                        )}
                     </div>
 
                     {/* name + badges */}
