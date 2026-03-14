@@ -38,24 +38,40 @@ const toPayload = (entry) => ({
 })
 
 // ── Team color tab bar ────────────────────────────────────────────────────
-function TeamTabs({ teams, active, onChange }) {
+function TeamTabs({ teams, active, onChange, summaries = {} }) {
     return (
         <div style={{ display: 'flex', gap: 0, marginBottom: 0, borderBottom: '1px solid var(--border-subtle)' }}>
             {teams.map(tid => {
                 const team = getTeam(tid)
                 const isActive = active === tid
+                const s = summaries[tid]
                 return (
                     <button key={tid} onClick={() => onChange(tid)} style={{
                         flex: 1, padding: '10px 16px', border: 'none', cursor: 'pointer',
                         background: isActive ? 'var(--bg-elevated)' : 'var(--bg-subtle)',
                         borderBottom: isActive ? `2px solid ${team.color}` : '2px solid transparent',
                         color: isActive ? team.color : 'var(--text-secondary)',
-                        fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, letterSpacing: 1.5,
                         transition: 'all 0.2s', marginBottom: -1,
                         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                     }}>
                         <TeamLogo teamId={tid} size={20} />
-                        {tid}
+                        <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, letterSpacing: 1.5 }}>
+                            {tid}
+                        </span>
+                        {s && (
+                            <span style={{
+                                fontFamily: "'Bebas Neue',sans-serif",
+                                fontSize: isActive ? 15 : 13,
+                                letterSpacing: 0.5,
+                                color: isActive ? team.color : 'var(--text-muted)',
+                                opacity: isActive ? 1 : 0.8,
+                            }}>
+                                {s.score}/{s.wickets}
+                                <span style={{ fontSize: isActive ? 11 : 10, marginLeft: 4, fontFamily: 'DM Sans,sans-serif', fontWeight: 400 }}>
+                                    ({s.overs})
+                                </span>
+                            </span>
+                        )}
                     </button>
                 )
             })}
@@ -207,9 +223,34 @@ function fmtDismissal(e) {
     }
 }
 
+// Compute innings summary (score/wickets/overs) for a given batting team
+function _inningsSummary(entries, battingTeam, teams) {
+    const oversToBalls = (o) => { const f = Math.floor(o); return f * 6 + Math.round((o - f) * 10) }
+    const batted    = entries.filter(e => e.teamId === battingTeam && (e.balls != null || e.runs != null))
+    const oppTeam   = battingTeam === teams[0] ? teams[1] : teams[0]
+    const oppBowlers= entries.filter(e => e.teamId === oppTeam && e.oversBowled != null)
+    if (batted.length === 0 && oppBowlers.length === 0) return null
+
+    const totalBalls   = oppBowlers.reduce((s, e) => s + oversToBalls(e.oversBowled ?? 0), 0)
+    const wides        = oppBowlers.reduce((s, e) => s + (e.wides   ?? 0), 0)
+    const noBalls      = oppBowlers.reduce((s, e) => s + (e.noBalls ?? 0), 0)
+    const byes         = oppBowlers.reduce((s, e) => s + (e.byes    ?? 0), 0)
+    const legByes      = oppBowlers.reduce((s, e) => s + (e.legByes ?? 0), 0)
+    const battingRuns  = batted.reduce((s, e) => s + (e.runs ?? 0), 0)
+    const score        = battingRuns + wides + noBalls + byes + legByes
+    const wickets      = batted.filter(e => e.dismissal && e.dismissal !== 'not out').length
+    const overs        = totalBalls > 0 ? `${Math.floor(totalBalls / 6)}.${totalBalls % 6}` : null
+    return { score, wickets, overs }
+}
+
 function ScorecardView({ entries, teams }) {
     const [teamTab,    setTeamTab]    = useState(teams[0])
     const [sectionTab, setSectionTab] = useState('batting')
+
+    // Pre-compute summaries for both teams (used in tab labels)
+    const tabSummaries = Object.fromEntries(
+        teams.map(t => [t, _inningsSummary(entries, t, teams)]).filter(([, s]) => s)
+    )
 
     const teamEntries = entries.filter(e => e.teamId === teamTab)
 
@@ -271,7 +312,7 @@ function ScorecardView({ entries, teams }) {
 
     return (
         <div>
-            <TeamTabs teams={teams} active={teamTab} onChange={t => { setTeamTab(t); setSectionTab('batting') }} />
+            <TeamTabs teams={teams} active={teamTab} onChange={t => { setTeamTab(t); setSectionTab('batting') }} summaries={tabSummaries} />
             <div style={{ padding: '14px 0 8px', display: 'flex', gap: 4 }}>
                 {SECTION_TABS.map(s => (
                     <button key={s.id} onClick={() => setSectionTab(s.id)} style={{
