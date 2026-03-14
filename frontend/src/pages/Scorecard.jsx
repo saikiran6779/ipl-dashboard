@@ -214,7 +214,14 @@ function ScorecardView({ entries, teams }) {
     const teamEntries = entries.filter(e => e.teamId === teamTab)
 
     // ── Per-tab filtered sets ──────────────────────────────────────────────
-    const battedEntries   = teamEntries.filter(e => e.balls != null || e.runs != null)
+    const battedEntries   = teamEntries
+        .filter(e => e.balls != null || e.runs != null)
+        .sort((a, b) => {
+            if (a.battingPosition != null && b.battingPosition != null) return a.battingPosition - b.battingPosition
+            if (a.battingPosition != null) return -1
+            if (b.battingPosition != null) return 1
+            return 0
+        })
     const yetToBatEntries = teamEntries.filter(e => e.balls == null && e.runs == null)
     // If 11 batters already recorded, suppress "yet to bat" (impact player slot)
     const showYetToBat    = battedEntries.length < 11 && yetToBatEntries.length > 0
