@@ -244,7 +244,7 @@ function _inningsSummary(entries, battingTeam, teams) {
     return { score, wickets, overs }
 }
 
-function ScorecardView({ entries, teams }) {
+export function ScorecardView({ entries, teams }) {
     const [teamTab,    setTeamTab]    = useState(teams[0])
     const [sectionTab, setSectionTab] = useState('batting')
 

@@ -14,6 +14,7 @@ import SuperAdminUsers from './pages/SuperAdminUsers'
 import SuperAdminTeams from './pages/SuperAdminTeams'
 import Teams from './pages/Teams'
 import Venues from './pages/Venues'
+import MatchPage from './pages/MatchPage'
 import { getMatches, getStats, createMatch, updateMatch, deleteMatch } from './services/api'
 import { useAuth } from './context/AuthContext'
 
@@ -34,6 +35,7 @@ export default function App() {
   const [saving,    setSaving]    = useState(false)
   const [profileId,      setProfileId]      = useState(null)
   const [teamId,         setTeamId]         = useState(null)
+  const [matchObj,       setMatchObj]       = useState(null)
   const [superAdminTab,  setSuperAdminTab]  = useState('users')  // 'users' | 'teams'
 
   // ── Data fetching ──────────────────────────────────────────────────────────
@@ -121,6 +123,24 @@ export default function App() {
   const handleOpenTeam = (id) => { setTeamId(id); setView('teams') }
   const handleBackFromTeam = () => { setTeamId(null); setView('teams') }
 
+  const handleOpenMatch = (match) => { setMatchObj(match); setView('match') }
+  const handleBackFromMatch = () => { setMatchObj(null); setView('matches') }
+
+  const handleDeleteFromMatchPage = async (id) => {
+    if (!window.confirm(
+      'Delete this match?\n\nThis will also permanently delete all scorecard / player stats for this match.'
+    )) return
+    try {
+      await deleteMatch(id)
+      toast.success('Match deleted')
+      setMatchObj(null)
+      setView('matches')
+      fetchAll()
+    } catch {
+      toast.error('Failed to delete match')
+    }
+  }
+
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
@@ -173,7 +193,17 @@ export default function App() {
           <Teams stats={stats} matches={matches} onOpenProfile={handleOpenProfile} initialTeamId={teamId} onBack={handleBackFromTeam} />
         )}
         {view === 'matches' && (
-          <Matches matches={matches} loading={loading} onEdit={handleEdit} onDelete={handleDelete} />
+          <Matches matches={matches} loading={loading} onEdit={handleEdit} onDelete={handleDelete} onOpenMatch={handleOpenMatch} />
+        )}
+        {view === 'match' && matchObj && (
+          <MatchPage
+            match={matchObj}
+            onBack={handleBackFromMatch}
+            onEdit={() => handleEdit(matchObj)}
+            onDelete={() => handleDeleteFromMatchPage(matchObj.id)}
+            isAdmin={isAdmin}
+            onOpenProfile={handleOpenProfile}
+          />
         )}
         {view === 'add' && isAdmin && (
           <MatchForm editMatch={editMatch} onSubmit={handleSubmit} onCancel={handleCancel} loading={saving} />
