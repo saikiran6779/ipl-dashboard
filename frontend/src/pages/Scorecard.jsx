@@ -236,6 +236,27 @@ function ScorecardView({ entries, teams }) {
         })
     const fieldingEntries = teamEntries.filter(e => (e.catches ?? 0) > 0 || (e.runOuts ?? 0) > 0)
 
+    // ── Innings totals (batting summary banner) ────────────────────────────
+    // Extras + overs come from the OPPOSING team's bowlers (they bowl against teamTab)
+    const opposingTeam   = teamTab === teams[0] ? teams[1] : teams[0]
+    const oppBowlers     = entries.filter(e => e.teamId === opposingTeam && e.oversBowled != null)
+
+    // Convert cricket overs (4.3 = 4 full overs + 3 balls) to total balls
+    const oversToBalls = (o) => { const f = Math.floor(o); return f * 6 + Math.round((o - f) * 10) }
+    const totalBalls   = oppBowlers.reduce((s, e) => s + oversToBalls(e.oversBowled ?? 0), 0)
+    const oversDisplay = totalBalls > 0 ? `${Math.floor(totalBalls / 6)}.${totalBalls % 6}` : null
+
+    const totalWides   = oppBowlers.reduce((s, e) => s + (e.wides   ?? 0), 0)
+    const totalNoBalls = oppBowlers.reduce((s, e) => s + (e.noBalls ?? 0), 0)
+    const totalExtras  = totalWides + totalNoBalls
+
+    const battingRuns  = battedEntries.reduce((s, e) => s + (e.runs ?? 0), 0)
+    const totalScore   = battingRuns + totalExtras
+    const wickets      = battedEntries.filter(e => e.dismissal && e.dismissal !== 'not out').length
+    const runRate      = totalBalls > 0 ? (totalScore / (totalBalls / 6)).toFixed(2) : null
+
+    const showInningsSummary = battedEntries.length > 0
+
     const SECTION_TABS = [
         { id: 'batting',  label: '🏏 Batting' },
         { id: 'bowling',  label: '⚡ Bowling' },
@@ -259,6 +280,40 @@ function ScorecardView({ entries, teams }) {
                     }}>{s.label}</button>
                 ))}
             </div>
+
+            {/* ── Innings summary banner (batting tab only) ── */}
+            {sectionTab === 'batting' && showInningsSummary && (
+                <div style={{
+                    display: 'flex', alignItems: 'baseline', flexWrap: 'wrap', gap: '6px 16px',
+                    padding: '10px 14px', marginBottom: 8,
+                    background: 'var(--bg-subtle)', borderRadius: 8,
+                    border: '1px solid var(--border-subtle)',
+                }}>
+                    {/* Score */}
+                    <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 26, letterSpacing: 1, color: 'var(--text-primary)' }}>
+                        {totalScore}/{wickets}
+                    </span>
+                    {/* Overs + RR */}
+                    {oversDisplay && (
+                        <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+                            ({oversDisplay} ov
+                            {runRate && <span style={{ color: 'var(--text-muted)' }}> · RR {runRate}</span>}
+                            )
+                        </span>
+                    )}
+                    {/* Extras */}
+                    {totalExtras > 0 && (() => {
+                        const parts = []
+                        if (totalWides   > 0) parts.push(`W: ${totalWides}`)
+                        if (totalNoBalls > 0) parts.push(`NB: ${totalNoBalls}`)
+                        return (
+                            <span style={{ fontSize: 12, color: 'var(--text-muted)', marginLeft: 'auto' }}>
+                                Extras {totalExtras} ({parts.join(', ')})
+                            </span>
+                        )
+                    })()}
+                </div>
+            )}
 
             {teamEntries.length === 0 && (
                 <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: 13 }}>
