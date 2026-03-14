@@ -7,7 +7,7 @@ import { useAuth } from '../context/AuthContext'
 const ROLE_COLORS = {
   SUPER_ADMIN: '#f97316',
   ADMIN:       '#22c55e',
-  USER:        '#8b949e',
+  USER:        'var(--text-secondary)',
 }
 
 const ROLE_LABELS = {
@@ -89,7 +89,7 @@ export default function SuperAdminUsers() {
         <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 28, color: '#f97316', letterSpacing: 2, lineHeight: 1 }}>
           User Management
         </div>
-        <div style={{ color: '#8b949e', fontSize: 13, marginTop: 4 }}>
+        <div style={{ color: 'var(--text-secondary)', fontSize: 13, marginTop: 4 }}>
           Promote trusted users to Admin or demote Admins back to User.
         </div>
       </div>
@@ -105,11 +105,11 @@ export default function SuperAdminUsers() {
           <div style={{ overflowX: 'auto' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
               <thead>
-                <tr style={{ borderBottom: '1px solid #21262d' }}>
+                <tr style={{ borderBottom: '1px solid var(--border-subtle)' }}>
                   {['Name', 'Email', 'Role', 'Joined', 'Actions'].map(h => (
                     <th key={h} style={{
                       padding: '10px 16px', textAlign: 'left',
-                      fontSize: 10, fontWeight: 700, color: '#8b949e',
+                      fontSize: 10, fontWeight: 700, color: 'var(--text-secondary)',
                       textTransform: 'uppercase', letterSpacing: '0.1em', whiteSpace: 'nowrap',
                     }}>{h}</th>
                   ))}
@@ -120,26 +120,26 @@ export default function SuperAdminUsers() {
                   <tr
                     key={u.id}
                     style={{
-                      borderTop: i > 0 ? '1px solid #21262d' : 'none',
+                      borderTop: i > 0 ? '1px solid var(--border-subtle)' : 'none',
                       background: u.id === currentUser?.id ? 'rgba(249,115,22,0.04)' : 'transparent',
                     }}
                   >
-                    <td style={{ padding: '12px 16px', fontWeight: 600, color: '#e6edf3' }}>
+                    <td style={{ padding: '12px 16px', fontWeight: 600, color: 'var(--text-primary)' }}>
                       {u.name}
                       {u.id === currentUser?.id && (
-                        <span style={{ marginLeft: 6, fontSize: 10, color: '#8b949e' }}>(you)</span>
+                        <span style={{ marginLeft: 6, fontSize: 10, color: 'var(--text-secondary)' }}>(you)</span>
                       )}
                     </td>
-                    <td style={{ padding: '12px 16px', color: '#8b949e' }}>{u.email}</td>
+                    <td style={{ padding: '12px 16px', color: 'var(--text-secondary)' }}>{u.email}</td>
                     <td style={{ padding: '12px 16px' }}><RoleBadge role={u.role} /></td>
-                    <td style={{ padding: '12px 16px', color: '#8b949e', whiteSpace: 'nowrap' }}>
+                    <td style={{ padding: '12px 16px', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
                       {u.createdAt ? new Date(u.createdAt).toLocaleDateString('en-IN', {
                         day: '2-digit', month: 'short', year: 'numeric',
                       }) : '—'}
                     </td>
                     <td style={{ padding: '12px 16px' }}>
                       {u.role === 'SUPER_ADMIN' && (
-                        <span style={{ fontSize: 11, color: '#8b949e', fontStyle: 'italic' }}>Protected</span>
+                        <span style={{ fontSize: 11, color: 'var(--text-secondary)', fontStyle: 'italic' }}>Protected</span>
                       )}
                       {u.role === 'USER' && (
                         <Button
@@ -167,7 +167,7 @@ export default function SuperAdminUsers() {
               </tbody>
             </table>
             {users.length === 0 && (
-              <div style={{ padding: '40px 20px', textAlign: 'center', color: '#8b949e' }}>
+              <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--text-secondary)' }}>
                 No users found
               </div>
             )}

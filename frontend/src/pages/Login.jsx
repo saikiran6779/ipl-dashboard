@@ -36,7 +36,7 @@ export default function Login({ onNavigate }) {
           background: 'linear-gradient(135deg, #f97316, #dc2626)',
           WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
         }}>IPL 2025</div>
-        <div style={{ color: '#8b949e', fontSize: 13, marginTop: 4 }}>Sign in to your account</div>
+        <div style={{ color: 'var(--text-secondary)', fontSize: 13, marginTop: 4 }}>Sign in to your account</div>
       </div>
 
       {/* Card */}
@@ -102,7 +102,7 @@ export default function Login({ onNavigate }) {
         </form>
       </div>
 
-      <p style={{ textAlign: 'center', color: '#8b949e', fontSize: 13, marginTop: 20 }}>
+      <p style={{ textAlign: 'center', color: 'var(--text-secondary)', fontSize: 13, marginTop: 20 }}>
         Don't have an account?{' '}
         <button
           onClick={() => onNavigate('register')}

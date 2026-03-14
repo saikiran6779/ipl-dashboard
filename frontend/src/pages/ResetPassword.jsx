@@ -46,7 +46,7 @@ export default function ResetPassword({ onNavigate }) {
     return (
       <div style={{ maxWidth: 420, margin: '80px auto', padding: '0 20px', textAlign: 'center' }}>
         <div style={{ fontSize: 40, marginBottom: 16 }}>⚠️</div>
-        <p style={{ color: '#8b949e' }}>Invalid reset link. Please request a new one.</p>
+        <p style={{ color: 'var(--text-secondary)' }}>Invalid reset link. Please request a new one.</p>
         <Button variant="ghost" onClick={() => onNavigate('forgot-password')} style={{ marginTop: 16 }}>
           Request New Link
         </Button>
@@ -58,16 +58,16 @@ export default function ResetPassword({ onNavigate }) {
     <div style={{ maxWidth: 420, margin: '80px auto', padding: '0 20px' }}>
       <div style={{ textAlign: 'center', marginBottom: 32 }}>
         <div style={{ fontSize: 40, marginBottom: 12 }}>🔑</div>
-        <div style={{ fontWeight: 700, fontSize: 20, color: '#e6edf3', marginBottom: 6 }}>Reset Password</div>
-        <div style={{ color: '#8b949e', fontSize: 13 }}>Choose a strong new password</div>
+        <div style={{ fontWeight: 700, fontSize: 20, color: 'var(--text-primary)', marginBottom: 6 }}>Reset Password</div>
+        <div style={{ color: 'var(--text-secondary)', fontSize: 13 }}>Choose a strong new password</div>
       </div>
 
       <Card>
         {done ? (
           <div style={{ padding: 28, textAlign: 'center' }}>
             <div style={{ fontSize: 36, marginBottom: 16 }}>✅</div>
-            <p style={{ color: '#e6edf3', marginBottom: 8, fontWeight: 600 }}>Password reset!</p>
-            <p style={{ color: '#8b949e', fontSize: 13, marginBottom: 24 }}>
+            <p style={{ color: 'var(--text-primary)', marginBottom: 8, fontWeight: 600 }}>Password reset!</p>
+            <p style={{ color: 'var(--text-secondary)', fontSize: 13, marginBottom: 24 }}>
               Your password has been updated. You can now sign in.
             </p>
             <Button variant="primary" onClick={() => onNavigate('login')} style={{ width: '100%' }}>

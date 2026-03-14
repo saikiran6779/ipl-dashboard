@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import toast from 'react-hot-toast'
 import { Spinner, Button, Input, Select } from '../components/UI'
 import { getSquad, getScorecard, saveScorecard, createPlayer } from '../services/api'
-import { getTeam } from '../services/constants'
+import { getTeam, formatDate } from '../services/constants'
 
 const ROLES      = ['BAT', 'BOWL', 'ALL', 'WK']
 const ROLE_LABELS = { BAT: 'Batter', BOWL: 'Bowler', ALL: 'All-rounder', WK: 'Wicket-keeper' }
@@ -37,16 +37,16 @@ const toPayload = (entry) => ({
 // ── Team color tab bar ────────────────────────────────────────────────────
 function TeamTabs({ teams, active, onChange }) {
     return (
-        <div style={{ display: 'flex', gap: 0, marginBottom: 0, borderBottom: '1px solid #21262d' }}>
+        <div style={{ display: 'flex', gap: 0, marginBottom: 0, borderBottom: '1px solid var(--border-subtle)' }}>
             {teams.map(tid => {
                 const team = getTeam(tid)
                 const isActive = active === tid
                 return (
                     <button key={tid} onClick={() => onChange(tid)} style={{
                         flex: 1, padding: '12px 16px', border: 'none', cursor: 'pointer',
-                        background: isActive ? '#161b22' : '#0d1117',
+                        background: isActive ? 'var(--bg-elevated)' : 'var(--bg-subtle)',
                         borderBottom: isActive ? `2px solid ${team.color}` : '2px solid transparent',
-                        color: isActive ? team.color : '#8b949e',
+                        color: isActive ? team.color : 'var(--text-secondary)',
                         fontFamily: "'Bebas Neue',sans-serif", fontSize: 17, letterSpacing: 1.5,
                         transition: 'all 0.2s', marginBottom: -1,
                     }}>
@@ -66,23 +66,23 @@ function PlayerRow({ player, entry, onChange, sectionTab }) {
             type={type} placeholder={placeholder} value={entry[k]}
             onChange={e => set(k, e.target.value)}
             style={{
-                width, background: '#0d1117', border: '1px solid #30363d', borderRadius: 6,
-                padding: '5px 8px', color: '#e6edf3', fontSize: 12, outline: 'none',
+                width, background: 'var(--bg-subtle)', border: '1px solid var(--border-input)', borderRadius: 6,
+                padding: '5px 8px', color: 'var(--text-primary)', fontSize: 12, outline: 'none',
                 textAlign: 'center', boxSizing: 'border-box',
             }}
             onFocus={e  => (e.target.style.borderColor = '#f97316')}
-            onBlur={e   => (e.target.style.borderColor = '#30363d')}
+            onBlur={e   => (e.target.style.borderColor = 'var(--border-input)')}
         />
     )
 
     return (
-        <tr style={{ borderTop: '1px solid #21262d' }}
-            onMouseEnter={e => e.currentTarget.style.background = '#1c2128'}
+        <tr style={{ borderTop: '1px solid var(--border-subtle)' }}
+            onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
         >
             {/* Player name + role */}
             <td style={{ padding: '10px 12px', minWidth: 140 }}>
-                <div style={{ fontWeight: 600, fontSize: 13, color: '#e6edf3',
+                <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--text-primary)',
                     whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 160 }}>
                     {player.name}
                 </div>
@@ -98,8 +98,8 @@ function PlayerRow({ player, entry, onChange, sectionTab }) {
                 <td style={{ padding: '8px 6px', textAlign: 'center' }}>{inp('sixes',  '0')}</td>
                 <td style={{ padding: '8px 6px' }}>
                     <select value={entry.dismissal} onChange={e => set('dismissal', e.target.value)}
-                            style={{ background: '#0d1117', border: '1px solid #30363d', borderRadius: 6,
-                                padding: '5px 6px', color: '#e6edf3', fontSize: 11, outline: 'none', cursor: 'pointer' }}>
+                            style={{ background: 'var(--bg-subtle)', border: '1px solid var(--border-input)', borderRadius: 6,
+                                padding: '5px 6px', color: 'var(--text-primary)', fontSize: 11, outline: 'none', cursor: 'pointer' }}>
                         {DISMISSALS.map(d => <option key={d} value={d}>{d}</option>)}
                     </select>
                 </td>
@@ -109,7 +109,7 @@ function PlayerRow({ player, entry, onChange, sectionTab }) {
                 <td style={{ padding: '8px 6px', textAlign: 'center' }}>{inp('oversBowled',  '0.0', 'number', 72)}</td>
                 <td style={{ padding: '8px 6px', textAlign: 'center' }}>{inp('wickets',      '0')}</td>
                 <td style={{ padding: '8px 6px', textAlign: 'center' }}>{inp('runsConceded', '0')}</td>
-                <td style={{ padding: '8px 6px', textAlign: 'center', color: '#8b949e', fontSize: 12 }}>
+                <td style={{ padding: '8px 6px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: 12 }}>
                     {entry.oversBowled && entry.runsConceded
                         ? (parseFloat(entry.runsConceded) / parseFloat(entry.oversBowled)).toFixed(2)
                         : '—'}
@@ -148,12 +148,12 @@ function AddPlayerInline({ teamId, onAdded }) {
 
     if (!open) return (
         <button onClick={() => setOpen(true)} style={{
-            background: 'none', border: '1px dashed #30363d', borderRadius: 8, color: '#8b949e',
+            background: 'none', border: '1px dashed var(--border-input)', borderRadius: 8, color: 'var(--text-secondary)',
             cursor: 'pointer', fontSize: 12, padding: '8px 14px', width: '100%',
             marginTop: 8, transition: 'border-color 0.2s, color 0.2s',
         }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor = '#f97316'; e.currentTarget.style.color = '#f97316' }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = '#30363d'; e.currentTarget.style.color = '#8b949e' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-input)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
         >
             ＋ Add player to {teamId}
         </button>
@@ -161,17 +161,17 @@ function AddPlayerInline({ teamId, onAdded }) {
 
     return (
         <div style={{ display: 'flex', gap: 8, marginTop: 8, padding: '10px 12px',
-            background: '#0d1117', borderRadius: 8, border: '1px solid #30363d', flexWrap: 'wrap' }}>
+            background: 'var(--bg-subtle)', borderRadius: 8, border: '1px solid var(--border-input)', flexWrap: 'wrap' }}>
             <input
                 autoFocus placeholder="Player name"
                 value={name} onChange={e => setName(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleAdd()}
-                style={{ flex: '1 1 140px', background: '#161b22', border: '1px solid #30363d',
-                    borderRadius: 6, padding: '6px 10px', color: '#e6edf3', fontSize: 12, outline: 'none' }}
+                style={{ flex: '1 1 140px', background: 'var(--bg-elevated)', border: '1px solid var(--border-input)',
+                    borderRadius: 6, padding: '6px 10px', color: 'var(--text-primary)', fontSize: 12, outline: 'none' }}
             />
             <select value={role} onChange={e => setRole(e.target.value)}
-                    style={{ background: '#161b22', border: '1px solid #30363d', borderRadius: 6,
-                        padding: '6px 8px', color: '#e6edf3', fontSize: 12, outline: 'none', cursor: 'pointer' }}>
+                    style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-input)', borderRadius: 6,
+                        padding: '6px 8px', color: 'var(--text-primary)', fontSize: 12, outline: 'none', cursor: 'pointer' }}>
                 {ROLES.map(r => <option key={r} value={r}>{ROLE_LABELS[r]}</option>)}
             </select>
             <Button variant="primary" onClick={handleAdd} disabled={saving} style={{ padding: '6px 14px', fontSize: 12 }}>
@@ -203,14 +203,14 @@ function ScorecardView({ entries, teams }) {
                     <button key={s.id} onClick={() => setSectionTab(s.id)} style={{
                         padding: '5px 12px', borderRadius: 6, border: 'none', cursor: 'pointer', fontSize: 12,
                         fontWeight: 600, fontFamily: 'DM Sans,sans-serif',
-                        background: sectionTab === s.id ? 'linear-gradient(135deg,#f97316,#dc2626)' : '#21262d',
-                        color: sectionTab === s.id ? '#fff' : '#8b949e', transition: 'all 0.2s',
+                        background: sectionTab === s.id ? 'linear-gradient(135deg,#f97316,#dc2626)' : 'var(--border-subtle)',
+                        color: sectionTab === s.id ? '#fff' : 'var(--text-secondary)', transition: 'all 0.2s',
                     }}>{s.label}</button>
                 ))}
             </div>
 
             {teamEntries.length === 0 && (
-                <div style={{ padding: '24px', textAlign: 'center', color: '#8b949e', fontSize: 13 }}>
+                <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: 13 }}>
                     No data for {teamTab}
                 </div>
             )}
@@ -219,7 +219,7 @@ function ScorecardView({ entries, teams }) {
                 <div style={{ overflowX: 'auto' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                         <thead>
-                        <tr style={{ background: '#0d1117' }}>
+                        <tr style={{ background: 'var(--bg-subtle)' }}>
                             <th style={thStyle('left')}>Player</th>
                             {sectionTab === 'batting'  && ['Runs','Balls','4s','6s','SR','Dismissal'].map((h,i) => <th key={i} style={thStyle()}>{h}</th>)}
                             {sectionTab === 'bowling'  && ['Overs','Wickets','Runs','Economy'].map((h,i)         => <th key={i} style={thStyle()}>{h}</th>)}
@@ -228,8 +228,8 @@ function ScorecardView({ entries, teams }) {
                         </thead>
                         <tbody>
                         {teamEntries.map(e => (
-                            <tr key={e.statsId} style={{ borderTop: '1px solid #21262d', transition: 'background 0.15s' }}
-                                onMouseEnter={ev => ev.currentTarget.style.background = '#1c2128'}
+                            <tr key={e.statsId} style={{ borderTop: '1px solid var(--border-subtle)', transition: 'background 0.15s' }}
+                                onMouseEnter={ev => ev.currentTarget.style.background = 'var(--bg-hover)'}
                                 onMouseLeave={ev => ev.currentTarget.style.background = 'transparent'}
                             >
                                 <td style={{ padding: '10px 12px' }}>
@@ -237,18 +237,18 @@ function ScorecardView({ entries, teams }) {
                                     <div style={{ fontSize: 10, color: ROLE_COLORS[e.role] }}>{ROLE_LABELS[e.role]}</div>
                                 </td>
                                 {sectionTab === 'batting' && <>
-                                    <td style={tdStyle(e.runs >= 50 ? '#f97316' : e.runs >= 30 ? '#22c55e' : '#e6edf3', true)}>{e.runs ?? '—'}</td>
+                                    <td style={tdStyle(e.runs >= 50 ? '#f97316' : e.runs >= 30 ? '#22c55e' : 'var(--text-primary)', true)}>{e.runs ?? '—'}</td>
                                     <td style={tdStyle()}>{e.balls ?? '—'}</td>
                                     <td style={tdStyle('#22c55e')}>{e.fours ?? '—'}</td>
                                     <td style={tdStyle('#f97316')}>{e.sixes ?? '—'}</td>
                                     <td style={tdStyle()}>{e.strikeRate?.toFixed(1) ?? '—'}</td>
-                                    <td style={{ padding: '10px 12px', fontSize: 11, color: e.dismissal === 'not out' ? '#22c55e' : '#8b949e' }}>{e.dismissal ?? '—'}</td>
+                                    <td style={{ padding: '10px 12px', fontSize: 11, color: e.dismissal === 'not out' ? '#22c55e' : 'var(--text-secondary)' }}>{e.dismissal ?? '—'}</td>
                                 </>}
                                 {sectionTab === 'bowling' && <>
                                     <td style={tdStyle()}>{e.oversBowled ?? '—'}</td>
-                                    <td style={tdStyle(e.wickets >= 3 ? '#8b5cf6' : '#e6edf3', true)}>{e.wickets ?? '—'}</td>
+                                    <td style={tdStyle(e.wickets >= 3 ? '#8b5cf6' : 'var(--text-primary)', true)}>{e.wickets ?? '—'}</td>
                                     <td style={tdStyle()}>{e.runsConceded ?? '—'}</td>
-                                    <td style={tdStyle(e.economy < 7 ? '#22c55e' : e.economy < 9 ? '#e6edf3' : '#ef4444')}>{e.economy?.toFixed(2) ?? '—'}</td>
+                                    <td style={tdStyle(e.economy < 7 ? '#22c55e' : e.economy < 9 ? 'var(--text-primary)' : '#ef4444')}>{e.economy?.toFixed(2) ?? '—'}</td>
                                 </>}
                                 {sectionTab === 'fielding' && <>
                                     <td style={tdStyle('#3b82f6', true)}>{e.catches ?? '—'}</td>
@@ -265,10 +265,10 @@ function ScorecardView({ entries, teams }) {
 }
 
 const thStyle = (align = 'center') => ({
-    padding: '9px 12px', textAlign: align, color: '#8b949e',
+    padding: '9px 12px', textAlign: align, color: 'var(--text-secondary)',
     fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1.5, whiteSpace: 'nowrap',
 })
-const tdStyle = (color = '#e6edf3', bold = false) => ({
+const tdStyle = (color = 'var(--text-primary)', bold = false) => ({
     padding: '10px 12px', textAlign: 'center', color,
     fontFamily: bold ? "'Bebas Neue',sans-serif" : 'inherit',
     fontSize: bold ? 18 : 13,
@@ -387,7 +387,7 @@ function ScorecardEntry({ matchId, teams, onSaved }) {
 
             {/* Player selector chips */}
             <div style={{ padding: '14px 0 10px' }}>
-                <div style={{ fontSize: 10, color: '#8b949e', textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 8 }}>
+                <div style={{ fontSize: 10, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 8 }}>
                     Select players in this match
                 </div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
@@ -396,9 +396,9 @@ function ScorecardEntry({ matchId, teams, onSaved }) {
                         const team = getTeam(p.teamId)
                         return (
                             <button key={p.id} onClick={() => togglePlayer(p.id)} style={{
-                                padding: '5px 12px', borderRadius: 20, border: `1px solid ${isOn ? team.color : '#30363d'}`,
+                                padding: '5px 12px', borderRadius: 20, border: `1px solid ${isOn ? team.color : 'var(--border-input)'}`,
                                 background: isOn ? team.color + '22' : 'transparent',
-                                color: isOn ? team.color : '#8b949e', cursor: 'pointer',
+                                color: isOn ? team.color : 'var(--text-secondary)', cursor: 'pointer',
                                 fontSize: 12, fontWeight: 600, transition: 'all 0.15s',
                             }}>{p.name}</button>
                         )
@@ -415,13 +415,13 @@ function ScorecardEntry({ matchId, teams, onSaved }) {
 
             {/* Section tabs */}
             {selectedPlayers.length > 0 && (
-                <div style={{ display: 'flex', gap: 4, marginBottom: 12, borderTop: '1px solid #21262d', paddingTop: 14 }}>
+                <div style={{ display: 'flex', gap: 4, marginBottom: 12, borderTop: '1px solid var(--border-subtle)', paddingTop: 14 }}>
                     {SECTION_TABS.map(s => (
                         <button key={s.id} onClick={() => setSectionTab(s.id)} style={{
                             padding: '5px 12px', borderRadius: 6, border: 'none', cursor: 'pointer', fontSize: 12,
                             fontWeight: 600, fontFamily: 'DM Sans,sans-serif',
-                            background: sectionTab === s.id ? 'linear-gradient(135deg,#f97316,#dc2626)' : '#21262d',
-                            color: sectionTab === s.id ? '#fff' : '#8b949e', transition: 'all 0.2s',
+                            background: sectionTab === s.id ? 'linear-gradient(135deg,#f97316,#dc2626)' : 'var(--border-subtle)',
+                            color: sectionTab === s.id ? '#fff' : 'var(--text-secondary)', transition: 'all 0.2s',
                         }}>{s.label}</button>
                     ))}
                 </div>
@@ -429,7 +429,7 @@ function ScorecardEntry({ matchId, teams, onSaved }) {
 
             {/* Stats table */}
             {selectedPlayers.length === 0 && (
-                <div style={{ padding: '24px', textAlign: 'center', color: '#8b949e', fontSize: 13 }}>
+                <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: 13 }}>
                     Select players above to enter their stats
                 </div>
             )}
@@ -438,7 +438,7 @@ function ScorecardEntry({ matchId, teams, onSaved }) {
                 <div style={{ overflowX: 'auto' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                         <thead>
-                        <tr style={{ background: '#0d1117' }}>
+                        <tr style={{ background: 'var(--bg-subtle)' }}>
                             <th style={thStyle('left')}>Player</th>
                             {sectionTab === 'batting'  && ['Runs','Balls','4s','6s','Dismissal'].map((h,i) => <th key={i} style={thStyle()}>{h}</th>)}
                             {sectionTab === 'bowling'  && ['Overs','Wickets','Runs','Economy'].map((h,i)   => <th key={i} style={thStyle()}>{h}</th>)}
@@ -462,7 +462,7 @@ function ScorecardEntry({ matchId, teams, onSaved }) {
 
             {/* Save */}
             <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: 16,
-                borderTop: '1px solid #21262d', marginTop: 12 }}>
+                borderTop: '1px solid var(--border-subtle)', marginTop: 12 }}>
                 <Button variant="primary" onClick={handleSave} disabled={saving}>
                     {saving ? 'Saving…' : '💾 Save Scorecard'}
                 </Button>
@@ -502,23 +502,23 @@ export default function ScorecardModal({ match, onClose, isAdmin = false }) {
             display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
         }} onClick={onClose}>
             <div style={{
-                background: '#161b22', border: '1px solid #30363d', borderRadius: 16,
+                background: 'var(--bg-elevated)', border: '1px solid var(--border-input)', borderRadius: 16,
                 width: '100%', maxWidth: 780, maxHeight: '90vh',
                 display: 'flex', flexDirection: 'column', overflow: 'hidden',
                 animation: 'fadeUp 0.2s ease',
             }} onClick={e => e.stopPropagation()}>
 
                 {/* Modal header */}
-                <div style={{ padding: '18px 22px', borderBottom: '1px solid #21262d',
+                <div style={{ padding: '18px 22px', borderBottom: '1px solid var(--border-subtle)',
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
                     <div>
                         <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, letterSpacing: 1.5, color: '#f97316' }}>
                             Scorecard
                         </div>
-                        <div style={{ fontSize: 11, color: '#8b949e', marginTop: 2 }}>
+                        <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2 }}>
                             {match.team1} vs {match.team2}
                             {match.matchNo ? ` · Match ${match.matchNo}` : ''}
-                            {match.date ? ` · ${match.date}` : ''}
+                            {match.date ? ` · ${formatDate(match.date)}` : ''}
                         </div>
                     </div>
                     <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
@@ -533,8 +533,8 @@ export default function ScorecardModal({ match, onClose, isAdmin = false }) {
                             </Button>
                         )}
                         <button onClick={onClose} style={{
-                            background: '#21262d', border: '1px solid #30363d', borderRadius: 8,
-                            color: '#8b949e', fontSize: 18, cursor: 'pointer', width: 34, height: 34,
+                            background: 'var(--border-subtle)', border: '1px solid var(--border-input)', borderRadius: 8,
+                            color: 'var(--text-secondary)', fontSize: 18, cursor: 'pointer', width: 34, height: 34,
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                         }}>✕</button>
                     </div>

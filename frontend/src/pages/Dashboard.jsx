@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Card, CardHeader, TeamChip, EmptyState, Spinner } from '../components/UI'
-import { getTeam } from '../services/constants'
+import { getTeam, formatDate } from '../services/constants'
 
 const TABS = [
     { id: 'standings', label: 'Standings',  icon: '🏆' },
@@ -94,26 +94,6 @@ function NRRCell({ nrr }) {
                     transition: 'width 1s ease',
                 }} />
             </div>
-        </div>
-    )
-}
-
-// ── Win Rate display ──────────────────────────────────────────────────────
-function WinRateCell({ won, played, color }) {
-    const pct = played > 0 ? Math.round((won / played) * 100) : 0
-    const r = 9, circ = 2 * Math.PI * r
-    const dash = (pct / 100) * circ
-    return (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3 }}>
-            <svg width={26} height={26} style={{ flexShrink: 0 }}>
-                <circle cx={13} cy={13} r={r} fill="none" stroke="var(--border-subtle)" strokeWidth={2.5} />
-                <circle cx={13} cy={13} r={r} fill="none" stroke={color} strokeWidth={2.5}
-                        strokeDasharray={`${dash} ${circ}`} strokeDashoffset={circ / 4}
-                        strokeLinecap="round" style={{ transition: 'stroke-dasharray 1s ease' }} />
-                <text x={13} y={17} textAnchor="middle" fontSize={6.5} fill={color} fontWeight="800"
-                      fontFamily="'Bebas Neue',sans-serif">{pct}</text>
-            </svg>
-            <span style={{ fontSize: 9, color: 'var(--text-muted)' }}>{pct}%</span>
         </div>
     )
 }
@@ -265,7 +245,6 @@ export default function Dashboard({ stats, matches, loading, onOpenTeam }) {
                                         <TH width={48}>W</TH>
                                         <TH width={48}>L</TH>
                                         <TH width={48}>NR</TH>
-                                        <TH width={60}>Win%</TH>
                                         <TH width={60}>Pts</TH>
                                         <TH width={120}>NRR</TH>
                                     </tr>
@@ -318,12 +297,6 @@ export default function Dashboard({ stats, matches, loading, onOpenTeam }) {
                                                 {/* NR */}
                                                 <td style={{ padding: '10px 12px', textAlign: 'center' }}>
                                                     <span style={{ color: 'var(--text-secondary)', fontFamily: "'Bebas Neue',sans-serif", fontSize: 16 }}>{row.nr ?? 0}</span>
-                                                </td>
-                                                {/* Win% */}
-                                                <td style={{ padding: '10px 12px', textAlign: 'center' }}>
-                                                    <div style={{ display: 'flex', justifyContent: 'center' }}>
-                                                        <WinRateCell won={row.won} played={row.played} color={team.color} />
-                                                    </div>
                                                 </td>
                                                 {/* Pts */}
                                                 <td style={{ padding: '10px 12px', textAlign: 'center' }}>
@@ -468,7 +441,7 @@ export default function Dashboard({ stats, matches, loading, onOpenTeam }) {
                                 >
                                     <div className="result-meta-cell" style={{ fontSize: 11, color: 'var(--text-secondary)', minWidth: 54, textAlign: 'center', flexShrink: 0 }}>
                                         {m.matchNo && <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#f97316' }}>M{m.matchNo}</div>}
-                                        <div>{m.date}</div>
+                                        <div>{formatDate(m.date)}</div>
                                     </div>
                                     <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
                                         <TeamChip teamId={m.team1} score={m.team1Score} wickets={m.team1Wickets} overs={m.team1Overs} won={m.winner === m.team1} />

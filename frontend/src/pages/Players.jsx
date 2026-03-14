@@ -37,7 +37,7 @@ function AddPlayerModal({ onClose, onSaved }) {
             zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20,
         }} onClick={onClose}>
             <div style={{
-                background: '#161b22', border: '1px solid #30363d', borderRadius: 16,
+                background: 'var(--bg-elevated)', border: '1px solid var(--border-input)', borderRadius: 16,
                 padding: 28, width: '100%', maxWidth: 420,
                 animation: 'fadeUp 0.2s ease',
             }} onClick={e => e.stopPropagation()}>
@@ -45,7 +45,7 @@ function AddPlayerModal({ onClose, onSaved }) {
                     <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, letterSpacing: 1, color: '#f97316' }}>
                         Add Player
                     </div>
-                    <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#8b949e', fontSize: 20, cursor: 'pointer' }}>✕</button>
+                    <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: 20, cursor: 'pointer' }}>✕</button>
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -72,9 +72,9 @@ function AddPlayerModal({ onClose, onSaved }) {
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                             <img src={form.profilePictureUrl} alt="preview"
                                  style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover',
-                                     border: '2px solid #30363d' }}
+                                     border: '2px solid var(--border-input)' }}
                                  onError={e => { e.target.style.display = 'none' }} />
-                            <span style={{ fontSize: 12, color: '#8b949e' }}>Preview</span>
+                            <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Preview</span>
                         </div>
                     )}
                 </div>
@@ -101,8 +101,8 @@ function PlayerCard({ player, onOpenProfile, onDelete, canDelete }) {
             onMouseEnter={() => setHover(true)}
             onMouseLeave={() => setHover(false)}
             style={{
-                background: '#161b22',
-                border: `1px solid ${hover ? team.color + '66' : '#21262d'}`,
+                background: 'var(--bg-elevated)',
+                border: `1px solid ${hover ? team.color + '66' : 'var(--border-subtle)'}`,
                 borderRadius: 12, padding: '16px', cursor: 'pointer',
                 transition: 'border-color 0.2s, transform 0.2s, box-shadow 0.2s',
                 transform: hover ? 'translateY(-2px)' : 'none',
@@ -133,7 +133,7 @@ function PlayerCard({ player, onOpenProfile, onDelete, canDelete }) {
                 </div>
 
                 <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: 700, fontSize: 14, color: '#e6edf3', marginBottom: 4,
+                    <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--text-primary)', marginBottom: 4,
                         whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {player.name}
                     </div>
@@ -155,7 +155,7 @@ function PlayerCard({ player, onOpenProfile, onDelete, canDelete }) {
                   <button
                       onClick={e => { e.stopPropagation(); onDelete(player) }}
                       style={{
-                          background: 'none', border: 'none', color: '#8b949e', cursor: 'pointer',
+                          background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer',
                           fontSize: 14, padding: '2px 4px', borderRadius: 4, marginLeft: 8,
                           opacity: hover ? 1 : 0, transition: 'opacity 0.2s',
                       }}
@@ -227,10 +227,10 @@ export default function Players({ onOpenProfile }) {
             {/* Page header */}
             <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
                 <div>
-                    <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 32, letterSpacing: 2, color: '#e6edf3', lineHeight: 1 }}>
+                    <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 32, letterSpacing: 2, color: 'var(--text-primary)', lineHeight: 1 }}>
                         Player Registry
                     </div>
-                    <div style={{ fontSize: 12, color: '#8b949e', marginTop: 4 }}>
+                    <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4 }}>
                         {players.length} player{players.length !== 1 ? 's' : ''} across {new Set(players.map(p => p.teamId)).size} teams
                     </div>
                 </div>
@@ -275,8 +275,8 @@ export default function Players({ onOpenProfile }) {
                             <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, letterSpacing: 1.5, color: team.color }}>
                                 {teamId}
                             </div>
-                            <div style={{ fontSize: 11, color: '#8b949e' }}>— {team.name}</div>
-                            <div style={{ marginLeft: 'auto', fontSize: 11, color: '#8b949e' }}>
+                            <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>— {team.name}</div>
+                            <div style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--text-secondary)' }}>
                                 {grouped[teamId].length} player{grouped[teamId].length !== 1 ? 's' : ''}
                             </div>
                         </div>

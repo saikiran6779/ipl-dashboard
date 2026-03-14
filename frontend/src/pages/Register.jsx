@@ -44,7 +44,7 @@ export default function Register({ onNavigate }) {
           background: 'linear-gradient(135deg, #22c55e, #16a34a)',
           WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
         }}>Join IPL 2025</div>
-        <div style={{ color: '#8b949e', fontSize: 13, marginTop: 4 }}>Create your account</div>
+        <div style={{ color: 'var(--text-secondary)', fontSize: 13, marginTop: 4 }}>Create your account</div>
       </div>
 
       {/* Card */}
@@ -110,7 +110,7 @@ export default function Register({ onNavigate }) {
         </form>
       </div>
 
-      <p style={{ textAlign: 'center', color: '#8b949e', fontSize: 13, marginTop: 20 }}>
+      <p style={{ textAlign: 'center', color: 'var(--text-secondary)', fontSize: 13, marginTop: 20 }}>
         Already have an account?{' '}
         <button
           onClick={() => onNavigate('login')}

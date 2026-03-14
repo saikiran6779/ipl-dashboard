@@ -109,8 +109,8 @@ export default function MatchForm({ editMatch, onSubmit, onCancel, loading }) {
             { label: 'Team 1', prefix: 'team1' },
             { label: 'Team 2', prefix: 'team2' },
           ].map(({ label, prefix }) => (
-            <div key={prefix} style={{ background: '#0d1117', border: '1px solid #21262d', borderRadius: 10, padding: 14 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#8b949e', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>{label}</div>
+            <div key={prefix} style={{ background: 'var(--bg-subtle)', border: '1px solid var(--border-subtle)', borderRadius: 10, padding: 14 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>{label}</div>
               <div style={{ marginBottom: 10 }}>
                 <Select label={`Team *`} name={prefix} value={form[prefix]} onChange={handle} required>
                   <option value="">Select team</option>
@@ -135,7 +135,7 @@ export default function MatchForm({ editMatch, onSubmit, onCancel, loading }) {
               name="noResult"
               checked={form.noResult}
               onChange={handleCheckbox}
-              style={{ width: 15, height: 15, accentColor: '#8b949e', cursor: 'pointer' }}
+              style={{ width: 15, height: 15, accentColor: 'var(--text-secondary)', cursor: 'pointer' }}
             />
             No Result / Abandoned
           </label>
@@ -166,7 +166,7 @@ export default function MatchForm({ editMatch, onSubmit, onCancel, loading }) {
         {/* Player Stats */}
         <SectionLabel>Player Stats</SectionLabel>
         {!form.team1 && !form.team2 && (
-          <div style={{ fontSize: 12, color: '#8b949e', marginBottom: 12 }}>
+          <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 12 }}>
             Select teams above to enable player search
           </div>
         )}
