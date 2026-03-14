@@ -32,7 +32,9 @@ public class VenueService {
 
     public VenueDTO createVenue(VenueDTO dto) {
         Venue saved = venueRepository.save(Venue.builder()
-                .name(dto.getName()).city(dto.getCity()).imageUrl(dto.getImageUrl()).build());
+                .name(dto.getName()).city(dto.getCity())
+                .imageUrls(dto.getImageUrls() != null ? dto.getImageUrls() : new java.util.ArrayList<>())
+                .build());
         return toDTO(saved);
     }
 
@@ -41,7 +43,8 @@ public class VenueService {
                 .orElseThrow(() -> new NoSuchElementException("Venue not found: " + id));
         v.setName(dto.getName());
         v.setCity(dto.getCity());
-        v.setImageUrl(dto.getImageUrl());
+        v.getImageUrls().clear();
+        if (dto.getImageUrls() != null) v.getImageUrls().addAll(dto.getImageUrls());
         return toDTO(venueRepository.save(v));
     }
 
@@ -51,6 +54,7 @@ public class VenueService {
     }
 
     public VenueDTO toDTO(Venue v) {
-        return VenueDTO.builder().id(v.getId()).name(v.getName()).city(v.getCity()).imageUrl(v.getImageUrl()).build();
+        return VenueDTO.builder().id(v.getId()).name(v.getName()).city(v.getCity())
+                .imageUrls(v.getImageUrls()).build();
     }
 }
