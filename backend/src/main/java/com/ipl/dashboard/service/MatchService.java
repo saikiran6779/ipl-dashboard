@@ -147,7 +147,7 @@ public class MatchService {
 
         return table.values().stream()
                 .sorted(Comparator.comparingInt(StatsDTO.TeamStanding::getPoints).reversed()
-                        .thenComparingDouble(StatsDTO.TeamStanding::getNrr).reversed())
+                        .thenComparing(Comparator.comparingDouble(StatsDTO.TeamStanding::getNrr).reversed()))
                 .collect(Collectors.toList());
     }
 
