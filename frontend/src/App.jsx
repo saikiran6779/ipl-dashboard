@@ -13,6 +13,7 @@ import ResetPassword from './pages/ResetPassword'
 import SuperAdminUsers from './pages/SuperAdminUsers'
 import SuperAdminTeams from './pages/SuperAdminTeams'
 import Teams from './pages/Teams'
+import Venues from './pages/Venues'
 import { getMatches, getStats, createMatch, updateMatch, deleteMatch } from './services/api'
 import { useAuth } from './context/AuthContext'
 
@@ -176,6 +177,9 @@ export default function App() {
         )}
         {view === 'add' && isAdmin && (
           <MatchForm editMatch={editMatch} onSubmit={handleSubmit} onCancel={handleCancel} loading={saving} />
+        )}
+        {view === 'venues' && (
+          <Venues />
         )}
         {view === 'players' && (
           <Players onOpenProfile={handleOpenProfile} />

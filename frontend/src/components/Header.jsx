@@ -8,6 +8,7 @@ const NAV_ITEMS = [
   { id: 'dashboard', label: '📊 Dashboard', activeFor: ['dashboard'] },
   { id: 'teams',     label: '🛡️ Teams',     activeFor: ['teams'] },
   { id: 'matches',   label: '📋 Matches',   activeFor: ['matches'] },
+  { id: 'venues',    label: '🏟️ Venues',    activeFor: ['venues'] },
   { id: 'players',   label: '👤 Players',   activeFor: ['players', 'profile'] },
 ]
 

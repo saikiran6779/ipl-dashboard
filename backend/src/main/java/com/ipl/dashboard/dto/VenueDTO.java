@@ -10,4 +10,5 @@ public class VenueDTO {
     private Long   id;
     private String name;
     private String city;
+    private String imageUrl;
 }

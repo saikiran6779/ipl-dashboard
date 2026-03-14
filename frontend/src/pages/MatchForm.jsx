@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
+import toast from 'react-hot-toast'
 import { Input, Select, SectionLabel, Button, PlayerCombobox } from '../components/UI'
 import { TEAMS, resolvePlayerFromJson } from '../services/constants'
 import { parseCricsheetData, resolveVenueFromJson } from '../services/cricsheet'
-import { getSquad, getPlayers, getVenues } from '../services/api'
+import { getSquad, getPlayers, getVenues, createVenue } from '../services/api'
+import { useAuth } from '../context/AuthContext'
 
 const EMPTY = {
   matchNo: '', date: '', venueId: null,
@@ -18,12 +20,17 @@ const EMPTY = {
 }
 
 export default function MatchForm({ editMatch, onSubmit, onCancel, loading }) {
+  const { isAdmin } = useAuth()
   const [form,       setForm]       = useState(EMPTY)
   const [players,    setPlayers]    = useState([])   // squad for selected teams (combobox options)
   const [allPlayers, setAllPlayers] = useState([])   // all players (for JSON auto-resolution)
   const [venues,     setVenues]     = useState([])   // all venues from API
   const [jsonHints,     setJsonHints]     = useState({})
   const [jsonWarnings,  setJsonWarnings]  = useState([])
+  const [showAddVenue,  setShowAddVenue]  = useState(false)
+  const [newVenueName,  setNewVenueName]  = useState('')
+  const [newVenueCity,  setNewVenueCity]  = useState('')
+  const [savingVenue,   setSavingVenue]   = useState(false)
   const fileInputRef = useRef(null)
 
   // Fetch all players + venues once on mount for JSON auto-resolution
@@ -155,6 +162,26 @@ export default function MatchForm({ editMatch, onSubmit, onCancel, loading }) {
     setJsonHints({}); setJsonWarnings([]); onCancel()
   }
 
+  // ── Quick-add venue ───────────────────────────────────────────────────────
+  const handleAddVenue = async () => {
+    if (!newVenueName.trim() || !newVenueCity.trim()) { toast.error('Name and city required'); return }
+    setSavingVenue(true)
+    try {
+      const created = await createVenue({ name: newVenueName.trim(), city: newVenueCity.trim() })
+      const updated = await getVenues()
+      setVenues(updated)
+      set('venueId', created.id)
+      setShowAddVenue(false)
+      setNewVenueName('')
+      setNewVenueCity('')
+      toast.success(`"${created.name}" added`)
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to create venue')
+    } finally {
+      setSavingVenue(false)
+    }
+  }
+
   const teamOptions = [form.team1, form.team2].filter(Boolean)
 
   // ── Hint pill (used in Player Stats card headers) ────────────────────────
@@ -211,14 +238,59 @@ export default function MatchForm({ editMatch, onSubmit, onCancel, loading }) {
         <div className="rg-1-1-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 2fr', gap: 12, marginBottom: 24 }}>
           <Input label="Match No." name="matchNo" type="number" value={form.matchNo} onChange={handle} placeholder="e.g. 1" />
           <Input label="Date *"    name="date"    type="date"   value={form.date}    onChange={handle} required />
-          <Select
-            label="Venue" name="venueId" value={form.venueId ?? ''}
-            onChange={e => set('venueId', e.target.value ? Number(e.target.value) : null)}
-            hint={jsonHints.venueName ? { text: `${jsonHints.venueName}${jsonHints.venueCity ? ` · ${jsonHints.venueCity}` : ''}`, matched: !!form.venueId } : null}
-          >
-            <option value="">Select venue</option>
-            {venues.map(v => <option key={v.id} value={v.id}>{v.name} — {v.city}</option>)}
-          </Select>
+          <div>
+            <Select
+              label="Venue" name="venueId" value={form.venueId ?? ''}
+              onChange={e => set('venueId', e.target.value ? Number(e.target.value) : null)}
+              hint={jsonHints.venueName ? { text: `${jsonHints.venueName}${jsonHints.venueCity ? ` · ${jsonHints.venueCity}` : ''}`, matched: !!form.venueId } : null}
+            >
+              <option value="">Select venue</option>
+              {venues.map(v => <option key={v.id} value={v.id}>{v.name} — {v.city}</option>)}
+            </Select>
+            {isAdmin && !showAddVenue && (
+              <button
+                type="button"
+                onClick={() => setShowAddVenue(true)}
+                style={{
+                  marginTop: 6, background: 'none', border: 'none',
+                  color: '#0d9488', cursor: 'pointer', fontSize: 12,
+                  fontWeight: 600, fontFamily: 'DM Sans,sans-serif', padding: 0,
+                }}
+              >＋ Add new venue</button>
+            )}
+            {isAdmin && showAddVenue && (
+              <div style={{
+                marginTop: 8, padding: '12px 14px', borderRadius: 10,
+                background: 'var(--bg-subtle)', border: '1px solid rgba(13,148,136,0.35)',
+              }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#0d9488', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>
+                  New Venue
+                </div>
+                <div style={{ display: 'flex', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
+                  <input
+                    autoFocus placeholder="Stadium name *"
+                    value={newVenueName} onChange={e => setNewVenueName(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && handleAddVenue()}
+                    style={{ flex: '2 1 140px', padding: '7px 10px', borderRadius: 7, fontSize: 12, border: '1px solid var(--border-input)', background: 'var(--bg-elevated)', color: 'var(--text-primary)', outline: 'none', fontFamily: 'DM Sans,sans-serif' }}
+                  />
+                  <input
+                    placeholder="City *"
+                    value={newVenueCity} onChange={e => setNewVenueCity(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && handleAddVenue()}
+                    style={{ flex: '1 1 100px', padding: '7px 10px', borderRadius: 7, fontSize: 12, border: '1px solid var(--border-input)', background: 'var(--bg-elevated)', color: 'var(--text-primary)', outline: 'none', fontFamily: 'DM Sans,sans-serif' }}
+                  />
+                </div>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <button type="button" onClick={handleAddVenue} disabled={savingVenue} style={{ padding: '6px 14px', borderRadius: 7, border: 'none', background: '#0d9488', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 12, fontFamily: 'DM Sans,sans-serif', opacity: savingVenue ? 0.7 : 1 }}>
+                    {savingVenue ? '…' : 'Add'}
+                  </button>
+                  <button type="button" onClick={() => { setShowAddVenue(false); setNewVenueName(''); setNewVenueCity('') }} style={{ padding: '6px 10px', borderRadius: 7, border: '1px solid var(--border-input)', background: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 12, fontFamily: 'DM Sans,sans-serif' }}>
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* ── Teams & Scores ── */}

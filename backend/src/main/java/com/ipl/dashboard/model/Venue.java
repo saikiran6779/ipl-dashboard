@@ -18,4 +18,7 @@ public class Venue {
     private String name;
 
     private String city;
+
+    @Column(length = 1024)
+    private String imageUrl;
 }
