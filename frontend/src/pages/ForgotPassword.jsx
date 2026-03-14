@@ -26,8 +26,8 @@ export default function ForgotPassword({ onNavigate }) {
     <div style={{ maxWidth: 420, margin: '80px auto', padding: '0 20px' }}>
       <div style={{ textAlign: 'center', marginBottom: 32 }}>
         <div style={{ fontSize: 40, marginBottom: 12 }}>🔐</div>
-        <div style={{ fontWeight: 700, fontSize: 20, color: '#e6edf3', marginBottom: 6 }}>Forgot Password</div>
-        <div style={{ color: '#8b949e', fontSize: 13 }}>
+        <div style={{ fontWeight: 700, fontSize: 20, color: 'var(--text-primary)', marginBottom: 6 }}>Forgot Password</div>
+        <div style={{ color: 'var(--text-secondary)', fontSize: 13 }}>
           {sent ? 'Check your inbox' : "We'll email you a reset link"}
         </div>
       </div>
@@ -36,8 +36,8 @@ export default function ForgotPassword({ onNavigate }) {
         {sent ? (
           <div style={{ padding: 28, textAlign: 'center' }}>
             <div style={{ fontSize: 36, marginBottom: 16 }}>📬</div>
-            <p style={{ color: '#e6edf3', marginBottom: 8, fontWeight: 600 }}>Reset link sent!</p>
-            <p style={{ color: '#8b949e', fontSize: 13, marginBottom: 24 }}>
+            <p style={{ color: 'var(--text-primary)', marginBottom: 8, fontWeight: 600 }}>Reset link sent!</p>
+            <p style={{ color: 'var(--text-secondary)', fontSize: 13, marginBottom: 24 }}>
               If an account exists for <strong style={{ color: '#f97316' }}>{email}</strong>,
               you'll receive an email with instructions shortly.
             </p>

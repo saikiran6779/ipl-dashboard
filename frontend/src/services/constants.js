@@ -25,3 +25,13 @@ export const VENUES = [
 ]
 
 export const getTeam = (id) => TEAMS.find(t => t.id === id) || { id, name: id, color: '#444', accent: '#fff' }
+
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+
+export function formatDate(dateStr) {
+  if (!dateStr) return '—'
+  const parts = String(dateStr).split('-')
+  if (parts.length !== 3) return dateStr
+  const [y, m, d] = parts
+  return `${MONTHS[parseInt(m, 10) - 1]} ${parseInt(d, 10)}, ${y}`
+}
