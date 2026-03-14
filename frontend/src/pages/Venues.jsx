@@ -85,7 +85,7 @@ function VenueDetailModal({ venue, matches, isAdmin, onEdit, onClose }) {
           <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
             {isAdmin && (
               <button onClick={() => { onClose(); onEdit(venue) }}
-                style={{ padding: '6px 14px', borderRadius: 8, border: '1px solid rgba(249,115,22,0.4)', background: 'rgba(249,115,22,0.08)', color: '#f97316', cursor: 'pointer', fontWeight: 600, fontSize: 12, fontFamily: 'DM Sans,sans-serif' }}>
+                style={{ padding: '6px 14px', borderRadius: 8, border: '1px solid rgba(249,115,22,0.4)', background: 'rgba(249,115,22,0.08)', color: '#f97316', cursor: 'pointer', fontWeight: 600, fontSize: 12, fontFamily: 'Rajdhani,sans-serif' }}>
                 ✏️ Edit
               </button>
             )}
@@ -177,7 +177,7 @@ function ImageUrlEditor({ urls, onChange }) {
   // Move image i to index 0 (makes it primary)
   const setPrimary = (i)     => onChange([urls[i], ...urls.filter((_, j) => j !== i)])
 
-  const inputStyle = { flex: 1, padding: '7px 10px', borderRadius: 7, fontSize: 12, border: '1px solid var(--border-input)', background: 'var(--bg-subtle)', color: 'var(--text-primary)', outline: 'none', fontFamily: 'DM Sans,sans-serif', minWidth: 0 }
+  const inputStyle = { flex: 1, padding: '7px 10px', borderRadius: 7, fontSize: 12, border: '1px solid var(--border-input)', background: 'var(--bg-subtle)', color: 'var(--text-primary)', outline: 'none', fontFamily: 'Rajdhani,sans-serif', minWidth: 0 }
 
   return (
     <div>
@@ -213,7 +213,7 @@ function ImageUrlEditor({ urls, onChange }) {
         ))}
       </div>
       <button onClick={add}
-        style={{ marginTop: 8, background: 'none', border: '1px dashed var(--border-input)', borderRadius: 7, color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 12, padding: '6px 14px', width: '100%', fontFamily: 'DM Sans,sans-serif', fontWeight: 600, transition: 'all 0.15s' }}
+        style={{ marginTop: 8, background: 'none', border: '1px dashed var(--border-input)', borderRadius: 7, color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 12, padding: '6px 14px', width: '100%', fontFamily: 'Rajdhani,sans-serif', fontWeight: 600, transition: 'all 0.15s' }}
         onMouseEnter={e => { e.currentTarget.style.borderColor = '#f97316'; e.currentTarget.style.color = '#f97316' }}
         onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-input)'; e.currentTarget.style.color = 'var(--text-secondary)' }}>
         ＋ Add image URL
@@ -242,7 +242,7 @@ function VenueModal({ venue, onSave, onClose }) {
     }
   }
 
-  const inputStyle = { width: '100%', boxSizing: 'border-box', background: 'var(--bg-subtle)', border: '1px solid var(--border-input)', borderRadius: 8, padding: '9px 12px', color: 'var(--text-primary)', fontSize: 13, outline: 'none', fontFamily: 'DM Sans, sans-serif' }
+  const inputStyle = { width: '100%', boxSizing: 'border-box', background: 'var(--bg-subtle)', border: '1px solid var(--border-input)', borderRadius: 8, padding: '9px 12px', color: 'var(--text-primary)', fontSize: 13, outline: 'none', fontFamily: 'Rajdhani, sans-serif' }
   const labelStyle = { fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: 1, display: 'block', marginBottom: 5 }
 
   return (
@@ -272,8 +272,8 @@ function VenueModal({ venue, onSave, onClose }) {
           <ImageUrlEditor urls={imageUrls} onChange={setImageUrls} />
         </div>
         <div style={{ padding: '14px 22px', borderTop: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'flex-end', gap: 8, flexShrink: 0 }}>
-          <button onClick={onClose} style={{ padding: '8px 18px', borderRadius: 8, border: '1px solid var(--border-input)', background: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontWeight: 600, fontSize: 13, fontFamily: 'DM Sans,sans-serif' }}>Cancel</button>
-          <button onClick={handleSave} disabled={saving} style={{ padding: '8px 20px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#f97316,#dc2626)', color: '#fff', cursor: saving ? 'default' : 'pointer', fontWeight: 700, fontSize: 13, fontFamily: 'DM Sans,sans-serif', opacity: saving ? 0.7 : 1 }}>
+          <button onClick={onClose} style={{ padding: '8px 18px', borderRadius: 8, border: '1px solid var(--border-input)', background: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontWeight: 600, fontSize: 13, fontFamily: 'Rajdhani,sans-serif' }}>Cancel</button>
+          <button onClick={handleSave} disabled={saving} style={{ padding: '8px 20px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#f97316,#dc2626)', color: '#fff', cursor: saving ? 'default' : 'pointer', fontWeight: 700, fontSize: 13, fontFamily: 'Rajdhani,sans-serif', opacity: saving ? 0.7 : 1 }}>
             {saving ? 'Saving…' : venue?.id ? 'Update' : 'Add Venue'}
           </button>
         </div>
@@ -394,10 +394,10 @@ export default function Venues({ matches = [] }) {
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
           <input placeholder="Search venues…" value={search} onChange={e => setSearch(e.target.value)}
-            style={{ padding: '8px 14px', borderRadius: 8, fontSize: 13, border: '1px solid var(--border-input)', background: 'var(--bg-subtle)', color: 'var(--text-primary)', outline: 'none', width: 200, fontFamily: 'DM Sans,sans-serif' }}
+            style={{ padding: '8px 14px', borderRadius: 8, fontSize: 13, border: '1px solid var(--border-input)', background: 'var(--bg-subtle)', color: 'var(--text-primary)', outline: 'none', width: 200, fontFamily: 'Rajdhani,sans-serif' }}
             onFocus={e => (e.target.style.borderColor = '#f97316')} onBlur={e => (e.target.style.borderColor = 'var(--border-input)')} />
           {isAdmin && (
-            <button onClick={() => setEditModal({})} style={{ padding: '8px 18px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#f97316,#dc2626)', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 13, fontFamily: 'DM Sans,sans-serif', boxShadow: '0 2px 12px rgba(249,115,22,0.3)', whiteSpace: 'nowrap' }}>
+            <button onClick={() => setEditModal({})} style={{ padding: '8px 18px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#f97316,#dc2626)', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 13, fontFamily: 'Rajdhani,sans-serif', boxShadow: '0 2px 12px rgba(249,115,22,0.3)', whiteSpace: 'nowrap' }}>
               ＋ Add Venue
             </button>
           )}

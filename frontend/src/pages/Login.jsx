@@ -75,7 +75,7 @@ export default function Login({ onNavigate }) {
             style={{
               background: 'none', border: 'none', color: '#f97316', fontSize: 12,
               cursor: 'pointer', textAlign: 'right', padding: 0,
-              fontFamily: 'DM Sans, sans-serif', fontWeight: 600,
+              fontFamily: 'Rajdhani, sans-serif', fontWeight: 600,
               transition: 'color 0.2s',
             }}
             onMouseEnter={e => e.currentTarget.style.color = '#fb923c'}
@@ -92,7 +92,7 @@ export default function Login({ onNavigate }) {
               borderRadius: 10, border: 'none',
               background: loading ? '#374151' : 'linear-gradient(135deg, #f97316, #dc2626)',
               color: '#fff', cursor: loading ? 'not-allowed' : 'pointer',
-              fontWeight: 700, fontSize: 15, fontFamily: 'DM Sans, sans-serif',
+              fontWeight: 700, fontSize: 15, fontFamily: 'Rajdhani, sans-serif',
               boxShadow: loading ? 'none' : '0 4px 20px rgba(249,115,22,0.35)',
               transition: 'all 0.2s', opacity: loading ? 0.7 : 1,
             }}
@@ -108,7 +108,7 @@ export default function Login({ onNavigate }) {
           onClick={() => onNavigate('register')}
           style={{
             background: 'none', border: 'none', color: '#f97316', cursor: 'pointer',
-            fontFamily: 'DM Sans, sans-serif', fontSize: 13, fontWeight: 700,
+            fontFamily: 'Rajdhani, sans-serif', fontSize: 13, fontWeight: 700,
           }}
         >
           Register now →

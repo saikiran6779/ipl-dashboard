@@ -216,7 +216,7 @@ export default function MatchForm({ editMatch, onSubmit, onCancel, loading }) {
             border: '1px solid rgba(13,148,136,0.5)',
             background: 'rgba(13,148,136,0.08)',
             color: '#0d9488', cursor: 'pointer', fontWeight: 600, fontSize: 13,
-            fontFamily: 'DM Sans, sans-serif', transition: 'all 0.2s',
+            fontFamily: 'Rajdhani, sans-serif', transition: 'all 0.2s',
           }}
           onMouseEnter={e => { e.currentTarget.style.background = 'rgba(13,148,136,0.15)'; e.currentTarget.style.borderColor = '#0d9488' }}
           onMouseLeave={e => { e.currentTarget.style.background = 'rgba(13,148,136,0.08)'; e.currentTarget.style.borderColor = 'rgba(13,148,136,0.5)' }}
@@ -254,7 +254,7 @@ export default function MatchForm({ editMatch, onSubmit, onCancel, loading }) {
                 style={{
                   marginTop: 6, background: 'none', border: 'none',
                   color: '#0d9488', cursor: 'pointer', fontSize: 12,
-                  fontWeight: 600, fontFamily: 'DM Sans,sans-serif', padding: 0,
+                  fontWeight: 600, fontFamily: 'Rajdhani,sans-serif', padding: 0,
                 }}
               >＋ Add new venue</button>
             )}
@@ -271,20 +271,20 @@ export default function MatchForm({ editMatch, onSubmit, onCancel, loading }) {
                     autoFocus placeholder="Stadium name *"
                     value={newVenueName} onChange={e => setNewVenueName(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && handleAddVenue()}
-                    style={{ flex: '2 1 140px', padding: '7px 10px', borderRadius: 7, fontSize: 12, border: '1px solid var(--border-input)', background: 'var(--bg-elevated)', color: 'var(--text-primary)', outline: 'none', fontFamily: 'DM Sans,sans-serif' }}
+                    style={{ flex: '2 1 140px', padding: '7px 10px', borderRadius: 7, fontSize: 12, border: '1px solid var(--border-input)', background: 'var(--bg-elevated)', color: 'var(--text-primary)', outline: 'none', fontFamily: 'Rajdhani,sans-serif' }}
                   />
                   <input
                     placeholder="City *"
                     value={newVenueCity} onChange={e => setNewVenueCity(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && handleAddVenue()}
-                    style={{ flex: '1 1 100px', padding: '7px 10px', borderRadius: 7, fontSize: 12, border: '1px solid var(--border-input)', background: 'var(--bg-elevated)', color: 'var(--text-primary)', outline: 'none', fontFamily: 'DM Sans,sans-serif' }}
+                    style={{ flex: '1 1 100px', padding: '7px 10px', borderRadius: 7, fontSize: 12, border: '1px solid var(--border-input)', background: 'var(--bg-elevated)', color: 'var(--text-primary)', outline: 'none', fontFamily: 'Rajdhani,sans-serif' }}
                   />
                 </div>
                 <div style={{ display: 'flex', gap: 6 }}>
-                  <button type="button" onClick={handleAddVenue} disabled={savingVenue} style={{ padding: '6px 14px', borderRadius: 7, border: 'none', background: '#0d9488', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 12, fontFamily: 'DM Sans,sans-serif', opacity: savingVenue ? 0.7 : 1 }}>
+                  <button type="button" onClick={handleAddVenue} disabled={savingVenue} style={{ padding: '6px 14px', borderRadius: 7, border: 'none', background: '#0d9488', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 12, fontFamily: 'Rajdhani,sans-serif', opacity: savingVenue ? 0.7 : 1 }}>
                     {savingVenue ? '…' : 'Add'}
                   </button>
-                  <button type="button" onClick={() => { setShowAddVenue(false); setNewVenueName(''); setNewVenueCity('') }} style={{ padding: '6px 10px', borderRadius: 7, border: '1px solid var(--border-input)', background: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 12, fontFamily: 'DM Sans,sans-serif' }}>
+                  <button type="button" onClick={() => { setShowAddVenue(false); setNewVenueName(''); setNewVenueCity('') }} style={{ padding: '6px 10px', borderRadius: 7, border: '1px solid var(--border-input)', background: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 12, fontFamily: 'Rajdhani,sans-serif' }}>
                     Cancel
                   </button>
                 </div>

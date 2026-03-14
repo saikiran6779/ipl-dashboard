@@ -40,37 +40,42 @@ const toPayload = (entry) => ({
 // ── Team color tab bar ────────────────────────────────────────────────────
 function TeamTabs({ teams, active, onChange, summaries = {} }) {
     return (
-        <div style={{ display: 'flex', gap: 0, marginBottom: 0, borderBottom: '1px solid var(--border-subtle)' }}>
+        <div style={{ display: 'flex', borderBottom: '1px solid var(--border-subtle)' }}>
             {teams.map(tid => {
                 const team = getTeam(tid)
                 const isActive = active === tid
                 const s = summaries[tid]
                 return (
                     <button key={tid} onClick={() => onChange(tid)} style={{
-                        flex: 1, padding: '10px 16px', border: 'none', cursor: 'pointer',
-                        background: isActive ? 'var(--bg-elevated)' : 'var(--bg-subtle)',
-                        borderBottom: isActive ? `2px solid ${team.color}` : '2px solid transparent',
+                        flex: 1, padding: '16px 20px', border: 'none', cursor: 'pointer',
+                        background: isActive
+                            ? `linear-gradient(180deg, ${team.color}14 0%, transparent 100%)`
+                            : 'transparent',
+                        borderBottom: isActive ? `3px solid ${team.color}` : '3px solid transparent',
                         color: isActive ? team.color : 'var(--text-secondary)',
                         transition: 'all 0.2s', marginBottom: -1,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                    }}>
-                        <TeamLogo teamId={tid} size={20} />
-                        <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, letterSpacing: 1.5 }}>
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+                    }}
+                    onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'var(--bg-hover)' }}
+                    onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}
+                    >
+                        <TeamLogo teamId={tid} size={22} />
+                        <span style={{ fontFamily: 'Rajdhani,sans-serif', fontWeight: 700, fontSize: 17, letterSpacing: 0.5 }}>
                             {tid}
                         </span>
                         {s && (
-                            <span style={{
-                                fontFamily: "'Bebas Neue',sans-serif",
-                                fontSize: isActive ? 15 : 13,
-                                letterSpacing: 0.5,
-                                color: isActive ? team.color : 'var(--text-muted)',
-                                opacity: isActive ? 1 : 0.8,
-                            }}>
-                                {s.score}/{s.wickets}
-                                <span style={{ fontSize: isActive ? 11 : 10, marginLeft: 4, fontFamily: 'DM Sans,sans-serif', fontWeight: 400 }}>
+                            <div style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
+                                <span style={{
+                                    fontFamily: "'Bebas Neue',sans-serif",
+                                    fontSize: isActive ? 20 : 16, letterSpacing: 1,
+                                    color: isActive ? team.color : 'var(--text-muted)',
+                                }}>
+                                    {s.score}/{s.wickets}
+                                </span>
+                                <span style={{ fontSize: 11, fontFamily: 'Rajdhani,sans-serif', fontWeight: 600, color: 'var(--text-muted)' }}>
                                     ({s.overs})
                                 </span>
-                            </span>
+                            </div>
                         )}
                     </button>
                 )
@@ -311,16 +316,32 @@ export function ScorecardView({ entries, teams }) {
                      : sectionTab === 'bowling'  ? bowlingEntries
                      :                             fieldingEntries
 
+    const currentTeamColor = getTeam(teamTab).color
+
     return (
         <div>
-            <TeamTabs teams={teams} active={teamTab} onChange={t => { setTeamTab(t); setSectionTab('batting') }} summaries={tabSummaries} />
-            <div style={{ padding: '14px 0 8px', display: 'flex', gap: 4 }}>
+            {/* ── Team tab strip ── */}
+            <TeamTabs
+                teams={teams}
+                active={teamTab}
+                onChange={t => { setTeamTab(t); setSectionTab('batting') }}
+                summaries={tabSummaries}
+            />
+
+            {/* ── Section tabs (Batting / Bowling / Fielding) ── */}
+            <div style={{ padding: '16px 20px 14px', display: 'flex', gap: 8 }}>
                 {SECTION_TABS.map(s => (
                     <button key={s.id} onClick={() => setSectionTab(s.id)} style={{
-                        padding: '5px 12px', borderRadius: 6, border: 'none', cursor: 'pointer', fontSize: 12,
-                        fontWeight: 600, fontFamily: 'DM Sans,sans-serif',
-                        background: sectionTab === s.id ? 'linear-gradient(135deg,#f97316,#dc2626)' : 'var(--border-subtle)',
-                        color: sectionTab === s.id ? '#fff' : 'var(--text-secondary)', transition: 'all 0.2s',
+                        padding: '7px 20px', borderRadius: 20,
+                        border: sectionTab === s.id ? 'none' : '1px solid var(--border-subtle)',
+                        cursor: 'pointer', fontSize: 13,
+                        fontWeight: 700, fontFamily: 'Rajdhani, sans-serif', letterSpacing: 0.5,
+                        background: sectionTab === s.id
+                            ? 'linear-gradient(135deg,#f97316,#dc2626)'
+                            : 'var(--bg-subtle)',
+                        color: sectionTab === s.id ? '#fff' : 'var(--text-secondary)',
+                        transition: 'all 0.2s',
+                        boxShadow: sectionTab === s.id ? '0 3px 14px rgba(249,115,22,0.38)' : 'none',
                     }}>{s.label}</button>
                 ))}
             </div>
@@ -328,24 +349,27 @@ export function ScorecardView({ entries, teams }) {
             {/* ── Innings summary banner (batting tab only) ── */}
             {sectionTab === 'batting' && showInningsSummary && (
                 <div style={{
-                    display: 'flex', alignItems: 'baseline', flexWrap: 'wrap', gap: '6px 16px',
-                    padding: '10px 14px', marginBottom: 8,
-                    background: 'var(--bg-subtle)', borderRadius: 8,
-                    border: '1px solid var(--border-subtle)',
+                    display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px 24px',
+                    padding: '12px 20px',
+                    background: `linear-gradient(90deg, ${currentTeamColor}18 0%, transparent 65%)`,
+                    borderTop: `2px solid ${currentTeamColor}44`,
+                    borderBottom: '1px solid var(--border-subtle)',
                 }}>
-                    {/* Score */}
-                    <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 26, letterSpacing: 1, color: 'var(--text-primary)' }}>
-                        {totalScore}/{wickets}
-                    </span>
-                    {/* Overs + RR */}
-                    {oversDisplay && (
-                        <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-                            ({oversDisplay} ov
-                            {runRate && <span style={{ color: 'var(--text-muted)' }}> · RR {runRate}</span>}
-                            )
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
+                        <span style={{
+                            fontFamily: "'Bebas Neue',sans-serif", fontSize: 34,
+                            letterSpacing: 1, color: 'var(--text-primary)',
+                            animation: 'scoreFlash 0.35s ease both',
+                        }}>
+                            {totalScore}/{wickets}
                         </span>
-                    )}
-                    {/* Extras */}
+                        {oversDisplay && (
+                            <span style={{ fontSize: 14, color: 'var(--text-secondary)', fontWeight: 600 }}>
+                                {oversDisplay} ov
+                                {runRate && <span style={{ color: 'var(--text-muted)', marginLeft: 6 }}>· RR {runRate}</span>}
+                            </span>
+                        )}
+                    </div>
                     {totalExtras > 0 && (() => {
                         const parts = []
                         if (totalWides   > 0) parts.push(`W: ${totalWides}`)
@@ -353,75 +377,129 @@ export function ScorecardView({ entries, teams }) {
                         if (totalByes    > 0) parts.push(`B: ${totalByes}`)
                         if (totalLegByes > 0) parts.push(`LB: ${totalLegByes}`)
                         return (
-                            <span style={{ fontSize: 12, color: 'var(--text-muted)', marginLeft: 'auto' }}>
-                                Extras {totalExtras} ({parts.join(', ')})
-                            </span>
+                            <div style={{
+                                marginLeft: 'auto', fontSize: 12, color: 'var(--text-muted)',
+                                background: 'var(--bg-subtle)', borderRadius: 6,
+                                padding: '4px 11px', border: '1px solid var(--border-subtle)',
+                            }}>
+                                Extras <strong style={{ color: 'var(--text-secondary)' }}>{totalExtras}</strong>
+                                <span style={{ color: 'var(--border-input)', margin: '0 5px' }}>·</span>
+                                {parts.join(' · ')}
+                            </div>
                         )
                     })()}
                 </div>
             )}
 
+            {/* ── Empty states ── */}
             {teamEntries.length === 0 && (
-                <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: 13 }}>
+                <div style={{ padding: '36px 20px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: 14 }}>
                     No data for {teamTab}
                 </div>
             )}
-
             {teamEntries.length > 0 && activeRows.length === 0 && (
-                <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: 13 }}>
+                <div style={{ padding: '36px 20px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: 14 }}>
                     No {sectionTab} data recorded
                 </div>
             )}
 
+            {/* ── Stats table ── */}
             {activeRows.length > 0 && (
                 <div style={{ overflowX: 'auto' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                         <thead>
-                        <tr style={{ background: 'var(--bg-subtle)' }}>
-                            <th style={thStyle('left')}>Player</th>
-                            {sectionTab === 'batting'  && ['Runs','Balls','4s','6s','SR','Dismissal'].map((h,i) => <th key={i} style={thStyle()}>{h}</th>)}
+                        <tr style={{ background: 'var(--bg-subtle)', borderBottom: '2px solid var(--border-subtle)' }}>
+                            <th style={{ ...thStyle('left'), paddingLeft: 20 }}>Player</th>
+                            {sectionTab === 'batting'  && ['Runs','Balls','4s','6s','SR','Dismissal'].map((h,i) => <th key={i} style={i === 5 ? { ...thStyle('left'), paddingRight: 20 } : thStyle()}>{h}</th>)}
                             {sectionTab === 'bowling'  && ['Overs','Wickets','Runs','Economy'].map((h,i)        => <th key={i} style={thStyle()}>{h}</th>)}
                             {sectionTab === 'fielding' && ['Catches','Run Outs'].map((h,i)                      => <th key={i} style={thStyle()}>{h}</th>)}
                         </tr>
                         </thead>
                         <tbody>
-                        {activeRows.map(e => (
-                            <tr key={e.statsId} style={{ borderTop: '1px solid var(--border-subtle)', transition: 'background 0.15s' }}
+                        {activeRows.map((e, idx) => (
+                            <tr key={e.statsId}
+                                style={{
+                                    borderTop: '1px solid var(--border-subtle)',
+                                    transition: 'background 0.15s',
+                                    animation: `rowIn 0.22s ease ${idx * 0.03}s both`,
+                                }}
                                 onMouseEnter={ev => ev.currentTarget.style.background = 'var(--bg-hover)'}
                                 onMouseLeave={ev => ev.currentTarget.style.background = 'transparent'}
                             >
-                                <td style={{ padding: '10px 12px' }}>
-                                    <div style={{ fontWeight: 600, fontSize: 13 }}>{e.playerName}</div>
-                                    <div title={ROLE_LABELS[e.role]} style={{ fontSize: 9, fontWeight: 700, letterSpacing: 0.5,
-                                        color: ROLE_COLORS[e.role], marginTop: 3 }}>{e.role}</div>
+                                {/* Player name cell */}
+                                <td style={{ padding: '12px 12px 10px 20px', minWidth: 160 }}>
+                                    <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--text-primary)' }}>{e.playerName}</div>
+                                    <div style={{
+                                        fontSize: 9, fontWeight: 700, letterSpacing: 0.8,
+                                        color: ROLE_COLORS[e.role], marginTop: 3, textTransform: 'uppercase',
+                                    }}>{e.role}</div>
                                 </td>
+
+                                {/* ── Batting columns ── */}
                                 {sectionTab === 'batting' && (() => {
                                     const dis = fmtDismissal(e)
                                     const isNotOut = dis.label === 'not out'
+                                    const runsColor = e.runs >= 100 ? '#fbbf24'
+                                        : e.runs >= 50 ? '#f97316'
+                                        : e.runs >= 30 ? '#22c55e'
+                                        : 'var(--text-primary)'
                                     return (<>
-                                        <td style={tdStyle(e.runs >= 50 ? '#f97316' : e.runs >= 30 ? '#22c55e' : 'var(--text-primary)', true)}>{e.runs ?? '—'}</td>
+                                        {/* Runs with milestone badge */}
+                                        <td style={{ padding: '10px 12px', textAlign: 'center' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+                                                <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 21, color: runsColor }}>
+                                                    {e.runs ?? '—'}
+                                                </span>
+                                                {e.runs >= 100 && (
+                                                    <span style={{ fontSize: 8, background: '#fbbf2422', border: '1px solid #fbbf2466', color: '#fbbf24', borderRadius: 3, padding: '1px 4px', fontWeight: 700 }}>100</span>
+                                                )}
+                                                {e.runs >= 50 && e.runs < 100 && (
+                                                    <span style={{ fontSize: 8, background: '#f9731622', border: '1px solid #f9731666', color: '#f97316', borderRadius: 3, padding: '1px 4px', fontWeight: 700 }}>50</span>
+                                                )}
+                                            </div>
+                                        </td>
                                         <td style={tdStyle()}>{e.balls ?? '—'}</td>
-                                        <td style={tdStyle('#22c55e')}>{e.fours ?? '—'}</td>
-                                        <td style={tdStyle('#f97316')}>{e.sixes ?? '—'}</td>
+                                        <td style={{ ...tdStyle('#22c55e'), fontWeight: 700 }}>{e.fours ?? '—'}</td>
+                                        <td style={{ ...tdStyle('#f97316'), fontWeight: 700 }}>{e.sixes ?? '—'}</td>
                                         <td style={tdStyle()}>{e.strikeRate?.toFixed(1) ?? '—'}</td>
-                                        <td style={{ padding: '10px 12px', fontSize: 11, whiteSpace: 'nowrap' }}>
-                                            <span style={{ color: isNotOut ? '#22c55e' : 'var(--text-secondary)' }}>
+                                        <td style={{ padding: '10px 20px 10px 12px', fontSize: 12, whiteSpace: 'nowrap' }}>
+                                            <span style={{ color: isNotOut ? '#22c55e' : 'var(--text-secondary)', fontWeight: isNotOut ? 700 : 500 }}>
                                                 {dis.label}
                                             </span>
                                             {dis.detail && (
-                                                <span style={{ color: 'var(--text-muted)', marginLeft: 4 }}>
-                                                    {dis.detail}
-                                                </span>
+                                                <span style={{ color: 'var(--text-muted)', marginLeft: 5 }}>{dis.detail}</span>
                                             )}
                                         </td>
                                     </>)
                                 })()}
+
+                                {/* ── Bowling columns ── */}
                                 {sectionTab === 'bowling' && <>
                                     <td style={tdStyle()}>{e.oversBowled ?? '—'}</td>
-                                    <td style={tdStyle(e.wickets >= 3 ? '#8b5cf6' : 'var(--text-primary)', true)}>{e.wickets ?? '—'}</td>
+                                    {/* Wickets with milestone badge */}
+                                    <td style={{ padding: '10px 12px', textAlign: 'center' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+                                            <span style={{
+                                                fontFamily: "'Bebas Neue',sans-serif", fontSize: 21,
+                                                color: e.wickets >= 5 ? '#fbbf24' : e.wickets >= 3 ? '#8b5cf6' : 'var(--text-primary)',
+                                            }}>
+                                                {e.wickets ?? '—'}
+                                            </span>
+                                            {e.wickets >= 5 && (
+                                                <span style={{ fontSize: 8, background: '#fbbf2422', border: '1px solid #fbbf2466', color: '#fbbf24', borderRadius: 3, padding: '1px 4px', fontWeight: 700 }}>5W</span>
+                                            )}
+                                            {(e.wickets === 3 || e.wickets === 4) && (
+                                                <span style={{ fontSize: 8, background: '#8b5cf622', border: '1px solid #8b5cf666', color: '#8b5cf6', borderRadius: 3, padding: '1px 4px', fontWeight: 700 }}>{e.wickets}W</span>
+                                            )}
+                                        </div>
+                                    </td>
                                     <td style={tdStyle()}>{e.runsConceded ?? '—'}</td>
-                                    <td style={tdStyle(e.economy < 7 ? '#22c55e' : e.economy < 9 ? 'var(--text-primary)' : '#ef4444')}>{e.economy?.toFixed(2) ?? '—'}</td>
+                                    <td style={tdStyle(e.economy < 7 ? '#22c55e' : e.economy < 9 ? 'var(--text-primary)' : '#ef4444')}>
+                                        {e.economy?.toFixed(2) ?? '—'}
+                                    </td>
                                 </>}
+
+                                {/* ── Fielding columns ── */}
                                 {sectionTab === 'fielding' && <>
                                     <td style={tdStyle('#3b82f6', true)}>{e.catches ?? '—'}</td>
                                     <td style={tdStyle('#3b82f6', true)}>{e.runOuts ?? '—'}</td>
@@ -429,16 +507,19 @@ export function ScorecardView({ entries, teams }) {
                             </tr>
                         ))}
 
-                        {/* Yet to bat row — only shown when fewer than 11 batters recorded */}
+                        {/* Yet to bat row */}
                         {sectionTab === 'batting' && showYetToBat && (
                             <tr style={{ borderTop: '2px dashed var(--border-subtle)' }}>
-                                <td colSpan={7} style={{ padding: '10px 12px' }}>
-                                    <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1, marginRight: 8 }}>
-                                        Yet to bat
-                                    </span>
+                                <td colSpan={7} style={{ padding: '12px 20px' }}>
+                                    <span style={{
+                                        fontSize: 9, fontWeight: 700, color: 'var(--text-muted)',
+                                        textTransform: 'uppercase', letterSpacing: 1.2,
+                                        background: 'var(--bg-subtle)', border: '1px solid var(--border-subtle)',
+                                        borderRadius: 4, padding: '2px 7px', marginRight: 10,
+                                    }}>Yet to bat</span>
                                     {yetToBatEntries.map((e, i) => (
-                                        <span key={e.statsId} style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
-                                            {i > 0 && <span style={{ color: 'var(--border-input)', margin: '0 4px' }}>·</span>}
+                                        <span key={e.statsId} style={{ fontSize: 13, color: 'var(--text-secondary)', fontWeight: 600 }}>
+                                            {i > 0 && <span style={{ color: 'var(--border-input)', margin: '0 5px' }}>·</span>}
                                             {e.playerName}
                                         </span>
                                     ))}
@@ -454,13 +535,16 @@ export function ScorecardView({ entries, teams }) {
 }
 
 const thStyle = (align = 'center') => ({
-    padding: '9px 12px', textAlign: align, color: 'var(--text-secondary)',
-    fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1.5, whiteSpace: 'nowrap',
+    padding: '10px 12px', textAlign: align,
+    color: 'var(--text-muted)', fontSize: 10,
+    fontWeight: 700, textTransform: 'uppercase',
+    letterSpacing: 1.8, whiteSpace: 'nowrap',
+    fontFamily: 'Rajdhani, sans-serif',
 })
 const tdStyle = (color = 'var(--text-primary)', bold = false) => ({
     padding: '10px 12px', textAlign: 'center', color,
     fontFamily: bold ? "'Bebas Neue',sans-serif" : 'inherit',
-    fontSize: bold ? 18 : 13,
+    fontSize: bold ? 19 : 13, fontWeight: bold ? 400 : 600,
 })
 
 // ── Entry form (edit mode) ────────────────────────────────────────────────
@@ -609,7 +693,7 @@ function ScorecardEntry({ matchId, teams, onSaved }) {
                     {SECTION_TABS.map(s => (
                         <button key={s.id} onClick={() => setSectionTab(s.id)} style={{
                             padding: '5px 12px', borderRadius: 6, border: 'none', cursor: 'pointer', fontSize: 12,
-                            fontWeight: 600, fontFamily: 'DM Sans,sans-serif',
+                            fontWeight: 600, fontFamily: 'Rajdhani,sans-serif',
                             background: sectionTab === s.id ? 'linear-gradient(135deg,#f97316,#dc2626)' : 'var(--border-subtle)',
                             color: sectionTab === s.id ? '#fff' : 'var(--text-secondary)', transition: 'all 0.2s',
                         }}>{s.label}</button>
@@ -658,7 +742,7 @@ function ScorecardEntry({ matchId, teams, onSaved }) {
                 <button onClick={() => setShowImport(true)} style={{
                     padding: '8px 18px', borderRadius: 8, border: `1px solid ${TEAL}`,
                     background: `${TEAL}15`, color: TEAL, cursor: 'pointer',
-                    fontWeight: 600, fontSize: 13, fontFamily: 'DM Sans,sans-serif',
+                    fontWeight: 600, fontSize: 13, fontFamily: 'Rajdhani,sans-serif',
                     transition: 'all 0.2s',
                 }}
                 onMouseEnter={e => { e.currentTarget.style.background = `${TEAL}30` }}
@@ -799,7 +883,7 @@ export default function ScorecardModal({ match, onClose, isAdmin = false, openIm
                 </div>
 
                 {/* Modal body */}
-                <div style={{ flex: 1, overflowY: 'auto', padding: '0 22px 20px' }}>
+                <div style={{ flex: 1, overflowY: 'auto', padding: '0 0 20px' }}>
                     {mode === 'loading' && (
                         <div style={{ padding: 40, display: 'flex', justifyContent: 'center' }}><Spinner /></div>
                     )}

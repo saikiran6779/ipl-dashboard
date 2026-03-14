@@ -228,7 +228,7 @@ function TeamDetail({ teamId, standing, rank, allMatches, onBack, onOpenProfile 
         style={{
           background: 'none', border: 'none', cursor: 'pointer',
           color: 'var(--text-secondary)', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6,
-          marginBottom: 20, padding: '6px 0', fontFamily: 'DM Sans, sans-serif',
+          marginBottom: 20, padding: '6px 0', fontFamily: 'Rajdhani, sans-serif',
           transition: 'color 0.2s',
         }}
         onMouseEnter={e => e.currentTarget.style.color = 'var(--text-primary)'}
@@ -318,7 +318,7 @@ function TeamDetail({ teamId, standing, rank, allMatches, onBack, onOpenProfile 
         {tabs.map(t => (
           <button key={t.id} onClick={() => setActiveTab(t.id)} style={{
             padding: '7px 18px', borderRadius: 7, border: 'none', cursor: 'pointer',
-            fontSize: 13, fontWeight: 600, fontFamily: 'DM Sans, sans-serif',
+            fontSize: 13, fontWeight: 600, fontFamily: 'Rajdhani, sans-serif',
             background: activeTab === t.id ? `linear-gradient(135deg, ${team.color}, ${team.color}99)` : 'transparent',
             color: activeTab === t.id ? '#fff' : 'var(--text-secondary)',
             transition: 'all 0.2s',

@@ -124,7 +124,7 @@ export default function SuperAdminTeams() {
                     background: isDirty(team.id) ? '#f97316' : 'var(--bg-subtle)',
                     color:      isDirty(team.id) ? '#fff'    : 'var(--text-secondary)',
                     fontWeight: 600, fontSize: 12, cursor: isDirty(team.id) ? 'pointer' : 'default',
-                    fontFamily: 'DM Sans, sans-serif', whiteSpace: 'nowrap',
+                    fontFamily: 'Rajdhani, sans-serif', whiteSpace: 'nowrap',
                     transition: 'all 0.15s', opacity: busy === team.id ? 0.6 : 1,
                   }}
                 >

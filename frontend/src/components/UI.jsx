@@ -146,7 +146,7 @@ export function Button({ children, variant = 'primary', onClick, type = 'button'
       style={{
         padding: '8px 18px', borderRadius: 8, cursor: disabled ? 'not-allowed' : 'pointer',
         fontWeight: 600, fontSize: 13, transition: 'all 0.2s', opacity: disabled ? 0.5 : 1,
-        fontFamily: 'DM Sans, sans-serif',
+        fontFamily: 'Rajdhani, sans-serif',
         ...variants[variant], ...style,
       }}
     >

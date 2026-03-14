@@ -218,7 +218,7 @@ export default function Dashboard({ stats, matches, loading, onOpenTeam }) {
                 {TABS.map(t => (
                     <button key={t.id} onClick={() => handleTab(t.id)} style={{
                         padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer',
-                        fontSize: 13, fontWeight: 600, fontFamily: 'DM Sans, sans-serif',
+                        fontSize: 13, fontWeight: 600, fontFamily: 'Rajdhani, sans-serif',
                         background: tab === t.id ? 'linear-gradient(135deg,#f97316,#dc2626)' : 'transparent',
                         color: tab === t.id ? '#fff' : 'var(--text-secondary)', transition: 'all 0.2s',
                         display: 'flex', alignItems: 'center', gap: 6,

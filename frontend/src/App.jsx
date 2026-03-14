@@ -169,7 +169,7 @@ export default function App() {
                   onClick={() => setSuperAdminTab(tab.key)}
                   style={{
                     padding: '8px 18px', border: 'none', cursor: 'pointer',
-                    background: 'transparent', fontFamily: 'DM Sans, sans-serif',
+                    background: 'transparent', fontFamily: 'Rajdhani, sans-serif',
                     fontWeight: 600, fontSize: 13,
                     color: superAdminTab === tab.key ? '#f97316' : 'var(--text-secondary)',
                     borderBottom: superAdminTab === tab.key ? '2px solid #f97316' : '2px solid transparent',

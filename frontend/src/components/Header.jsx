@@ -151,7 +151,7 @@ const menuItemStyle = {
   width: '100%', padding: '9px 12px', borderRadius: 8,
   border: 'none', background: 'transparent',
   color: 'var(--text-primary)', cursor: 'pointer',
-  fontWeight: 600, fontSize: 13, fontFamily: 'DM Sans, sans-serif',
+  fontWeight: 600, fontSize: 13, fontFamily: 'Rajdhani, sans-serif',
   textAlign: 'left', display: 'flex', alignItems: 'center', gap: 10,
   transition: 'background 0.15s',
 }
@@ -239,7 +239,7 @@ export default function Header({ view, setView, onAddClick }) {
                     background: active ? 'rgba(249,115,22,0.1)' : 'transparent',
                     color: active ? '#f97316' : 'var(--text-secondary)',
                     cursor: 'pointer', fontWeight: active ? 700 : 500,
-                    fontSize: 13, fontFamily: 'DM Sans, sans-serif',
+                    fontSize: 13, fontFamily: 'Rajdhani, sans-serif',
                     transition: 'all 0.15s', whiteSpace: 'nowrap',
                     position: 'relative',
                   }}
@@ -269,7 +269,7 @@ export default function Header({ view, setView, onAddClick }) {
                   padding: '7px 16px', borderRadius: 8, border: 'none',
                   background: 'linear-gradient(135deg, #f97316, #dc2626)',
                   color: '#fff', cursor: 'pointer', fontWeight: 700,
-                  fontSize: 13, fontFamily: 'DM Sans, sans-serif',
+                  fontSize: 13, fontFamily: 'Rajdhani, sans-serif',
                   boxShadow: '0 2px 10px rgba(249,115,22,0.35)',
                   transition: 'opacity 0.15s, transform 0.15s',
                   whiteSpace: 'nowrap',
@@ -300,7 +300,7 @@ export default function Header({ view, setView, onAddClick }) {
                     border: '1px solid var(--border-input)',
                     background: 'transparent', color: 'var(--text-primary)',
                     cursor: 'pointer', fontWeight: 600, fontSize: 12,
-                    fontFamily: 'DM Sans, sans-serif', transition: 'all 0.15s',
+                    fontFamily: 'Rajdhani, sans-serif', transition: 'all 0.15s',
                   }}
                   onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
                   onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
@@ -311,7 +311,7 @@ export default function Header({ view, setView, onAddClick }) {
                     padding: '6px 14px', borderRadius: 8, border: 'none',
                     background: 'linear-gradient(135deg, #f97316, #dc2626)',
                     color: '#fff', cursor: 'pointer', fontWeight: 700,
-                    fontSize: 12, fontFamily: 'DM Sans, sans-serif',
+                    fontSize: 12, fontFamily: 'Rajdhani, sans-serif',
                     boxShadow: '0 2px 8px rgba(249,115,22,0.3)',
                   }}
                 >Register</button>
@@ -353,7 +353,7 @@ export default function Header({ view, setView, onAddClick }) {
             return (
               <button key={item.id} onClick={() => handleNav(item.id)} style={{
                 padding: '11px 14px', borderRadius: 10, border: 'none', cursor: 'pointer',
-                fontWeight: active ? 700 : 600, fontSize: 14, fontFamily: 'DM Sans, sans-serif',
+                fontWeight: active ? 700 : 600, fontSize: 14, fontFamily: 'Rajdhani, sans-serif',
                 textAlign: 'left', background: active ? 'rgba(249,115,22,0.1)' : 'transparent',
                 color: active ? '#f97316' : 'var(--text-primary)', transition: 'all 0.15s',
                 display: 'flex', alignItems: 'center', gap: 10,
@@ -367,7 +367,7 @@ export default function Header({ view, setView, onAddClick }) {
           {isAdmin && (
             <button onClick={() => { onAddClick(); setMenuOpen(false) }} style={{
               padding: '11px 14px', borderRadius: 10, border: 'none', cursor: 'pointer',
-              fontWeight: 700, fontSize: 14, fontFamily: 'DM Sans, sans-serif', textAlign: 'left',
+              fontWeight: 700, fontSize: 14, fontFamily: 'Rajdhani, sans-serif', textAlign: 'left',
               background: 'linear-gradient(135deg, #f97316, #dc2626)', color: '#fff',
               marginTop: 6, boxShadow: '0 4px 16px rgba(249,115,22,0.3)',
             }}>＋ Add Match</button>
@@ -390,7 +390,7 @@ export default function Header({ view, setView, onAddClick }) {
                 </div>
                 <button onClick={() => { handleLogout(); setMenuOpen(false) }} style={{
                   padding: '11px 14px', borderRadius: 10, border: 'none', cursor: 'pointer',
-                  fontWeight: 600, fontSize: 14, fontFamily: 'DM Sans, sans-serif', textAlign: 'left',
+                  fontWeight: 600, fontSize: 14, fontFamily: 'Rajdhani, sans-serif', textAlign: 'left',
                   background: 'rgba(239,68,68,0.08)', color: '#ef4444', width: '100%',
                   display: 'flex', alignItems: 'center', gap: 10,
                 }}>
@@ -402,12 +402,12 @@ export default function Header({ view, setView, onAddClick }) {
                 <button onClick={() => handleNav('login')} style={{
                   padding: '11px 14px', borderRadius: 10,
                   border: '1px solid var(--border-input)', cursor: 'pointer',
-                  fontWeight: 600, fontSize: 14, fontFamily: 'DM Sans, sans-serif',
+                  fontWeight: 600, fontSize: 14, fontFamily: 'Rajdhani, sans-serif',
                   background: 'transparent', color: 'var(--text-primary)',
                 }}>Login</button>
                 <button onClick={() => handleNav('register')} style={{
                   padding: '11px 14px', borderRadius: 10, border: 'none', cursor: 'pointer',
-                  fontWeight: 700, fontSize: 14, fontFamily: 'DM Sans, sans-serif',
+                  fontWeight: 700, fontSize: 14, fontFamily: 'Rajdhani, sans-serif',
                   background: 'linear-gradient(135deg, #f97316, #dc2626)', color: '#fff',
                 }}>Register</button>
               </div>

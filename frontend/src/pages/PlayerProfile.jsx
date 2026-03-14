@@ -117,7 +117,7 @@ function MatchLog({ log }) {
                     {tabs.map(t => (
                         <button key={t.id} onClick={() => setTab(t.id)} style={{
                             padding: '6px 14px', borderRadius: 6, border: 'none', cursor: 'pointer',
-                            fontSize: 12, fontWeight: 600, fontFamily: 'DM Sans, sans-serif',
+                            fontSize: 12, fontWeight: 600, fontFamily: 'Rajdhani, sans-serif',
                             background: tab === t.id ? 'linear-gradient(135deg,#f97316,#dc2626)' : 'transparent',
                             color: tab === t.id ? '#fff' : 'var(--text-secondary)', transition: 'all 0.2s',
                         }}>{t.label}</button>
@@ -414,7 +414,7 @@ export default function PlayerProfile({ playerId, onBack, onOpenTeam }) {
                                 background: 'var(--bg-subtle)', border: '1px solid var(--border-input)',
                                 borderRadius: 8, padding: '10px 12px',
                                 color: 'var(--text-primary)', fontSize: 13, outline: 'none',
-                                fontFamily: 'DM Sans, sans-serif',
+                                fontFamily: 'Rajdhani, sans-serif',
                             }}
                         />
                         {urlInput && (
@@ -432,7 +432,7 @@ export default function PlayerProfile({ playerId, onBack, onOpenTeam }) {
                                 flex: 1, padding: '9px 0', background: 'transparent',
                                 border: '1px solid var(--border-input)', borderRadius: 8,
                                 color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 13,
-                                fontFamily: 'DM Sans, sans-serif',
+                                fontFamily: 'Rajdhani, sans-serif',
                             }}>Cancel</button>
                             <button onClick={saveUrl} disabled={saving} style={{
                                 flex: 2, padding: '9px 0',
@@ -440,7 +440,7 @@ export default function PlayerProfile({ playerId, onBack, onOpenTeam }) {
                                 border: 'none', borderRadius: 8,
                                 color: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 700,
                                 opacity: saving ? 0.7 : 1,
-                                fontFamily: 'DM Sans, sans-serif',
+                                fontFamily: 'Rajdhani, sans-serif',
                             }}>{saving ? 'Saving…' : 'Save'}</button>
                         </div>
                     </div>

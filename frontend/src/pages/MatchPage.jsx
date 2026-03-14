@@ -328,7 +328,7 @@ function PhaseBar({ label, subLabel, team1, team2, t1Runs, t1Balls, t2Runs, t2Ba
               {side.runs}
               <span style={{
                 fontSize: 10, color: 'var(--text-muted)',
-                fontFamily: 'DM Sans,sans-serif', marginLeft: 5, fontWeight: 600,
+                fontFamily: 'Rajdhani,sans-serif', marginLeft: 5, fontWeight: 600,
               }}>RR {fmt(side.runs, side.balls)}</span>
             </span>
           </div>
@@ -406,7 +406,7 @@ function ActionBtn({ onClick, color = 'var(--text-secondary)', bg = 'var(--bg-ho
       style={{
         padding: '6px 14px', background: bg, border: `1px solid ${border}`,
         borderRadius: 8, color, cursor: 'pointer', fontSize: 12, fontWeight: 600,
-        fontFamily: 'DM Sans,sans-serif', transition: 'background 0.15s',
+        fontFamily: 'Rajdhani,sans-serif', transition: 'background 0.15s',
       }}
     >{children}</button>
   )

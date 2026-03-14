@@ -788,7 +788,7 @@ export default function ScorecardImportModal({
               style={{
                 background: 'none', border: '1px solid var(--border-input)', borderRadius: 8,
                 color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 12, fontWeight: 600,
-                padding: '7px 16px', fontFamily: 'DM Sans,sans-serif',
+                padding: '7px 16px', fontFamily: 'Rajdhani,sans-serif',
               }}
             >
               ← Back

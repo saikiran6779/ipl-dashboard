@@ -100,7 +100,7 @@ export default function Register({ onNavigate }) {
               borderRadius: 10, border: 'none',
               background: loading ? '#374151' : 'linear-gradient(135deg, #22c55e, #16a34a)',
               color: '#fff', cursor: loading ? 'not-allowed' : 'pointer',
-              fontWeight: 700, fontSize: 15, fontFamily: 'DM Sans, sans-serif',
+              fontWeight: 700, fontSize: 15, fontFamily: 'Rajdhani, sans-serif',
               boxShadow: loading ? 'none' : '0 4px 20px rgba(34,197,94,0.35)',
               transition: 'all 0.2s', opacity: loading ? 0.7 : 1,
             }}
@@ -116,7 +116,7 @@ export default function Register({ onNavigate }) {
           onClick={() => onNavigate('login')}
           style={{
             background: 'none', border: 'none', color: '#f97316', cursor: 'pointer',
-            fontFamily: 'DM Sans, sans-serif', fontSize: 13, fontWeight: 700,
+            fontFamily: 'Rajdhani, sans-serif', fontSize: 13, fontWeight: 700,
           }}
         >
           Sign in →
