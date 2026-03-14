@@ -848,10 +848,10 @@ export default function PlayerProfile({ playerId, onBack, onOpenTeam }) {
                 }}
               />
               {urlInput && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 12 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, marginTop: 16 }}>
                   <img src={urlInput} alt="preview"
-                    style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover',
-                      border: `2px solid ${team.color}66` }}
+                    style={{ width: 160, height: 160, borderRadius: '50%', objectFit: 'cover',
+                      border: `3px solid ${team.color}`, boxShadow: `0 0 0 5px ${team.color}22, 0 8px 28px ${team.color}44` }}
                     onError={e => { e.target.style.opacity = 0 }}
                     onLoad={e => { e.target.style.opacity = 1 }} />
                   <span style={{
