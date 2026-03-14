@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Card, CardHeader, TeamChip, EmptyState, Spinner, TeamLogo } from '../components/UI'
+import { Card, CardHeader, EmptyState, Spinner, TeamLogo } from '../components/UI'
 import { getTeam, formatDate } from '../services/constants'
 
 const TABS = [
@@ -428,34 +428,110 @@ export default function Dashboard({ stats, matches, loading, onOpenTeam }) {
             {/* ── Recent Results ── */}
             {matches?.length > 0 && (
                 <Card style={{ marginTop: 20 }}>
-                    <CardHeader title="Recent Results" subtitle={`Last ${Math.min(5, matches.length)} matches`} />
-                    <div>
-                        {matches.slice(0, 5).map((m, i) => {
-                            const winnerTeam = getTeam(m.winner)
+                    <div style={{
+                        padding: '14px 20px 12px',
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                        borderBottom: '1px solid var(--border-subtle)',
+                    }}>
+                        <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--text-primary)' }}>Recent Results</div>
+                        <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>Last {Math.min(5, matches.length)} matches</div>
+                    </div>
+                    <div style={{ padding: '16px 20px', display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 18 }}>
+                        {matches.slice(0, 5).map((m) => {
+                            const wt      = m.winner ? getTeam(m.winner) : null
+                            const t1      = getTeam(m.team1)
+                            const t2      = getTeam(m.team2)
+                            const t1Won   = !m.noResult && m.winner === m.team1
+                            const t2Won   = !m.noResult && m.winner === m.team2
                             return (
-                                <div key={m.id} className="result-row-stack" style={{
-                                    padding: '14px 20px', borderTop: i > 0 ? '1px solid var(--border-subtle)' : 'none',
-                                    display: 'flex', alignItems: 'center', gap: 16, transition: 'background 0.15s', cursor: 'default' }}
-                                     onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
-                                     onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                                <div key={m.id} style={{
+                                    flexShrink: 0, width: 200,
+                                    background: 'var(--bg-subtle)',
+                                    border: '1px solid var(--border-subtle)',
+                                    borderRadius: 14, overflow: 'hidden',
+                                    display: 'flex', flexDirection: 'column',
+                                    transition: 'transform 0.18s, box-shadow 0.18s',
+                                }}
+                                    onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = wt ? `0 8px 24px ${wt.color}22` : '0 8px 20px rgba(0,0,0,0.1)' }}
+                                    onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none' }}
                                 >
-                                    <div className="result-meta-cell" style={{ fontSize: 11, color: 'var(--text-secondary)', minWidth: 54, textAlign: 'center', flexShrink: 0 }}>
-                                        {m.matchNo && <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: '#f97316' }}>M{m.matchNo}</div>}
-                                        <div>{formatDate(m.date)}</div>
+                                    {/* Top accent bar */}
+                                    <div style={{ height: 3, background: wt ? `linear-gradient(90deg, ${wt.color}, ${wt.color}44)` : 'var(--border-subtle)' }} />
+
+                                    {/* Match meta */}
+                                    <div style={{ padding: '8px 12px 6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        {m.matchNo
+                                            ? <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, color: '#f97316', letterSpacing: 1 }}>M{m.matchNo}</span>
+                                            : <span />
+                                        }
+                                        <span style={{ fontSize: 10, color: 'var(--text-secondary)' }}>{formatDate(m.date)}</span>
                                     </div>
-                                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-                                        <TeamChip teamId={m.team1} score={m.team1Score} wickets={m.team1Wickets} overs={m.team1Overs} won={m.winner === m.team1} />
-                                        <div style={{ padding: '3px 8px', borderRadius: 6, background: 'var(--bg-subtle)', border: '1px solid var(--border-subtle)',
-                                            color: 'var(--text-secondary)', fontWeight: 800, fontSize: 11 }}>VS</div>
-                                        <TeamChip teamId={m.team2} score={m.team2Score} wickets={m.team2Wickets} overs={m.team2Overs} won={m.winner === m.team2} />
-                                    </div>
-                                    <div className="result-outcome-cell" style={{ fontSize: 11, textAlign: 'right', minWidth: 100, flexShrink: 0 }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'flex-end' }}>
-                                            <div style={{ width: 3, height: 12, borderRadius: 2, background: winnerTeam.color }} />
-                                            <span style={{ fontWeight: 700, color: '#f97316' }}>{m.winner} won</span>
+
+                                    {/* Teams */}
+                                    <div style={{ padding: '6px 12px 10px', display: 'flex', alignItems: 'center', gap: 6, flex: 1 }}>
+                                        {/* Team 1 */}
+                                        <div style={{ flex: 1, textAlign: 'center', opacity: t1Won ? 1 : 0.45, transition: 'opacity 0.2s' }}>
+                                            <TeamLogo teamId={m.team1} size={38} />
+                                            <div style={{ fontWeight: 800, fontSize: 12, marginTop: 5, color: 'var(--text-primary)' }}>{m.team1}</div>
+                                            {m.team1Score != null && (
+                                                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, lineHeight: 1.1, color: t1Won ? t1.color : 'var(--text-muted)', marginTop: 1 }}>
+                                                    {m.team1Score}/{m.team1Wickets}
+                                                    <div style={{ fontSize: 11 }}>({m.team1Overs})</div>
+                                                </div>
+                                            )}
                                         </div>
-                                        {m.winMargin && <div style={{ color: 'var(--text-secondary)', marginTop: 2 }}>by {m.winMargin} {m.winType}</div>}
+
+                                        {/* VS divider */}
+                                        <div style={{ fontSize: 9, fontWeight: 800, color: 'var(--text-muted)', letterSpacing: 1, flexShrink: 0 }}>VS</div>
+
+                                        {/* Team 2 */}
+                                        <div style={{ flex: 1, textAlign: 'center', opacity: t2Won ? 1 : 0.45, transition: 'opacity 0.2s' }}>
+                                            <TeamLogo teamId={m.team2} size={38} />
+                                            <div style={{ fontWeight: 800, fontSize: 12, marginTop: 5, color: 'var(--text-primary)' }}>{m.team2}</div>
+                                            {m.team2Score != null && (
+                                                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, lineHeight: 1.1, color: t2Won ? t2.color : 'var(--text-muted)', marginTop: 1 }}>
+                                                    {m.team2Score}/{m.team2Wickets}
+                                                    <div style={{ fontSize: 11 }}>({m.team2Overs})</div>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
+
+                                    {/* Winner footer */}
+                                    <div style={{
+                                        background: wt ? `${wt.color}18` : 'var(--bg-hover)',
+                                        borderTop: `1px solid ${wt ? wt.color + '33' : 'var(--border-subtle)'}`,
+                                        padding: '7px 12px', textAlign: 'center',
+                                    }}>
+                                        {m.noResult ? (
+                                            <div style={{ fontSize: 11, color: 'var(--text-secondary)', fontWeight: 600 }}>No Result</div>
+                                        ) : (
+                                            <>
+                                                <div style={{ fontWeight: 800, fontSize: 12, color: wt?.color ?? '#f97316' }}>
+                                                    🏆 {m.winner} won
+                                                </div>
+                                                {m.winMargin && (
+                                                    <div style={{ fontSize: 10, color: 'var(--text-secondary)', marginTop: 1 }}>
+                                                        by {m.winMargin} {m.winType}
+                                                    </div>
+                                                )}
+                                            </>
+                                        )}
+                                    </div>
+
+                                    {/* MOM */}
+                                    {m.playerOfMatchName && (
+                                        <div style={{
+                                            padding: '5px 12px 8px', textAlign: 'center',
+                                            fontSize: 10, color: 'var(--text-secondary)',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3,
+                                        }}>
+                                            <span style={{ color: '#f59e0b' }}>⭐</span>
+                                            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                {m.playerOfMatchName}
+                                            </span>
+                                        </div>
+                                    )}
                                 </div>
                             )
                         })}
