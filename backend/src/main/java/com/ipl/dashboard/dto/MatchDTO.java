@@ -42,9 +42,14 @@ public class MatchDTO {
     private String winMargin;
     private String winType;
 
-    private String playerOfMatch;
-    private String topScorer;
+    private Long    playerOfMatchId;
+    private String  playerOfMatchName;
+
+    private Long    topScorerId;
+    private String  topScorerName;
     private Integer topScorerRuns;
-    private String topWicketTaker;
+
+    private Long    topWicketTakerId;
+    private String  topWicketTakerName;
     private Integer topWicketTakerWickets;
 }

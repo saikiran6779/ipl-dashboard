@@ -3,18 +3,23 @@ package com.ipl.dashboard.service;
 import com.ipl.dashboard.dto.MatchDTO;
 import com.ipl.dashboard.dto.StatsDTO;
 import com.ipl.dashboard.model.Match;
+import com.ipl.dashboard.model.Player;
 import com.ipl.dashboard.repository.MatchRepository;
+import com.ipl.dashboard.repository.PlayerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class MatchService {
 
-    private final MatchRepository matchRepository;
+    private final MatchRepository  matchRepository;
+    private final PlayerRepository playerRepository;
 
     private static final Map<String, String> TEAM_NAMES = Map.ofEntries(
         Map.entry("MI",   "Mumbai Indians"),
@@ -31,11 +36,13 @@ public class MatchService {
 
     // ── CRUD ──────────────────────────────────────────────────────────────────
 
+    @Transactional(readOnly = true)
     public List<MatchDTO> getAllMatches() {
         return matchRepository.findAllByOrderByDateDescMatchNoDesc()
                 .stream().map(this::toDTO).collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public MatchDTO getMatchById(Long id) {
         return matchRepository.findById(id)
                 .map(this::toDTO)
@@ -65,6 +72,7 @@ public class MatchService {
 
     // ── STATS ─────────────────────────────────────────────────────────────────
 
+    @Transactional(readOnly = true)
     public StatsDTO.Summary getStats() {
         List<Match> all = matchRepository.findAll();
 
@@ -144,12 +152,14 @@ public class MatchService {
     }
 
     private List<StatsDTO.BatterStat> computeTopBatters(List<Match> matches) {
-        Map<String, StatsDTO.BatterStat> map = new LinkedHashMap<>();
+        Map<Long, StatsDTO.BatterStat> map = new LinkedHashMap<>();
         matches.stream()
-               .filter(m -> m.getTopScorer() != null && !m.getTopScorer().isBlank())
+               .filter(m -> m.getTopScorer() != null)
                .forEach(m -> {
-                   map.computeIfAbsent(m.getTopScorer(), n -> StatsDTO.BatterStat.builder().name(n).build());
-                   StatsDTO.BatterStat s = map.get(m.getTopScorer());
+                   Player p = m.getTopScorer();
+                   map.computeIfAbsent(p.getId(), id -> StatsDTO.BatterStat.builder()
+                           .playerId(id).name(p.getName()).build());
+                   StatsDTO.BatterStat s = map.get(p.getId());
                    s.setTotalRuns(s.getTotalRuns() + safe(m.getTopScorerRuns()));
                    s.setInnings(s.getInnings() + 1);
                });
@@ -159,12 +169,14 @@ public class MatchService {
     }
 
     private List<StatsDTO.BowlerStat> computeTopBowlers(List<Match> matches) {
-        Map<String, StatsDTO.BowlerStat> map = new LinkedHashMap<>();
+        Map<Long, StatsDTO.BowlerStat> map = new LinkedHashMap<>();
         matches.stream()
-               .filter(m -> m.getTopWicketTaker() != null && !m.getTopWicketTaker().isBlank())
+               .filter(m -> m.getTopWicketTaker() != null)
                .forEach(m -> {
-                   map.computeIfAbsent(m.getTopWicketTaker(), n -> StatsDTO.BowlerStat.builder().name(n).build());
-                   StatsDTO.BowlerStat s = map.get(m.getTopWicketTaker());
+                   Player p = m.getTopWicketTaker();
+                   map.computeIfAbsent(p.getId(), id -> StatsDTO.BowlerStat.builder()
+                           .playerId(id).name(p.getName()).build());
+                   StatsDTO.BowlerStat s = map.get(p.getId());
                    s.setTotalWickets(s.getTotalWickets() + safe(m.getTopWicketTakerWickets()));
                    s.setInnings(s.getInnings() + 1);
                });
@@ -174,14 +186,21 @@ public class MatchService {
     }
 
     private List<StatsDTO.MomStat> computeMom(List<Match> matches) {
-        Map<String, Integer> map = new LinkedHashMap<>();
+        Map<Long, StatsDTO.MomStat> map = new LinkedHashMap<>();
         matches.stream()
-               .filter(m -> m.getPlayerOfMatch() != null && !m.getPlayerOfMatch().isBlank())
-               .forEach(m -> map.merge(m.getPlayerOfMatch(), 1, Integer::sum));
+               .filter(m -> m.getPlayerOfMatch() != null)
+               .forEach(m -> {
+                   Player p = m.getPlayerOfMatch();
+                   map.computeIfAbsent(p.getId(), id -> StatsDTO.MomStat.builder()
+                           .playerId(id).name(p.getName()).awards(0).build());
+                   StatsDTO.MomStat s = map.get(p.getId());
+                   s.setAwards(s.getAwards() + 1);
+               });
         return map.entrySet().stream()
-                .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
+                .sorted(Map.Entry.<Long, StatsDTO.MomStat>comparingByValue(
+                        Comparator.comparingInt(StatsDTO.MomStat::getAwards)).reversed())
                 .limit(10)
-                .map(e -> StatsDTO.MomStat.builder().name(e.getKey()).awards(e.getValue()).build())
+                .map(Map.Entry::getValue)
                 .collect(Collectors.toList());
     }
 
@@ -204,13 +223,22 @@ public class MatchService {
                 .team2Score(m.getTeam2Score()).team2Wickets(m.getTeam2Wickets()).team2Overs(m.getTeam2Overs())
                 .tossWinner(m.getTossWinner()).tossDecision(m.getTossDecision())
                 .noResult(m.isNoResult()).winner(m.getWinner()).winMargin(m.getWinMargin()).winType(m.getWinType())
-                .playerOfMatch(m.getPlayerOfMatch())
-                .topScorer(m.getTopScorer()).topScorerRuns(m.getTopScorerRuns())
-                .topWicketTaker(m.getTopWicketTaker()).topWicketTakerWickets(m.getTopWicketTakerWickets())
+                .playerOfMatchId(m.getPlayerOfMatch() != null ? m.getPlayerOfMatch().getId() : null)
+                .playerOfMatchName(m.getPlayerOfMatch() != null ? m.getPlayerOfMatch().getName() : null)
+                .topScorerId(m.getTopScorer() != null ? m.getTopScorer().getId() : null)
+                .topScorerName(m.getTopScorer() != null ? m.getTopScorer().getName() : null)
+                .topScorerRuns(m.getTopScorerRuns())
+                .topWicketTakerId(m.getTopWicketTaker() != null ? m.getTopWicketTaker().getId() : null)
+                .topWicketTakerName(m.getTopWicketTaker() != null ? m.getTopWicketTaker().getName() : null)
+                .topWicketTakerWickets(m.getTopWicketTakerWickets())
                 .build();
     }
 
     private Match toEntity(MatchDTO dto) {
+        Player mom          = resolvePlayer(dto.getPlayerOfMatchId());
+        Player topScorer    = resolvePlayer(dto.getTopScorerId());
+        Player topWktTaker  = resolvePlayer(dto.getTopWicketTakerId());
+
         return Match.builder()
                 .matchNo(dto.getMatchNo()).date(dto.getDate()).venue(dto.getVenue())
                 .team1(dto.getTeam1()).team2(dto.getTeam2())
@@ -218,9 +246,14 @@ public class MatchService {
                 .team2Score(dto.getTeam2Score()).team2Wickets(dto.getTeam2Wickets()).team2Overs(dto.getTeam2Overs())
                 .tossWinner(dto.getTossWinner()).tossDecision(dto.getTossDecision())
                 .noResult(dto.isNoResult()).winner(dto.getWinner()).winMargin(dto.getWinMargin()).winType(dto.getWinType())
-                .playerOfMatch(dto.getPlayerOfMatch())
-                .topScorer(dto.getTopScorer()).topScorerRuns(dto.getTopScorerRuns())
-                .topWicketTaker(dto.getTopWicketTaker()).topWicketTakerWickets(dto.getTopWicketTakerWickets())
+                .playerOfMatch(mom)
+                .topScorer(topScorer).topScorerRuns(dto.getTopScorerRuns())
+                .topWicketTaker(topWktTaker).topWicketTakerWickets(dto.getTopWicketTakerWickets())
                 .build();
+    }
+
+    private Player resolvePlayer(Long id) {
+        if (id == null) return null;
+        return playerRepository.findById(id).orElse(null);
     }
 }

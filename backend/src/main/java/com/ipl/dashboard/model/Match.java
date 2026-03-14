@@ -52,10 +52,20 @@ public class Match {
     private String winMargin;
     private String winType; // "runs" or "wickets"
 
-    // Player highlights
-    private String playerOfMatch;
-    private String topScorer;
+    // Player highlights (FK to players table)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "player_of_match_id")
+    private Player playerOfMatch;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "top_scorer_id")
+    private Player topScorer;
+
     private Integer topScorerRuns;
-    private String topWicketTaker;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "top_wicket_taker_id")
+    private Player topWicketTaker;
+
     private Integer topWicketTakerWickets;
 }
