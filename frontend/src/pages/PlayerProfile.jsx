@@ -245,7 +245,7 @@ function MatchLog({ log }) {
 }
 
 // ── Main Profile Page ─────────────────────────────────────────────────────
-export default function PlayerProfile({ playerId, onBack }) {
+export default function PlayerProfile({ playerId, onBack, onOpenTeam }) {
     const [profile, setProfile]       = useState(null)
     const [loading, setLoading]       = useState(true)
     const [editingUrl, setEditingUrl] = useState(false)
@@ -358,8 +358,15 @@ export default function PlayerProfile({ playerId, onBack }) {
                             {profile.name}
                         </div>
                         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              <span style={{ fontSize: 11, fontWeight: 700, color: team.color,
-                  background: team.color + '22', borderRadius: 6, padding: '3px 10px' }}>
+              <span
+                onClick={() => onOpenTeam?.(profile.teamId)}
+                title={`View ${team.name}`}
+                style={{ fontSize: 11, fontWeight: 700, color: team.color,
+                    background: team.color + '22', borderRadius: 6, padding: '3px 10px',
+                    cursor: 'pointer', transition: 'background 0.15s' }}
+                onMouseEnter={e => e.currentTarget.style.background = team.color + '44'}
+                onMouseLeave={e => e.currentTarget.style.background = team.color + '22'}
+              >
                 {profile.teamId}
               </span>
                             <span style={{ fontSize: 11, fontWeight: 700,

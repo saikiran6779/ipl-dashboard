@@ -182,10 +182,10 @@ export default function App() {
           <Venues matches={matches} />
         )}
         {view === 'players' && (
-          <Players onOpenProfile={handleOpenProfile} />
+          <Players onOpenProfile={handleOpenProfile} onOpenTeam={handleOpenTeam} />
         )}
         {view === 'profile' && profileId && (
-          <PlayerProfile playerId={profileId} onBack={handleBackFromProfile} />
+          <PlayerProfile playerId={profileId} onBack={handleBackFromProfile} onOpenTeam={handleOpenTeam} />
         )}
       </main>
     </div>

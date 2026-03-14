@@ -91,7 +91,7 @@ function AddPlayerModal({ onClose, onSaved }) {
 }
 
 // ── Player Card ───────────────────────────────────────────────────────────
-function PlayerCard({ player, onOpenProfile, onDelete, canDelete }) {
+function PlayerCard({ player, onOpenProfile, onOpenTeam, onDelete, canDelete }) {
     const team = getTeam(player.teamId)
     const [hover, setHover] = useState(false)
 
@@ -138,8 +138,15 @@ function PlayerCard({ player, onOpenProfile, onDelete, canDelete }) {
                         {player.name}
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <div style={{ fontSize: 10, fontWeight: 700, color: team.color,
-                            background: team.color + '22', borderRadius: 4, padding: '2px 6px' }}>
+                        <div
+                            onClick={e => { e.stopPropagation(); onOpenTeam(player.teamId) }}
+                            title={`View ${team.name}`}
+                            style={{ fontSize: 10, fontWeight: 700, color: team.color,
+                                background: team.color + '22', borderRadius: 4, padding: '2px 6px',
+                                cursor: 'pointer', transition: 'background 0.15s' }}
+                            onMouseEnter={e => e.currentTarget.style.background = team.color + '44'}
+                            onMouseLeave={e => e.currentTarget.style.background = team.color + '22'}
+                        >
                             {player.teamId}
                         </div>
                         <div style={{ fontSize: 10, fontWeight: 600,
@@ -168,7 +175,7 @@ function PlayerCard({ player, onOpenProfile, onDelete, canDelete }) {
 }
 
 // ── Main Players Page ─────────────────────────────────────────────────────
-export default function Players({ onOpenProfile }) {
+export default function Players({ onOpenProfile, onOpenTeam }) {
     const { isAdmin } = useAuth()
     const [players,     setPlayers]     = useState([])
     const [loading,     setLoading]     = useState(true)
@@ -286,6 +293,7 @@ export default function Players({ onOpenProfile }) {
                                     key={p.id}
                                     player={p}
                                     onOpenProfile={onOpenProfile}
+                                    onOpenTeam={onOpenTeam}
                                     onDelete={handleDelete}
                                     canDelete={isAdmin}
                                 />
