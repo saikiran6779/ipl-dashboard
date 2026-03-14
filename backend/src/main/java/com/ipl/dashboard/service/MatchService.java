@@ -118,7 +118,10 @@ public class MatchService {
             s2.setRunsFor(s2.getRunsFor() + r2);       s2.setBallsFor(s2.getBallsFor() + b2);
             s2.setRunsAgainst(s2.getRunsAgainst() + r1); s2.setBallsAgainst(s2.getBallsAgainst() + b1);
 
-            if (t1.equals(m.getWinner())) {
+            if (m.isNoResult()) {
+                s1.setPoints(s1.getPoints() + 1);
+                s2.setPoints(s2.getPoints() + 1);
+            } else if (t1.equals(m.getWinner())) {
                 s1.setWon(s1.getWon() + 1); s1.setPoints(s1.getPoints() + 2);
                 s2.setLost(s2.getLost() + 1);
             } else if (t2.equals(m.getWinner())) {
@@ -200,7 +203,7 @@ public class MatchService {
                 .team1Score(m.getTeam1Score()).team1Wickets(m.getTeam1Wickets()).team1Overs(m.getTeam1Overs())
                 .team2Score(m.getTeam2Score()).team2Wickets(m.getTeam2Wickets()).team2Overs(m.getTeam2Overs())
                 .tossWinner(m.getTossWinner()).tossDecision(m.getTossDecision())
-                .winner(m.getWinner()).winMargin(m.getWinMargin()).winType(m.getWinType())
+                .noResult(m.isNoResult()).winner(m.getWinner()).winMargin(m.getWinMargin()).winType(m.getWinType())
                 .playerOfMatch(m.getPlayerOfMatch())
                 .topScorer(m.getTopScorer()).topScorerRuns(m.getTopScorerRuns())
                 .topWicketTaker(m.getTopWicketTaker()).topWicketTakerWickets(m.getTopWicketTakerWickets())
@@ -214,7 +217,7 @@ public class MatchService {
                 .team1Score(dto.getTeam1Score()).team1Wickets(dto.getTeam1Wickets()).team1Overs(dto.getTeam1Overs())
                 .team2Score(dto.getTeam2Score()).team2Wickets(dto.getTeam2Wickets()).team2Overs(dto.getTeam2Overs())
                 .tossWinner(dto.getTossWinner()).tossDecision(dto.getTossDecision())
-                .winner(dto.getWinner()).winMargin(dto.getWinMargin()).winType(dto.getWinType())
+                .noResult(dto.isNoResult()).winner(dto.getWinner()).winMargin(dto.getWinMargin()).winType(dto.getWinType())
                 .playerOfMatch(dto.getPlayerOfMatch())
                 .topScorer(dto.getTopScorer()).topScorerRuns(dto.getTopScorerRuns())
                 .topWicketTaker(dto.getTopWicketTaker()).topWicketTakerWickets(dto.getTopWicketTakerWickets())

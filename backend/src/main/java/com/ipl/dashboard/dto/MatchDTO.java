@@ -37,9 +37,8 @@ public class MatchDTO {
     private String tossWinner;
     private String tossDecision;
 
-    @NotBlank(message = "Winner is required")
+    private boolean noResult;
     private String winner;
-
     private String winMargin;
     private String winType;
 
