@@ -636,6 +636,49 @@ export default function ScorecardImportModal({
                 </span>
               </div>
 
+              {/* ── Fielder-only resolution (names in dismissals but not in any batting/bowling row) ── */}
+              {(() => {
+                const inTableNames = new Set()
+                parsedData.innings.forEach(inn => {
+                  inn.battingRows.forEach(r => inTableNames.add(r.cricsheetName))
+                  inn.bowlingRows.forEach(r => inTableNames.add(r.cricsheetName))
+                })
+                const fielderNames = Object.keys(resolutions).filter(n => !inTableNames.has(n))
+                if (fielderNames.length === 0) return null
+                return (
+                  <div style={{
+                    marginBottom: 20, padding: '12px 14px',
+                    background: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.2)',
+                    borderRadius: 8,
+                  }}>
+                    <div style={{
+                      fontSize: 10, fontWeight: 700, color: '#ef4444',
+                      textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 10,
+                    }}>
+                      🧤 Fielders (appear only in dismissal data)
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      {fielderNames.map(name => {
+                        const res = resolutions[name] || {}
+                        return (
+                          <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                            <span style={{ fontSize: 12, color: 'var(--text-secondary)', minWidth: 160 }}>{name}</span>
+                            <PlayerResolver
+                              cricsheetName={name}
+                              resolvedId={res.playerId ?? null}
+                              teamPlayers={allPlayers}
+                              onChange={id => resolvePlayer(name, id)}
+                              skipped={res.skipped}
+                              onSkip={() => skipPlayer(name)}
+                            />
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )
+              })()}
+
               {parsedData.innings.map((inn, idx) => (
                 <div key={idx} style={{ marginBottom: 28 }}>
                   {/* Innings heading */}
