@@ -36,6 +36,31 @@ jobs:
           target: "/home/ec2-user/"
           strip_components: 2
 
+      - name: Write environment secrets to EC2
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          DB_URL:       ${{ secrets.DB_URL }}
+          DB_USERNAME:  ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD:  ${{ secrets.DB_PASSWORD }}
+          JWT_SECRET:   ${{ secrets.JWT_SECRET }}
+          MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
+          MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          envs: DB_URL,DB_USERNAME,DB_PASSWORD,JWT_SECRET,MAIL_USERNAME,MAIL_PASSWORD
+          script: |
+            cat > /home/ec2-user/ipl.env <<EOF
+            DB_URL=$DB_URL
+            DB_USERNAME=$DB_USERNAME
+            DB_PASSWORD=$DB_PASSWORD
+            JWT_SECRET=$JWT_SECRET
+            MAIL_USERNAME=$MAIL_USERNAME
+            MAIL_PASSWORD=$MAIL_PASSWORD
+            EOF
+            chmod 600 /home/ec2-user/ipl.env
+
       - name: Restart service
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -45,5 +70,20 @@ jobs:
           script: |
             mv /home/ec2-user/*.jar /home/ec2-user/app.jar
             sudo systemctl restart ipl
-            sleep 15
-            sudo systemctl status ipl
+            sleep 20
+            sudo systemctl is-active --quiet ipl || (sudo journalctl -u ipl -n 50 && exit 1)
+
+      - name: Verify deployed commit matches HEAD
+        run: |
+          sleep 5
+          EXPECTED=$(git rev-parse --short HEAD)
+          DEPLOYED=$(curl -sf http://${{ secrets.EC2_HOST }}:8080/actuator/info \
+            | python3 -c "import sys,json; print(json.load(sys.stdin)['git']['commit']['id']['abbrev'])")
+          echo "Expected : $EXPECTED"
+          echo "Deployed : $DEPLOYED"
+          if [ "$DEPLOYED" = "$EXPECTED" ]; then
+            echo "Deployment verified — correct commit is live."
+          else
+            echo "ERROR: deployed commit does not match HEAD!"
+            exit 1
+          fi
