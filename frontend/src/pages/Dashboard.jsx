@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, Fragment } from 'react'
 import { Card, CardHeader, EmptyState, Spinner, TeamLogo } from '../components/UI'
 import { getTeam, formatDate } from '../services/constants'
 import { Trophy, Flame, Zap, Star, Medal, MapPin, Activity, Shield, TrendingUp } from 'lucide-react'
@@ -78,6 +78,14 @@ function SummaryCard({ label, value, Icon, color, delay }) {
         background: `linear-gradient(90deg, ${color}66, ${color}00)` }} />
     </div>
   )
+}
+
+// ── Form guide (last N results for a team from matches list) ──────────────
+function computeForm(matches, teamId, count = 5) {
+  return (matches || [])
+    .filter(m => (m.team1 === teamId || m.team2 === teamId) && (m.winner || m.noResult))
+    .slice(-count)
+    .map(m => m.noResult ? 'NR' : m.winner === teamId ? 'W' : 'L')
 }
 
 // ── NRR display ───────────────────────────────────────────────────────────
@@ -285,127 +293,225 @@ export default function Dashboard({ stats, matches, loading, onOpenTeam }) {
       {/* Standings */}
       {tab === 'standings' && (
         <Card className="fade-up">
-          <CardHeader title="Points Table" subtitle="IPL 2025 Season" />
+          {/* Header */}
+          <div style={{
+            padding: '16px 20px 14px',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            borderBottom: '1px solid var(--border-subtle)',
+          }}>
+            <div>
+              <div style={{ fontFamily: 'var(--font-heading)', fontSize: 'var(--text-md)', color: 'var(--text-primary)', letterSpacing: 1.5 }}>Points Table</div>
+              <div style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', marginTop: 2 }}>IPL 2025 Season</div>
+            </div>
+            <Trophy size={24} strokeWidth={1.5} color="#f97316" />
+          </div>
+
           {!stats?.standings?.length
             ? <EmptyState text="No matches yet" sub="Add matches to see standings" />
             : <>
-              <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                  <thead>
-                    <tr>
-                      <TH align="left"  width={48}>#</TH>
-                      <TH align="left"         >Team</TH>
-                      <TH width={48}>P</TH>
-                      <TH width={48}>W</TH>
-                      <TH width={48}>L</TH>
-                      <TH width={48}>NR</TH>
-                      <TH width={60}>Pts</TH>
-                      <TH width={120}>NRR</TH>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {stats.standings.map((row, i) => {
-                      const team = getTeam(row.teamId)
-                      const isPlayoff = i < 4
-                      return (
-                        <tr key={row.teamId}
-                          className={isPlayoff ? 'standings-playoff' : ''}
-                          style={{
-                            borderTop: '1px solid var(--border-subtle)',
-                            transition: 'background 0.15s', cursor: 'pointer',
-                          }}
-                          onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
-                          onMouseLeave={e => e.currentTarget.style.background = isPlayoff ? 'rgba(249,115,22,0.04)' : 'transparent'}
-                          onClick={() => onOpenTeam && onOpenTeam(row.teamId)}
-                          title={`View ${row.teamName} details`}
-                        >
-                          <td style={{ padding: '10px 12px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                              {isPlayoff && <div style={{ width: 3, height: 16, borderRadius: 2, background: '#f97316', flexShrink: 0 }} />}
-                              <span style={{
-                                color: isPlayoff ? '#f97316' : 'var(--text-secondary)',
-                                fontWeight: 700,
-                                fontFamily: 'var(--font-heading)',
-                                fontSize: 'var(--text-xl)',
-                              }}>
-                                {i + 1}
-                              </span>
-                            </div>
-                          </td>
-                          <td style={{ padding: '10px 12px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                              <TeamLogo teamId={row.teamId} size={30} />
-                              <div>
-                                <div style={{
-                                  fontWeight: 700,
-                                  fontFamily: 'var(--font-heading)',
-                                  fontSize: 'var(--text-base)',
-                                  color: 'var(--text-primary)',
-                                }}>{row.teamId}</div>
-                                <div style={{
-                                  fontFamily: 'var(--font-body)',
-                                  fontSize: 'var(--text-sm)', color: 'var(--text-secondary)',
-                                }}>{row.teamName}</div>
-                              </div>
-                            </div>
-                          </td>
-                          <td style={{ padding: '10px 12px', textAlign: 'center', color: 'var(--text-secondary)', fontWeight: 600 }}>{row.played}</td>
-                          <td style={{ padding: '10px 12px', textAlign: 'center' }}>
-                            <span style={{
-                              color: '#22c55e', fontWeight: 700,
-                              fontFamily: 'var(--font-heading)',
-                              fontSize: 'var(--text-xl)',
-                            }}>{row.won}</span>
-                          </td>
-                          <td style={{ padding: '10px 12px', textAlign: 'center' }}>
-                            <span style={{
-                              color: '#ef4444', fontWeight: 700,
-                              fontFamily: 'var(--font-heading)',
-                              fontSize: 'var(--text-xl)',
-                            }}>{row.lost}</span>
-                          </td>
-                          <td style={{ padding: '10px 12px', textAlign: 'center' }}>
-                            <span style={{
-                              color: 'var(--text-secondary)',
-                              fontFamily: 'var(--font-heading)',
-                              fontSize: 'var(--text-xl)',
-                            }}>{row.nr ?? 0}</span>
-                          </td>
-                          <td style={{ padding: '10px 12px', textAlign: 'center' }}>
-                            <span style={{
-                              background: isPlayoff ? 'rgba(249,115,22,0.15)' : 'var(--bg-subtle)',
-                              color: isPlayoff ? '#f97316' : 'var(--text-primary)',
-                              fontWeight: 800, padding: '3px 10px', borderRadius: 20,
-                              fontFamily: 'var(--font-heading)',
-                              fontSize: 'var(--text-xl)',
-                              letterSpacing: 1,
-                              border: isPlayoff ? '1px solid rgba(249,115,22,0.3)' : '1px solid var(--border-subtle)',
-                              display: 'inline-block',
-                            }}>{row.points}</span>
-                          </td>
-                          <td style={{ padding: '10px 12px', textAlign: 'center' }}>
-                            <div style={{ display: 'flex', justifyContent: 'center' }}>
-                              <NRRCell nrr={row.nrr} />
-                            </div>
-                          </td>
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
+              {/* Column headers — borderLeft: 4px transparent aligns with data rows */}
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: '48px 1fr 36px 36px 36px 36px 62px 100px',
+                alignItems: 'center',
+                padding: '7px 16px 7px 12px',
+                borderLeft: '4px solid transparent',
+                borderBottom: '2px solid var(--border-subtle)',
+                background: 'var(--bg-subtle)',
+              }}>
+                {[
+                  { label: '#',    align: 'center' },
+                  { label: 'Team', align: 'left'   },
+                  { label: 'P',    align: 'center' },
+                  { label: 'W',    align: 'center' },
+                  { label: 'L',    align: 'center' },
+                  { label: 'NR',   align: 'center' },
+                  { label: 'Pts',  align: 'center' },
+                  { label: 'NRR',  align: 'center' },
+                ].map(({ label, align }) => (
+                  <div key={label} style={{
+                    fontFamily: 'var(--font-body)', fontSize: 11, fontWeight: 700,
+                    textTransform: 'uppercase', letterSpacing: 1.5,
+                    color: 'var(--text-muted)', textAlign: align,
+                  }}>{label}</div>
+                ))}
               </div>
-              <div style={{ padding: '10px 16px', borderTop: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+
+              {/* Data rows */}
+              {stats.standings.map((row, i) => {
+                const team     = getTeam(row.teamId)
+                const isPO     = i < 4
+                const form     = computeForm(matches, row.teamId)
+                const winPct   = row.played > 0 ? row.won / row.played : 0
+                const nrrVal   = row.nrr ?? 0
+                const nrrColor = nrrVal >= 0 ? '#22c55e' : '#ef4444'
+                const nrrSign  = nrrVal >= 0 ? '+' : ''
+                const nrrClamp = Math.max(-2, Math.min(2, nrrVal))
+                const nrrPct   = ((nrrClamp + 2) / 4) * 100
+
+                return (
+                  <Fragment key={row.teamId}>
+                    {/* Playoff cutoff divider between rank 4 and 5 */}
+                    {i === 4 && (
+                      <div style={{
+                        display: 'flex', alignItems: 'center', gap: 12,
+                        padding: '5px 20px',
+                        borderTop: '1px solid var(--border-subtle)',
+                        borderLeft: '4px solid transparent',
+                      }}>
+                        <div style={{ flex: 1, borderTop: '1px dashed rgba(249,115,22,0.45)' }} />
+                        <span style={{
+                          fontFamily: 'var(--font-body)', fontSize: 10, fontWeight: 700,
+                          color: 'rgba(249,115,22,0.75)', letterSpacing: 1.5,
+                          textTransform: 'uppercase', flexShrink: 0,
+                        }}>Playoff Cutoff</span>
+                        <div style={{ flex: 1, borderTop: '1px dashed rgba(249,115,22,0.45)' }} />
+                      </div>
+                    )}
+
+                    <div
+                      onClick={() => onOpenTeam && onOpenTeam(row.teamId)}
+                      title={`View ${row.teamName}`}
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: '48px 1fr 36px 36px 36px 36px 62px 100px',
+                        alignItems: 'center',
+                        padding: '11px 16px 11px 12px',
+                        borderTop: i === 0 ? 'none' : '1px solid var(--border-subtle)',
+                        borderLeft: `4px solid ${isPO ? team.color : 'transparent'}`,
+                        background: isPO ? `${team.color}05` : 'transparent',
+                        cursor: 'pointer',
+                        transition: 'background 0.15s, border-left-color 0.2s',
+                        animation: `fadeUp 0.35s ease ${i * 0.045}s both`,
+                      }}
+                      onMouseEnter={e => {
+                        e.currentTarget.style.background = isPO ? `${team.color}14` : 'var(--bg-hover)'
+                        if (!isPO) e.currentTarget.style.borderLeftColor = `${team.color}90`
+                      }}
+                      onMouseLeave={e => {
+                        e.currentTarget.style.background = isPO ? `${team.color}05` : 'transparent'
+                        if (!isPO) e.currentTarget.style.borderLeftColor = 'transparent'
+                      }}
+                    >
+                      {/* Rank */}
+                      <div style={{ textAlign: 'center' }}>
+                        <span style={{
+                          fontFamily: 'var(--font-heading)', fontSize: 'var(--text-xl)',
+                          color: isPO ? team.color : 'var(--text-secondary)',
+                          fontWeight: 700, lineHeight: 1,
+                        }}>{i + 1}</span>
+                      </div>
+
+                      {/* Team: logo + name + form dots + win bar */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0, paddingRight: 8 }}>
+                        <TeamLogo teamId={row.teamId} size={32} />
+                        <div style={{ minWidth: 0, flex: 1 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <span style={{
+                              fontFamily: 'var(--font-heading)', fontSize: 'var(--text-base)',
+                              color: 'var(--text-primary)', fontWeight: 700, lineHeight: 1,
+                            }}>{row.teamId}</span>
+                            {form.length > 0 && (
+                              <div style={{ display: 'flex', gap: 3 }}>
+                                {form.map((r, j) => (
+                                  <div key={j} title={r} style={{
+                                    width: 7, height: 7, borderRadius: '50%',
+                                    background: r === 'W' ? '#22c55e' : r === 'L' ? '#ef4444' : '#6b7280',
+                                  }} />
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                          <div style={{
+                            fontFamily: 'var(--font-body)', fontSize: 11,
+                            color: 'var(--text-muted)', marginTop: 3,
+                            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                          }}>{row.teamName}</div>
+                          {row.played > 0 && (
+                            <div style={{ width: '80%', maxWidth: 160, height: 2, background: 'var(--bg-subtle)', borderRadius: 2, marginTop: 5, overflow: 'hidden' }}>
+                              <div style={{
+                                width: `${winPct * 100}%`, height: '100%', borderRadius: 2,
+                                background: `linear-gradient(90deg, ${team.color}, ${team.color}66)`,
+                                transition: 'width 1.2s cubic-bezier(0.34,1.56,0.64,1)',
+                              }} />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* P */}
+                      <div style={{ textAlign: 'center' }}>
+                        <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', fontWeight: 600 }}>{row.played}</span>
+                      </div>
+                      {/* W */}
+                      <div style={{ textAlign: 'center' }}>
+                        <span style={{ fontFamily: 'var(--font-heading)', fontSize: 'var(--text-md)', color: '#22c55e', lineHeight: 1 }}>{row.won}</span>
+                      </div>
+                      {/* L */}
+                      <div style={{ textAlign: 'center' }}>
+                        <span style={{ fontFamily: 'var(--font-heading)', fontSize: 'var(--text-md)', color: '#ef4444', lineHeight: 1 }}>{row.lost}</span>
+                      </div>
+                      {/* NR */}
+                      <div style={{ textAlign: 'center' }}>
+                        <span style={{ fontFamily: 'var(--font-heading)', fontSize: 'var(--text-md)', color: 'var(--text-muted)', lineHeight: 1 }}>{row.nr ?? 0}</span>
+                      </div>
+
+                      {/* PTS */}
+                      <div style={{ textAlign: 'center' }}>
+                        <span style={{
+                          fontFamily: 'var(--font-heading)', fontSize: 'var(--text-xl)',
+                          color: isPO ? team.color : 'var(--text-primary)',
+                          background: isPO ? `${team.color}18` : 'var(--bg-subtle)',
+                          border: `1px solid ${isPO ? team.color + '44' : 'var(--border-subtle)'}`,
+                          borderRadius: 20, padding: '2px 12px',
+                          letterSpacing: 1, display: 'inline-block', lineHeight: 1.6,
+                        }}>{row.points}</span>
+                      </div>
+
+                      {/* NRR */}
+                      <div style={{ textAlign: 'center', paddingRight: 8 }}>
+                        <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                          <span style={{
+                            fontFamily: 'var(--font-heading)', fontSize: 'var(--text-sm)',
+                            color: nrrColor, letterSpacing: 0.5,
+                          }}>{nrrSign}{nrrVal.toFixed(3)}</span>
+                          <div style={{ width: 60, height: 3, background: 'var(--bg-subtle)', borderRadius: 3, overflow: 'hidden', position: 'relative' }}>
+                            <div style={{ position: 'absolute', left: '50%', top: 0, bottom: 0, width: 1, background: 'var(--border-subtle)' }} />
+                            <div style={{
+                              position: 'absolute',
+                              left: nrrVal >= 0 ? '50%' : `${nrrPct}%`,
+                              width: nrrVal >= 0 ? `${nrrPct - 50}%` : `${50 - nrrPct}%`,
+                              height: '100%', background: nrrColor,
+                              transition: 'width 1s ease',
+                            }} />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </Fragment>
+                )
+              })}
+
+              {/* Footer */}
+              <div style={{
+                padding: '10px 16px 10px 20px', borderTop: '1px solid var(--border-subtle)',
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                gap: 8, flexWrap: 'wrap',
+              }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <div style={{ width: 3, height: 14, borderRadius: 2, background: '#f97316' }} />
-                  <span style={{
-                    fontFamily: 'var(--font-body)',
-                    fontSize: 'var(--text-sm)', color: 'var(--text-secondary)',
-                  }}>Top 4 advance to playoffs</span>
+                  <div style={{ width: 4, height: 16, borderRadius: 2, background: 'linear-gradient(180deg,#f97316,#dc2626)' }} />
+                  <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>Top 4 advance to playoffs</span>
                 </div>
-                <span style={{
-                  fontFamily: 'var(--font-body)',
-                  fontSize: 'var(--text-sm)', color: 'var(--text-muted)',
-                }}>Click a row to view team details</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#22c55e' }} />
+                    <span style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>W</span>
+                    <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#ef4444', marginLeft: 5 }} />
+                    <span style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>L</span>
+                    <span style={{ fontFamily: 'var(--font-body)', fontSize: 11, color: 'var(--text-muted)', marginLeft: 3 }}>(recent form)</span>
+                  </div>
+                  <span style={{ fontFamily: 'var(--font-body)', fontSize: 'var(--text-sm)', color: 'var(--text-muted)' }}>· Click for team details</span>
+                </div>
               </div>
             </>
           }
