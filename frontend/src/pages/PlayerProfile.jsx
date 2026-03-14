@@ -11,6 +11,29 @@ const ROLE_LABELS = { BAT: 'Batter', BOWL: 'Bowler', ALL: 'All-rounder', WK: 'Wi
 const ROLE_COLORS = { BAT: '#f97316', BOWL: '#8b5cf6', ALL: '#22c55e', WK: '#3b82f6' }
 const ROLE_ICON_COMPONENTS = { BAT: GiCricketBat, BOWL: GiTennisBall, ALL: GiCricket, WK: GiGloves }
 
+const NATIONALITY_FLAGS = {
+    'Indian': '🇮🇳', 'Australian': '🇦🇺', 'English': '🏴󠁧󠁢󠁥󠁮󠁧󠁿',
+    'South African': '🇿🇦', 'West Indian': '🏏', 'New Zealander': '🇳🇿',
+    'Sri Lankan': '🇱🇰', 'Afghan': '🇦🇫', 'Pakistani': '🇵🇰',
+    'Bangladeshi': '🇧🇩', 'Singaporean': '🇸🇬', 'Zimbabwean': '🇿🇼',
+}
+
+function getAge(dob) {
+    if (!dob) return null
+    const today = new Date()
+    const birth = new Date(dob)
+    let age = today.getFullYear() - birth.getFullYear()
+    const m = today.getMonth() - birth.getMonth()
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--
+    return age
+}
+
+function formatDob(dob) {
+    if (!dob) return null
+    const d = new Date(dob)
+    return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+}
+
 // ── Computed insights from matchLog ───────────────────────────────────────
 function computeInsights(profile) {
     const log        = profile.matchLog || []
@@ -528,6 +551,58 @@ export default function PlayerProfile({ playerId, onBack, onOpenTeam }) {
                                 {profile.matches} match{profile.matches !== 1 ? 'es' : ''}
                             </span>
                         </div>
+
+                        {/* Bio strip */}
+                        {(profile.nationality || profile.dateOfBirth || profile.battingStyle || profile.bowlingStyle) && (
+                            <div style={{
+                                display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center',
+                                marginTop: 12, animation: 'fadeUp 0.4s ease 0.2s both',
+                            }}>
+                                {profile.nationality && (
+                                    <span style={{
+                                        fontSize: 12, color: 'var(--text-secondary)',
+                                        display: 'inline-flex', alignItems: 'center', gap: 5,
+                                    }}>
+                                        <span style={{ fontSize: 16 }}>{NATIONALITY_FLAGS[profile.nationality] || '🌐'}</span>
+                                        {profile.nationality}
+                                    </span>
+                                )}
+                                {profile.dateOfBirth && (
+                                    <span style={{
+                                        fontSize: 12, color: 'var(--text-secondary)',
+                                        display: 'inline-flex', alignItems: 'center', gap: 5,
+                                    }}>
+                                        <span>🎂</span>
+                                        {formatDob(profile.dateOfBirth)}
+                                        <span style={{
+                                            fontSize: 10, background: team.color + '22',
+                                            color: team.color, borderRadius: 8, padding: '1px 7px',
+                                            fontWeight: 700,
+                                        }}>age {getAge(profile.dateOfBirth)}</span>
+                                    </span>
+                                )}
+                                {profile.battingStyle && (
+                                    <span style={{
+                                        fontSize: 11, color: 'var(--text-secondary)',
+                                        background: 'rgba(249,115,22,0.08)', borderRadius: 8,
+                                        padding: '2px 10px', border: '1px solid rgba(249,115,22,0.2)',
+                                        display: 'inline-flex', alignItems: 'center', gap: 4,
+                                    }}>
+                                        🏏 {profile.battingStyle}
+                                    </span>
+                                )}
+                                {profile.bowlingStyle && (
+                                    <span style={{
+                                        fontSize: 11, color: 'var(--text-secondary)',
+                                        background: 'rgba(139,92,246,0.08)', borderRadius: 8,
+                                        padding: '2px 10px', border: '1px solid rgba(139,92,246,0.2)',
+                                        display: 'inline-flex', alignItems: 'center', gap: 4,
+                                    }}>
+                                        ⚡ {profile.bowlingStyle}
+                                    </span>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

@@ -43,6 +43,10 @@ public class PlayerService {
                 .teamId(req.getTeamId())
                 .role(req.getRole())
                 .profilePictureUrl(req.getProfilePictureUrl())
+                .dateOfBirth(req.getDateOfBirth())
+                .nationality(req.getNationality())
+                .battingStyle(req.getBattingStyle())
+                .bowlingStyle(req.getBowlingStyle())
                 .build());
         return toSummary(saved);
     }
@@ -54,6 +58,10 @@ public class PlayerService {
         p.setTeamId(req.getTeamId());
         p.setRole(req.getRole());
         p.setProfilePictureUrl(req.getProfilePictureUrl());
+        p.setDateOfBirth(req.getDateOfBirth());
+        p.setNationality(req.getNationality());
+        p.setBattingStyle(req.getBattingStyle());
+        p.setBowlingStyle(req.getBowlingStyle());
         return toSummary(playerRepo.save(p));
     }
 
@@ -78,6 +86,10 @@ public class PlayerService {
                     .id(p.getId()).name(p.getName())
                     .teamId(p.getTeamId()).role(p.getRole())
                     .profilePictureUrl(p.getProfilePictureUrl())
+                    .dateOfBirth(p.getDateOfBirth())
+                    .nationality(p.getNationality())
+                    .battingStyle(p.getBattingStyle())
+                    .bowlingStyle(p.getBowlingStyle())
                     .matches(0).matchLog(List.of())
                     .build();
         }
@@ -120,6 +132,10 @@ public class PlayerService {
         return PlayerDTO.Profile.builder()
                 .id(p.getId()).name(p.getName()).teamId(p.getTeamId()).role(p.getRole())
                 .profilePictureUrl(p.getProfilePictureUrl())
+                .dateOfBirth(p.getDateOfBirth())
+                .nationality(p.getNationality())
+                .battingStyle(p.getBattingStyle())
+                .bowlingStyle(p.getBowlingStyle())
                 .matches(matches)
                 .totalRuns(totalRuns).highScore(highScore)
                 .totalBalls(totalBalls).totalFours(totalFours).totalSixes(totalSixes)
@@ -269,6 +285,10 @@ public class PlayerService {
                 .id(p.getId()).name(p.getName())
                 .teamId(p.getTeamId()).role(p.getRole())
                 .profilePictureUrl(p.getProfilePictureUrl())
+                .dateOfBirth(p.getDateOfBirth())
+                .nationality(p.getNationality())
+                .battingStyle(p.getBattingStyle())
+                .bowlingStyle(p.getBowlingStyle())
                 .build();
     }
 

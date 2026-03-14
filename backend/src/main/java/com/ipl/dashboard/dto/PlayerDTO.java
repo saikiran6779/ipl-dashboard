@@ -5,6 +5,7 @@ import lombok.*;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import java.time.LocalDate;
 import java.util.List;
 
 public class PlayerDTO {
@@ -15,7 +16,11 @@ public class PlayerDTO {
         @NotBlank private String name;
         @NotBlank private String teamId;
         @NotNull  private Player.Role role;
-        private String profilePictureUrl;
+        private String    profilePictureUrl;
+        private LocalDate dateOfBirth;
+        private String    nationality;
+        private String    battingStyle;
+        private String    bowlingStyle;
     }
 
     // ── Player list item ───────────────────────────────────────────────────
@@ -26,6 +31,10 @@ public class PlayerDTO {
         private String      teamId;
         private Player.Role role;
         private String      profilePictureUrl;
+        private LocalDate   dateOfBirth;
+        private String      nationality;
+        private String      battingStyle;
+        private String      bowlingStyle;
     }
 
     // ── Full player profile (career stats + match history) ─────────────────
@@ -36,6 +45,10 @@ public class PlayerDTO {
         private String      teamId;
         private Player.Role role;
         private String      profilePictureUrl;
+        private LocalDate   dateOfBirth;
+        private String      nationality;
+        private String      battingStyle;
+        private String      bowlingStyle;
 
         // Career batting
         private int    matches;

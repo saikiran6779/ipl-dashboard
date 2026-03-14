@@ -7,6 +7,25 @@ import { useAuth } from '../context/AuthContext'
 
 const IPL_PLACEHOLDER = 'https://documents.iplt20.com/ipl/assets/images/Default-Men.png'
 
+const NATIONALITY_FLAGS = {
+    'Indian': '🇮🇳', 'Australian': '🇦🇺', 'English': '🏴󠁧󠁢󠁥󠁮󠁧󠁿',
+    'South African': '🇿🇦', 'West Indian': '🏏', 'New Zealander': '🇳🇿',
+    'Sri Lankan': '🇱🇰', 'Afghan': '🇦🇫', 'Pakistani': '🇵🇰',
+    'Bangladeshi': '🇧🇩', 'Singaporean': '🇸🇬',
+}
+
+const BATTING_STYLES  = ['Right-hand bat', 'Left-hand bat']
+const BOWLING_STYLES  = [
+    'Right-arm fast', 'Right-arm fast-medium', 'Right-arm medium-fast',
+    'Right-arm medium', 'Right-arm off-break', 'Right-arm leg-break',
+    'Left-arm fast', 'Left-arm fast-medium', 'Left-arm medium-fast',
+    'Left-arm orthodox', 'Left-arm chinaman',
+]
+const NATIONALITIES = [
+    'Indian', 'Australian', 'English', 'South African', 'West Indian',
+    'New Zealander', 'Sri Lankan', 'Afghan', 'Pakistani', 'Bangladeshi', 'Singaporean',
+]
+
 const ROLES = ['BAT', 'BOWL', 'ALL', 'WK']
 const ROLE_LABELS = { BAT: 'Batter', BOWL: 'Bowler', ALL: 'All-rounder', WK: 'Wicket-keeper' }
 const ROLE_COLORS = { BAT: '#f97316', BOWL: '#8b5cf6', ALL: '#22c55e', WK: '#3b82f6' }
@@ -14,7 +33,10 @@ const ROLE_SHORT  = { BAT: 'BAT', BOWL: 'BOWL', ALL: 'ALL', WK: 'WK' }
 
 // ── Add Player Modal ──────────────────────────────────────────────────────
 function AddPlayerModal({ onClose, onSaved }) {
-    const [form, setForm] = useState({ name: '', teamId: 'MI', role: 'BAT', profilePictureUrl: '' })
+    const [form, setForm] = useState({
+        name: '', teamId: 'MI', role: 'BAT', profilePictureUrl: '',
+        dateOfBirth: '', nationality: '', battingStyle: '', bowlingStyle: '',
+    })
     const [saving, setSaving] = useState(false)
 
     const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
@@ -23,7 +45,13 @@ function AddPlayerModal({ onClose, onSaved }) {
         if (!form.name.trim()) { toast.error('Player name is required'); return }
         setSaving(true)
         try {
-            await createPlayer(form)
+            await createPlayer({
+                ...form,
+                dateOfBirth: form.dateOfBirth || null,
+                nationality: form.nationality || null,
+                battingStyle: form.battingStyle || null,
+                bowlingStyle: form.bowlingStyle || null,
+            })
             toast.success(`${form.name} added to ${form.teamId}!`)
             onSaved()
             onClose()
@@ -65,6 +93,41 @@ function AddPlayerModal({ onClose, onSaved }) {
                     <Select label="Role" value={form.role} onChange={e => set('role', e.target.value)}>
                         {ROLES.map(r => <option key={r} value={r}>{ROLE_LABELS[r]}</option>)}
                     </Select>
+                    <Select label="Nationality (optional)" value={form.nationality} onChange={e => set('nationality', e.target.value)}>
+                        <option value="">— Select —</option>
+                        {NATIONALITIES.map(n => <option key={n} value={n}>{NATIONALITY_FLAGS[n] || '🌐'} {n}</option>)}
+                    </Select>
+                    <div style={{ display: 'flex', gap: 10 }}>
+                        <div style={{ flex: 1 }}>
+                            <Select label="Batting Style" value={form.battingStyle} onChange={e => set('battingStyle', e.target.value)}>
+                                <option value="">— Select —</option>
+                                {BATTING_STYLES.map(s => <option key={s} value={s}>{s}</option>)}
+                            </Select>
+                        </div>
+                        <div style={{ flex: 1 }}>
+                            <Select label="Bowling Style" value={form.bowlingStyle} onChange={e => set('bowlingStyle', e.target.value)}>
+                                <option value="">— Select —</option>
+                                {BOWLING_STYLES.map(s => <option key={s} value={s}>{s}</option>)}
+                            </Select>
+                        </div>
+                    </div>
+                    <div>
+                        <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginBottom: 5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.8 }}>
+                            Date of Birth (optional)
+                        </div>
+                        <input
+                            type="date"
+                            value={form.dateOfBirth}
+                            onChange={e => set('dateOfBirth', e.target.value)}
+                            style={{
+                                width: '100%', boxSizing: 'border-box',
+                                background: 'var(--bg-input)', border: '1px solid var(--border-input)',
+                                borderRadius: 8, padding: '9px 12px',
+                                color: 'var(--text-primary)', fontSize: 13, outline: 'none',
+                                fontFamily: 'Rajdhani, sans-serif',
+                            }}
+                        />
+                    </div>
                     <Input
                         label="Photo URL (optional)"
                         placeholder="https://example.com/photo.jpg"
@@ -159,6 +222,11 @@ function PlayerCard({ player, onOpenProfile, onOpenTeam, onDelete, canDelete }) 
                                 border: `1px solid ${ROLE_COLORS[player.role]}33` }}>
                             {ROLE_SHORT[player.role]}
                         </div>
+                        {player.nationality && (
+                            <span title={player.nationality} style={{ fontSize: 14, lineHeight: 1 }}>
+                                {NATIONALITY_FLAGS[player.nationality] || '🌐'}
+                            </span>
+                        )}
                     </div>
                 </div>
 

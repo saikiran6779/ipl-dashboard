@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Entity
@@ -29,6 +30,11 @@ public class Player {
     private Role role;
 
     private String profilePictureUrl;
+
+    private LocalDate dateOfBirth;
+    private String    nationality;
+    private String    battingStyle;
+    private String    bowlingStyle;
 
     @OneToMany(mappedBy = "player", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PlayerMatchStats> stats;
