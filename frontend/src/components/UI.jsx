@@ -57,10 +57,10 @@ const baseInput = {
   transition: 'border-color 0.2s',
 }
 
-export function Input({ label, ...props }) {
+export function Input({ label, hint = null, ...props }) {
   return (
     <div>
-      {label && <Label>{label}</Label>}
+      {label && <LabelRow label={label} hint={hint} />}
       <input
         style={baseInput}
         onFocus={e => (e.target.style.borderColor = '#f97316')}
@@ -115,8 +115,8 @@ function HintBadge({ matched, text }) {
 
 function LabelRow({ label, hint }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginBottom: 4 }}>
-      <label style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginBottom: 4, minHeight: 18 }}>
+      <label style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.1em', lineHeight: '18px' }}>
         {label}
       </label>
       {hint && <HintBadge matched={hint.matched} text={hint.text} />}

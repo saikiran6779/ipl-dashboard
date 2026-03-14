@@ -157,6 +157,20 @@ export default function MatchForm({ editMatch, onSubmit, onCancel, loading }) {
 
   const teamOptions = [form.team1, form.team2].filter(Boolean)
 
+  // ── Hint pill (used in Player Stats card headers) ────────────────────────
+  const HintPill = ({ matched, text }) => (
+    <span style={{
+      fontSize: 10, fontWeight: 700,
+      color:      matched ? '#22c55e' : '#14b8a6',
+      background: matched ? 'rgba(34,197,94,0.1)' : 'rgba(20,184,166,0.1)',
+      border:     `1px solid ${matched ? 'rgba(34,197,94,0.35)' : 'rgba(20,184,166,0.35)'}`,
+      borderRadius: 20, padding: '2px 8px', whiteSpace: 'nowrap',
+      maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', display: 'inline-block',
+    }} title={text}>
+      {matched ? `✓ ${text}` : `📂 ${text}`}
+    </span>
+  )
+
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div style={{ maxWidth: 700, margin: '0 auto' }}>
@@ -267,22 +281,64 @@ export default function MatchForm({ editMatch, onSubmit, onCancel, loading }) {
             Select teams above to enable player search
           </div>
         )}
-        <div className="rg-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 28 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 28 }}>
 
-          <PlayerCombobox label="Player of the Match" players={players}
-            value={form.playerOfMatchId} onChange={id => set('playerOfMatchId', id)}
-            hint={jsonHints.playerOfMatchName ? { text: jsonHints.playerOfMatchName, matched: !!form.playerOfMatchId } : null} />
-          <div /> {/* spacer */}
+          {/* Player of the Match */}
+          <div style={{ background: 'var(--bg-subtle)', border: '1px solid var(--border-subtle)', borderRadius: 10, padding: 14 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: 1 }}>
+                🏅 Player of the Match
+              </div>
+              {jsonHints.playerOfMatchName && (
+                <HintPill matched={!!form.playerOfMatchId} text={jsonHints.playerOfMatchName} />
+              )}
+            </div>
+            <PlayerCombobox players={players} value={form.playerOfMatchId} onChange={id => set('playerOfMatchId', id)} />
+          </div>
 
-          <PlayerCombobox label="Top Scorer" players={players}
-            value={form.topScorerId} onChange={id => set('topScorerId', id)}
-            hint={jsonHints.topScorerName ? { text: jsonHints.topScorerName, matched: !!form.topScorerId } : null} />
-          <Input label="Runs Scored" name="topScorerRuns" type="number" value={form.topScorerRuns} onChange={handle} placeholder="e.g. 82" />
+          {/* Top Scorer */}
+          <div style={{ background: 'var(--bg-subtle)', border: '1px solid var(--border-subtle)', borderRadius: 10, padding: 14 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: 1, flex: 1 }}>
+                🏏 Top Scorer
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.1em', whiteSpace: 'nowrap' }}>Runs</span>
+                <input
+                  name="topScorerRuns" type="number" value={form.topScorerRuns} onChange={handle} placeholder="—"
+                  style={{ width: 64, padding: '4px 8px', borderRadius: 6, fontSize: 13, fontWeight: 700, textAlign: 'center', border: '1px solid var(--border-input)', background: 'var(--bg-input)', color: 'var(--text-primary)', outline: 'none' }}
+                  onFocus={e => (e.target.style.borderColor = '#f97316')}
+                  onBlur={e  => (e.target.style.borderColor = 'var(--border-input)')}
+                />
+              </div>
+              {jsonHints.topScorerName && (
+                <HintPill matched={!!form.topScorerId} text={jsonHints.topScorerName} />
+              )}
+            </div>
+            <PlayerCombobox players={players} value={form.topScorerId} onChange={id => set('topScorerId', id)} />
+          </div>
 
-          <PlayerCombobox label="Top Wicket Taker" players={players}
-            value={form.topWicketTakerId} onChange={id => set('topWicketTakerId', id)}
-            hint={jsonHints.topWicketTakerName ? { text: jsonHints.topWicketTakerName, matched: !!form.topWicketTakerId } : null} />
-          <Input label="Wickets Taken" name="topWicketTakerWickets" type="number" value={form.topWicketTakerWickets} onChange={handle} placeholder="e.g. 3" />
+          {/* Top Wicket Taker */}
+          <div style={{ background: 'var(--bg-subtle)', border: '1px solid var(--border-subtle)', borderRadius: 10, padding: 14 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: 1, flex: 1 }}>
+                🎯 Top Wicket Taker
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.1em', whiteSpace: 'nowrap' }}>Wickets</span>
+                <input
+                  name="topWicketTakerWickets" type="number" value={form.topWicketTakerWickets} onChange={handle} placeholder="—"
+                  style={{ width: 64, padding: '4px 8px', borderRadius: 6, fontSize: 13, fontWeight: 700, textAlign: 'center', border: '1px solid var(--border-input)', background: 'var(--bg-input)', color: 'var(--text-primary)', outline: 'none' }}
+                  onFocus={e => (e.target.style.borderColor = '#f97316')}
+                  onBlur={e  => (e.target.style.borderColor = 'var(--border-input)')}
+                />
+              </div>
+              {jsonHints.topWicketTakerName && (
+                <HintPill matched={!!form.topWicketTakerId} text={jsonHints.topWicketTakerName} />
+              )}
+            </div>
+            <PlayerCombobox players={players} value={form.topWicketTakerId} onChange={id => set('topWicketTakerId', id)} />
+          </div>
 
         </div>
 
