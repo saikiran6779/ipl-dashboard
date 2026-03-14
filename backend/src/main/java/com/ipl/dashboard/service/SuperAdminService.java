@@ -2,7 +2,9 @@ package com.ipl.dashboard.service;
 
 import com.ipl.dashboard.dto.AuthDTO;
 import com.ipl.dashboard.model.Role;
+import com.ipl.dashboard.model.Team;
 import com.ipl.dashboard.model.User;
+import com.ipl.dashboard.repository.TeamRepository;
 import com.ipl.dashboard.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,6 +18,7 @@ import java.util.NoSuchElementException;
 public class SuperAdminService {
 
     private final UserRepository userRepository;
+    private final TeamRepository teamRepository;
 
     // ── List all users ────────────────────────────────────────────────────────
 
@@ -52,6 +55,16 @@ public class SuperAdminService {
         }
         user.setRole(Role.USER);
         return AuthService.toUserInfo(userRepository.save(user));
+    }
+
+    // ── Update team logo URL ──────────────────────────────────────────────────
+
+    @Transactional
+    public void updateTeamLogo(String teamId, String logoUrl) {
+        Team team = teamRepository.findById(teamId.toUpperCase())
+                .orElseThrow(() -> new NoSuchElementException("Team not found: " + teamId));
+        team.setLogoUrl(logoUrl == null || logoUrl.isBlank() ? null : logoUrl.strip());
+        teamRepository.save(team);
     }
 
     // ── Guards ────────────────────────────────────────────────────────────────
