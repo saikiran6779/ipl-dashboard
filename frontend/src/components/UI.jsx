@@ -5,10 +5,11 @@ import { getTeam } from '../services/constants'
 export function Card({ children, style = {}, className = '' }) {
   return (
     <div className={`fade-up ${className}`} style={{
-      background: '#161b22',
-      border: '1px solid #21262d',
-      borderRadius: 14,
+      background: 'rgba(22, 27, 34, 0.9)',
+      border: '1px solid rgba(48, 54, 61, 0.7)',
+      borderRadius: 16,
       overflow: 'hidden',
+      backdropFilter: 'blur(8px)',
       ...style,
     }}>
       {children}
@@ -175,15 +176,20 @@ export function EmptyState({ icon = '📭', text, sub }) {
 
 // ── Loading ─────────────────────────────────────────────────────────────────
 
-export function Spinner() {
+export function Spinner({ size = 40, color = '#f97316', label = 'Loading...' }) {
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 60 }}>
-      <div style={{
-        width: 36, height: 36, borderRadius: '50%',
-        border: '3px solid #21262d',
-        borderTopColor: '#f97316',
-        animation: 'spin 0.7s linear infinite',
-      }} />
+    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: 60, gap: 16 }}>
+      <div style={{ position: 'relative', width: size, height: size }}>
+        <svg width={size} height={size} style={{ animation: 'spin 1s linear infinite' }}>
+          <circle cx={size/2} cy={size/2} r={size/2 - 3}
+            fill="none" stroke={`${color}22`} strokeWidth={3} />
+          <circle cx={size/2} cy={size/2} r={size/2 - 3}
+            fill="none" stroke={color} strokeWidth={3}
+            strokeDasharray={`${(size/2-3)*2*Math.PI*0.25} ${(size/2-3)*2*Math.PI*0.75}`}
+            strokeLinecap="round" />
+        </svg>
+      </div>
+      {label && <div style={{ fontSize: 12, color: '#8b949e', letterSpacing: 1 }}>{label}</div>}
       <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
     </div>
   )

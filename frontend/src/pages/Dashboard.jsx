@@ -32,22 +32,39 @@ function useCountUp(target, duration = 1200) {
 function SummaryCard({ label, value, icon, color, delay }) {
     const display = useCountUp(typeof value === 'number' ? value : parseFloat(String(value).replace(/,/g, '')))
     return (
-        <div className="fade-up" style={{ animationDelay: `${delay}s`, position: 'relative', overflow: 'hidden',
-            background: '#161b22', border: `1px solid #21262d`, borderRadius: 16, padding: '22px 24px',
-            transition: 'border-color 0.3s, transform 0.2s', cursor: 'default',
+        <div className="fade-up" style={{
+            animationDelay: `${delay}s`, position: 'relative', overflow: 'hidden',
+            background: 'rgba(22,27,34,0.9)', border: `1px solid rgba(48,54,61,0.6)`,
+            borderRadius: 16, padding: '20px 22px',
+            transition: 'border-color 0.3s, transform 0.25s, box-shadow 0.3s', cursor: 'default',
+            backdropFilter: 'blur(8px)',
         }}
-             onMouseEnter={e => { e.currentTarget.style.borderColor = color; e.currentTarget.style.transform = 'translateY(-2px)' }}
-             onMouseLeave={e => { e.currentTarget.style.borderColor = '#21262d'; e.currentTarget.style.transform = 'translateY(0)' }}
+             onMouseEnter={e => {
+               e.currentTarget.style.borderColor = color + 'aa'
+               e.currentTarget.style.transform = 'translateY(-3px)'
+               e.currentTarget.style.boxShadow = `0 8px 32px ${color}22`
+             }}
+             onMouseLeave={e => {
+               e.currentTarget.style.borderColor = 'rgba(48,54,61,0.6)'
+               e.currentTarget.style.transform = 'translateY(0)'
+               e.currentTarget.style.boxShadow = 'none'
+             }}
         >
             {/* glow blob */}
-            <div style={{ position: 'absolute', top: -30, right: -30, width: 100, height: 100, borderRadius: '50%',
-                background: color, opacity: 0.07, filter: 'blur(24px)', pointerEvents: 'none' }} />
-            <div style={{ fontSize: 28, marginBottom: 10 }}>{icon}</div>
-            <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 38, color, letterSpacing: 1, lineHeight: 1 }}>
+            <div style={{ position: 'absolute', top: -30, right: -30, width: 110, height: 110, borderRadius: '50%',
+                background: color, opacity: 0.1, filter: 'blur(28px)', pointerEvents: 'none' }} />
+            {/* icon with colored bg */}
+            <div style={{
+              display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+              width: 40, height: 40, borderRadius: 10, marginBottom: 12,
+              background: `${color}18`, border: `1px solid ${color}33`, fontSize: 20,
+            }}>{icon}</div>
+            <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 40, color, letterSpacing: 1, lineHeight: 1 }}>
                 {display}
             </div>
-            <div style={{ fontSize: 10, color: '#8b949e', textTransform: 'uppercase', letterSpacing: 2, marginTop: 6 }}>{label}</div>
-            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, ${color}44, ${color}00)` }} />
+            <div style={{ fontSize: 10, color: '#8b949e', textTransform: 'uppercase', letterSpacing: 2, marginTop: 8, fontWeight: 700 }}>{label}</div>
+            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 2,
+              background: `linear-gradient(90deg, ${color}66, ${color}00)` }} />
         </div>
     )
 }
@@ -170,7 +187,7 @@ function MOMPodium({ players }) {
 }
 
 // ── Main Dashboard ────────────────────────────────────────────────────────
-export default function Dashboard({ stats, matches, loading }) {
+export default function Dashboard({ stats, matches, loading, onOpenTeam }) {
     const [tab, setTab] = useState('standings')
     const [prevTab, setPrevTab] = useState(null)
 
@@ -232,10 +249,12 @@ export default function Dashboard({ stats, matches, loading }) {
                                         const isPlayoff = i < 4
                                         return (
                                             <tr key={row.teamId}
-                                                style={{ borderTop: '1px solid #21262d', transition: 'background 0.15s', cursor: 'default',
+                                                style={{ borderTop: '1px solid #21262d', transition: 'background 0.15s', cursor: 'pointer',
                                                     background: isPlayoff ? 'rgba(249,115,22,0.02)' : 'transparent' }}
                                                 onMouseEnter={e => e.currentTarget.style.background = '#1c2128'}
                                                 onMouseLeave={e => e.currentTarget.style.background = isPlayoff ? 'rgba(249,115,22,0.02)' : 'transparent'}
+                                                onClick={() => onOpenTeam && onOpenTeam(row.teamId)}
+                                                title={`View ${row.teamName} details`}
                                             >
                                                 {/* rank */}
                                                 <td style={{ padding: '12px 16px' }}>
@@ -251,9 +270,10 @@ export default function Dashboard({ stats, matches, loading }) {
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                                                         <div style={{ width: 4, height: 30, borderRadius: 2, background: team.color, flexShrink: 0 }} />
                                                         <div>
-                                                            <div style={{ fontWeight: 700, fontSize: 13 }}>{row.teamId}</div>
+                                                            <div style={{ fontWeight: 700, fontSize: 13, color: '#e6edf3' }}>{row.teamId}</div>
                                                             <div style={{ fontSize: 10, color: '#8b949e' }}>{row.teamName}</div>
                                                         </div>
+                                                        <div style={{ fontSize: 10, color: '#8b949e', marginLeft: 4 }}>→</div>
                                                     </div>
                                                 </td>
                                                 <td style={{ padding: '12px 16px', textAlign: 'center', color: '#8b949e' }}>{row.played}</td>
@@ -285,9 +305,12 @@ export default function Dashboard({ stats, matches, loading }) {
                                     </tbody>
                                 </table>
                             </div>
-                            <div style={{ padding: '10px 20px', borderTop: '1px solid #21262d', display: 'flex', alignItems: 'center', gap: 8 }}>
-                                <div style={{ width: 3, height: 14, borderRadius: 2, background: '#f97316' }} />
-                                <span style={{ fontSize: 11, color: '#8b949e' }}>Top 4 advance to playoffs</span>
+                            <div style={{ padding: '10px 20px', borderTop: '1px solid #21262d', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                  <div style={{ width: 3, height: 14, borderRadius: 2, background: '#f97316' }} />
+                                  <span style={{ fontSize: 11, color: '#8b949e' }}>Top 4 advance to playoffs</span>
+                                </div>
+                                <span style={{ fontSize: 11, color: '#8b949e' }}>Click a team row to view details →</span>
                             </div>
                         </>
                     }

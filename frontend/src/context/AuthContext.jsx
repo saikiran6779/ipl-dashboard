@@ -8,10 +8,11 @@ const REFRESH_KEY = 'ipl_refresh_token'
 const USER_KEY    = 'ipl_user'
 
 export function AuthProvider({ children }) {
-  const [user,    setUser]    = useState(() => {
+  const [user,       setUser]       = useState(() => {
     try { return JSON.parse(localStorage.getItem(USER_KEY)) } catch { return null }
   })
-  const [loading, setLoading] = useState(false)
+  const [loading,    setLoading]    = useState(false)
+  const [authAction, setAuthAction] = useState(null) // 'login' | 'logout' | 'register' | null
 
   // ── Helpers ──────────────────────────────────────────────────────────────
 
@@ -33,29 +34,40 @@ export function AuthProvider({ children }) {
 
   const login = async (email, password) => {
     setLoading(true)
+    setAuthAction('login')
     try {
       const data = await loginUser({ email, password })
       persist(data)
+      // Brief pause to show the "Welcome" animation
+      await new Promise(r => setTimeout(r, 800))
       return data
     } finally {
       setLoading(false)
+      setAuthAction(null)
     }
   }
 
   const register = async (name, email, password) => {
     setLoading(true)
+    setAuthAction('register')
     try {
       const data = await registerUser({ name, email, password })
       persist(data)
+      await new Promise(r => setTimeout(r, 800))
       return data
     } finally {
       setLoading(false)
+      setAuthAction(null)
     }
   }
 
   const logout = async () => {
+    setAuthAction('logout')
+    await new Promise(r => setTimeout(r, 100)) // Let state flush
     try { await logoutUser() } catch { /* ignore */ }
+    await new Promise(r => setTimeout(r, 600)) // Show logout animation
     clear()
+    setAuthAction(null)
   }
 
   // Called by Axios interceptor on 401
@@ -78,7 +90,7 @@ export function AuthProvider({ children }) {
   const isSuperAdmin = user?.role === 'SUPER_ADMIN'
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, doRefresh, isAdmin, isSuperAdmin }}>
+    <AuthContext.Provider value={{ user, loading, authAction, login, register, logout, doRefresh, isAdmin, isSuperAdmin }}>
       {children}
     </AuthContext.Provider>
   )

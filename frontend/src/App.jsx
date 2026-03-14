@@ -11,6 +11,7 @@ import Register from './pages/Register'
 import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
 import SuperAdminUsers from './pages/SuperAdminUsers'
+import Teams from './pages/Teams'
 import { getMatches, getStats, createMatch, updateMatch, deleteMatch } from './services/api'
 import { useAuth } from './context/AuthContext'
 
@@ -30,6 +31,7 @@ export default function App() {
   const [loading,   setLoading]   = useState(true)
   const [saving,    setSaving]    = useState(false)
   const [profileId, setProfileId] = useState(null)
+  const [teamId,    setTeamId]    = useState(null)
 
   // ── Data fetching ──────────────────────────────────────────────────────────
 
@@ -54,6 +56,7 @@ export default function App() {
   const navigate = useCallback((target) => {
     if (target === 'super-admin' && !isSuperAdmin) { setView('dashboard'); return }
     if (target === 'add'         && !isAdmin)       { return }
+    if (target === 'teams') setTeamId(null) // nav to grid, not detail
     setView(target)
   }, [isAdmin, isSuperAdmin])
 
@@ -110,10 +113,13 @@ export default function App() {
   const handleOpenProfile = (playerId) => { setProfileId(playerId); setView('profile') }
   const handleBackFromProfile = () => { setView('players'); setProfileId(null) }
 
+  const handleOpenTeam = (id) => { setTeamId(id); setView('teams') }
+  const handleBackFromTeam = () => { setTeamId(null); setView('teams') }
+
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <div style={{ minHeight: '100vh' }}>
+    <div style={{ minHeight: '100vh', background: '#080c12' }}>
       <Header view={view} setView={navigate} onAddClick={handleAddClick} />
 
       <main className="page-main" style={{ maxWidth: 1200, margin: '0 auto', padding: '28px 20px' }}>
@@ -129,7 +135,10 @@ export default function App() {
 
         {/* Main app views */}
         {view === 'dashboard' && (
-          <Dashboard stats={stats} matches={matches} loading={loading} onOpenProfile={handleOpenProfile} />
+          <Dashboard stats={stats} matches={matches} loading={loading} onOpenProfile={handleOpenProfile} onOpenTeam={handleOpenTeam} />
+        )}
+        {view === 'teams' && (
+          <Teams stats={stats} matches={matches} onOpenProfile={handleOpenProfile} initialTeamId={teamId} onBack={handleBackFromTeam} />
         )}
         {view === 'matches' && (
           <Matches matches={matches} loading={loading} onEdit={handleEdit} onDelete={handleDelete} />
