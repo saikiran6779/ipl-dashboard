@@ -119,7 +119,7 @@ export default function App() {
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <div style={{ minHeight: '100vh', background: '#080c12' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg-base)' }}>
       <Header view={view} setView={navigate} onAddClick={handleAddClick} />
 
       <main className="page-main" style={{ maxWidth: 1200, margin: '0 auto', padding: '28px 20px' }}>

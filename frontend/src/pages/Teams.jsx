@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { TEAMS, getTeam } from '../services/constants'
+import { TEAMS, getTeam, formatDate } from '../services/constants'
 import { getSquad, getStats, getMatches } from '../services/api'
 import { Spinner, EmptyState } from '../components/UI'
 
@@ -77,7 +77,7 @@ function TeamCard({ team, standing, rank, onClick }) {
         <div style={{
           position: 'absolute', top: 12, right: 12,
           background: isQualified ? 'rgba(249,115,22,0.15)' : 'var(--bg-subtle)',
-          border: `1px solid ${isQualified ? '#f97316' : '#30363d'}`,
+          border: `1px solid ${isQualified ? '#f97316' : 'var(--border-subtle)'}`,
           borderRadius: 20, padding: '2px 10px',
           fontSize: 11, fontWeight: 700,
           color: isQualified ? '#f97316' : 'var(--text-secondary)',
@@ -183,9 +183,6 @@ function PlayerRow({ player, index, onOpenProfile }) {
         <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--text-primary)' }}>{player.name}</div>
         <div style={{ fontSize: 10, color, textTransform: 'uppercase', letterSpacing: 1 }}>{player.role}</div>
       </div>
-      {player.nationality && (
-        <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{player.nationality}</div>
-      )}
     </div>
   )
 }
@@ -272,7 +269,7 @@ function TeamDetail({ teamId, standing, rank, allMatches, onBack, onOpenProfile 
             <div style={{
               textAlign: 'center',
               background: isQualified ? 'rgba(249,115,22,0.1)' : 'var(--bg-subtle)',
-              border: `1px solid ${isQualified ? '#f97316' : '#30363d'}`,
+              border: `1px solid ${isQualified ? '#f97316' : 'var(--border-subtle)'}`,
               borderRadius: 12, padding: '12px 20px',
             }}>
               <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 48, color: isQualified ? '#f97316' : 'var(--text-secondary)', lineHeight: 1 }}>
@@ -453,7 +450,7 @@ function TeamDetail({ teamId, standing, rank, allMatches, onBack, onOpenProfile 
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <div style={{ width: 3, height: 14, borderRadius: 2, background: opponentTeam.color }} />
                         <span style={{ fontWeight: 700, fontSize: 13 }}>vs {opponent}</span>
-                        <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>· {m.date}</span>
+                        <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>· {formatDate(m.date)}</span>
                       </div>
                       <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 3 }}>
                         {myScore} vs {oppScore}
