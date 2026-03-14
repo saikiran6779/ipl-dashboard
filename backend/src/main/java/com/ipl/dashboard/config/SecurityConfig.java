@@ -34,6 +34,9 @@ public class SecurityConfig {
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
 
+                // ── Actuator (info + health are read-only, safe to expose) ─
+                .requestMatchers("/actuator/info", "/actuator/health").permitAll()
+
                 // ── Public auth endpoints ──────────────────────────────────
                 .requestMatchers("/api/auth/**").permitAll()
 
