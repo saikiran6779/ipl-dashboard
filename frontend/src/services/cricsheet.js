@@ -371,9 +371,12 @@ function _parseBowling(inn) {
       let overBowlerRuns  = 0
 
       for (const d of deliveries) {
-        const extras   = d.extras || {}
-        const isWide   = !!extras.wides
-        const legalBall = !isWide  // Rule 1: no-balls ARE legal deliveries
+        const extras    = d.extras || {}
+        const isWide    = !!extras.wides
+        const isNoBall  = !!extras.noballs
+        // A valid delivery counts toward the over: NOT a wide AND NOT a no-ball.
+        // No-balls require an extra delivery to complete the over, same as wides.
+        const validBall = !isWide && !isNoBall
 
         // ── Bowler runs formula (Rule 2) ─────────────────────────────────
         // Leg-byes and byes are NOT charged to the bowler.
@@ -381,20 +384,22 @@ function _parseBowling(inn) {
                          - (extras.legbyes ?? 0)
                          - (extras.byes    ?? 0)
 
-        bl.runs     += bowlerRuns
+        bl.runs        += bowlerRuns
         overBowlerRuns += bowlerRuns
 
         if (isWide) {
           bl.wides++
+        } else if (isNoBall) {
+          bl.noBalls++
+          // no-ball does NOT advance the over ball count
         } else {
           bl.balls++
           overLegalBalls++
-          if (!!extras.noballs) bl.noBalls++
         }
 
-        // Dot ball: legal delivery where bowler concedes 0 runs (Rule 4)
-        // A leg-bye IS a dot ball for the bowler even though the team scored.
-        if (legalBall && bowlerRuns === 0) bl.dotBalls++
+        // Dot ball: valid delivery where bowler concedes 0 runs (Rule 4)
+        // A leg-bye on a valid delivery IS a dot for the bowler.
+        if (validBall && bowlerRuns === 0) bl.dotBalls++
 
         // Wickets — only bowler-credited kinds (Rule 5)
         if (d.wickets) {
@@ -403,16 +408,16 @@ function _parseBowling(inn) {
           }
         }
 
-        // Phase splits: runs use bowlerRuns; balls are legal only (Rule 8)
+        // Phase splits: runs use bowlerRuns; balls are valid deliveries only (Rule 8)
         if (phase === 'pp') {
           bl.ppRuns += bowlerRuns
-          if (legalBall) bl.ppBalls++
+          if (validBall) bl.ppBalls++
         } else if (phase === 'mid') {
           bl.midRuns += bowlerRuns
-          if (legalBall) bl.midBalls++
+          if (validBall) bl.midBalls++
         } else {
           bl.deathRuns += bowlerRuns
-          if (legalBall) bl.deathBalls++
+          if (validBall) bl.deathBalls++
         }
       }
 
