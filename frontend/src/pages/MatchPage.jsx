@@ -4,7 +4,7 @@ import toast from 'react-hot-toast'
 import { TeamLogo, Spinner } from '../components/UI'
 import { getScorecard, deleteScorecard } from '../services/api'
 import { getTeam, formatDate } from '../services/constants'
-import ScorecardModal, { ScorecardView } from './Scorecard'
+import { ScorecardView, ScorecardEntry } from './Scorecard'
 import ScorecardImportModal from './ScorecardImportModal'
 
 // ── Phase helpers ──────────────────────────────────────────────────────────
@@ -625,6 +625,38 @@ function SectionHeader({ title, actions }) {
   )
 }
 
+// ── Confirm dialog ─────────────────────────────────────────────────────────
+function ConfirmDialog({ title, message, confirmLabel = 'Confirm', confirmColor = '#ef4444', onConfirm, onCancel }) {
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 9999,
+      background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20,
+    }} onClick={onCancel}>
+      <div style={{
+        background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)',
+        borderRadius: 16, padding: '28px 28px 24px', maxWidth: 400, width: '100%',
+        boxShadow: '0 24px 60px rgba(0,0,0,0.5)',
+      }} onClick={e => e.stopPropagation()}>
+        <div style={{ fontFamily: 'var(--font-heading)', fontSize: 'var(--text-md)', letterSpacing: 1, color: 'var(--text-primary)', marginBottom: 10 }}>{title}</div>
+        <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', fontFamily: 'var(--font-body)', lineHeight: 1.6, marginBottom: 22 }}>{message}</div>
+        <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+          <button onClick={onCancel} style={{
+            padding: '8px 20px', borderRadius: 8, border: '1px solid var(--border-input)',
+            background: 'transparent', color: 'var(--text-secondary)', cursor: 'pointer',
+            fontSize: 'var(--text-sm)', fontWeight: 600, fontFamily: 'var(--font-body)',
+          }}>Cancel</button>
+          <button onClick={onConfirm} style={{
+            padding: '8px 20px', borderRadius: 8, border: 'none',
+            background: confirmColor, color: '#fff', cursor: 'pointer',
+            fontSize: 'var(--text-sm)', fontWeight: 700, fontFamily: 'var(--font-body)',
+          }}>{confirmLabel}</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ── Admin action button (reusable small ghost btn) ─────────────────────────
 function ActionBtn({ onClick, color = 'var(--text-secondary)', bg = 'var(--bg-hover)', border = 'var(--border-input)', children }) {
   return (
@@ -642,10 +674,11 @@ function ActionBtn({ onClick, color = 'var(--text-secondary)', bg = 'var(--bg-ho
 
 // ── Main page ──────────────────────────────────────────────────────────────
 export default function MatchPage({ match, allMatches = [], onBack, onEdit, onDelete, isAdmin, onOpenProfile }) {
-  const [entries,     setEntries]     = useState([])
-  const [loading,     setLoading]     = useState(true)
-  const [editModal,   setEditModal]   = useState(false)
-  const [importModal, setImportModal] = useState(false)
+  const [entries,       setEntries]       = useState([])
+  const [loading,       setLoading]       = useState(true)
+  const [editMode,      setEditMode]      = useState(false)
+  const [importModal,   setImportModal]   = useState(false)
+  const [deleteConfirm, setDeleteConfirm] = useState(false)
 
   const teams = [match.team1, match.team2]
 
@@ -661,7 +694,6 @@ export default function MatchPage({ match, allMatches = [], onBack, onEdit, onDe
   }
 
   const handleDeleteScorecard = async () => {
-    if (!window.confirm('Delete the scorecard for this match? The match itself will remain.')) return
     try {
       await deleteScorecard(match.id)
       setEntries([])
@@ -678,12 +710,12 @@ export default function MatchPage({ match, allMatches = [], onBack, onEdit, onDe
         color='#0d9488' bg='#0d948815' border='#0d948855'
       ><FileJson size={14} strokeWidth={2} /> Import JSON</ActionBtn>
       <ActionBtn
-        onClick={() => setEditModal(true)}
-        color='#f97316' bg='rgba(249,115,22,0.08)' border='rgba(249,115,22,0.35)'
-      ><Pencil size={13} strokeWidth={2} /> Edit Scorecard</ActionBtn>
+        onClick={() => setEditMode(m => !m)}
+        color='#f97316' bg={editMode ? 'rgba(249,115,22,0.18)' : 'rgba(249,115,22,0.08)'} border='rgba(249,115,22,0.35)'
+      ><Pencil size={13} strokeWidth={2} /> {editMode ? 'Close Editor' : 'Edit Scorecard'}</ActionBtn>
       {entries.length > 0 && (
         <ActionBtn
-          onClick={handleDeleteScorecard}
+          onClick={() => setDeleteConfirm(true)}
           color='#ef4444' bg='rgba(239,68,68,0.08)' border='rgba(239,68,68,0.3)'
         ><Trash2 size={13} strokeWidth={2} /> Delete Scorecard</ActionBtn>
       )}
@@ -723,6 +755,23 @@ export default function MatchPage({ match, allMatches = [], onBack, onEdit, onDe
             {/* Scorecard */}
             <SectionHeader title="Scorecard" actions={scorecardActions} />
 
+            {/* Inline scorecard editor */}
+            {editMode && (
+              <div style={{
+                background: 'var(--bg-elevated)', border: '1px solid rgba(249,115,22,0.35)',
+                borderRadius: 14, overflow: 'hidden', marginBottom: 20,
+              }}>
+                <div style={{ height: 3, background: 'linear-gradient(90deg,#f97316,#dc2626)' }} />
+                <div style={{ padding: '20px 20px 24px' }}>
+                  <ScorecardEntry
+                    matchId={match.id}
+                    teams={teams}
+                    onSaved={() => { setEditMode(false); reloadScorecard() }}
+                  />
+                </div>
+              </div>
+            )}
+
             {entries.length === 0 ? (
               <div style={{
                 textAlign: 'center', padding: '60px 20px',
@@ -748,12 +797,15 @@ export default function MatchPage({ match, allMatches = [], onBack, onEdit, onDe
         )}
       </div>
 
-      {/* Edit scorecard modal */}
-      {editModal && (
-        <ScorecardModal
-          match={match}
-          isAdmin={isAdmin}
-          onClose={() => { setEditModal(false); reloadScorecard() }}
+      {/* Delete scorecard confirmation */}
+      {deleteConfirm && (
+        <ConfirmDialog
+          title="Delete Scorecard"
+          message="Are you sure you want to delete the scorecard for this match? The match itself will remain but all player stats will be lost."
+          confirmLabel="Delete"
+          confirmColor="#ef4444"
+          onConfirm={() => { setDeleteConfirm(false); handleDeleteScorecard() }}
+          onCancel={() => setDeleteConfirm(false)}
         />
       )}
 

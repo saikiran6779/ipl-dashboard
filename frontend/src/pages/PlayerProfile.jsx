@@ -509,6 +509,10 @@ export default function PlayerProfile({ playerId, onBack, onOpenTeam }) {
         teamId: profile.teamId,
         role: profile.role,
         profilePictureUrl: urlInput.trim() || null,
+        dateOfBirth: profile.dateOfBirth,
+        nationality: profile.nationality,
+        battingStyle: profile.battingStyle,
+        bowlingStyle: profile.bowlingStyle,
       })
       setProfile(prev => ({ ...prev, profilePictureUrl: urlInput.trim() || null }))
       setEditingUrl(false)
