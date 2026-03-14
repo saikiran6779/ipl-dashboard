@@ -11,6 +11,7 @@ import Register from './pages/Register'
 import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
 import SuperAdminUsers from './pages/SuperAdminUsers'
+import SuperAdminTeams from './pages/SuperAdminTeams'
 import Teams from './pages/Teams'
 import { getMatches, getStats, createMatch, updateMatch, deleteMatch } from './services/api'
 import { useAuth } from './context/AuthContext'
@@ -30,8 +31,9 @@ export default function App() {
   const [editMatch, setEditMatch] = useState(null)
   const [loading,   setLoading]   = useState(true)
   const [saving,    setSaving]    = useState(false)
-  const [profileId, setProfileId] = useState(null)
-  const [teamId,    setTeamId]    = useState(null)
+  const [profileId,      setProfileId]      = useState(null)
+  const [teamId,         setTeamId]         = useState(null)
+  const [superAdminTab,  setSuperAdminTab]  = useState('users')  // 'users' | 'teams'
 
   // ── Data fetching ──────────────────────────────────────────────────────────
 
@@ -131,7 +133,34 @@ export default function App() {
         {view === 'reset-password'  && <ResetPassword   onNavigate={navigate} />}
 
         {/* Super-admin panel — guarded */}
-        {view === 'super-admin' && isSuperAdmin && <SuperAdminUsers />}
+        {view === 'super-admin' && isSuperAdmin && (
+          <div>
+            {/* Tab bar */}
+            <div style={{ display: 'flex', gap: 4, marginBottom: 28, borderBottom: '1px solid var(--border-subtle)', paddingBottom: 0 }}>
+              {[
+                { key: 'users', label: '👥 Users' },
+                { key: 'teams', label: '🏏 Team Logos' },
+              ].map(tab => (
+                <button
+                  key={tab.key}
+                  onClick={() => setSuperAdminTab(tab.key)}
+                  style={{
+                    padding: '8px 18px', border: 'none', cursor: 'pointer',
+                    background: 'transparent', fontFamily: 'DM Sans, sans-serif',
+                    fontWeight: 600, fontSize: 13,
+                    color: superAdminTab === tab.key ? '#f97316' : 'var(--text-secondary)',
+                    borderBottom: superAdminTab === tab.key ? '2px solid #f97316' : '2px solid transparent',
+                    marginBottom: -1, transition: 'color 0.15s',
+                  }}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+            {superAdminTab === 'users'  && <SuperAdminUsers />}
+            {superAdminTab === 'teams'  && <SuperAdminTeams />}
+          </div>
+        )}
 
         {/* Main app views */}
         {view === 'dashboard' && (

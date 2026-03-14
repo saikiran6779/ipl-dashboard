@@ -2,6 +2,7 @@ package com.ipl.dashboard.config;
 
 import com.ipl.dashboard.security.JwtAuthFilter;
 import com.ipl.dashboard.service.UserDetailsServiceImpl;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -52,6 +53,15 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.DELETE, "/api/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
 
                 .anyRequest().authenticated()
+            )
+            .exceptionHandling(e -> e
+                // Return 401 (not 403) when an unauthenticated / token-expired request
+                // hits a protected endpoint, so the frontend auto-refresh interceptor fires.
+                .authenticationEntryPoint((req, res, ex) -> {
+                    res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    res.setContentType("application/json");
+                    res.getWriter().write("{\"error\":\"Unauthorized\",\"message\":\"Authentication required\"}");
+                })
             )
             .authenticationProvider(authenticationProvider())
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

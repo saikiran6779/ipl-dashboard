@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/super-admin")
@@ -28,5 +29,13 @@ public class SuperAdminController {
     @PutMapping("/users/{userId}/demote")
     public ResponseEntity<AuthDTO.UserInfo> demoteUser(@PathVariable Long userId) {
         return ResponseEntity.ok(superAdminService.demoteUser(userId));
+    }
+
+    @PutMapping("/teams/{teamId}/logo")
+    public ResponseEntity<Void> updateTeamLogo(
+            @PathVariable String teamId,
+            @RequestBody Map<String, String> body) {
+        superAdminService.updateTeamLogo(teamId, body.get("logoUrl"));
+        return ResponseEntity.noContent().build();
     }
 }

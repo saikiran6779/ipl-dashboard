@@ -2,25 +2,32 @@ import { useState, useEffect } from 'react'
 import { TEAMS, getTeam, formatDate } from '../services/constants'
 import { getSquad, getStats, getMatches } from '../services/api'
 import { Spinner, EmptyState } from '../components/UI'
+import { useTeamLogos } from '../context/TeamsContext'
 
-// ── Team Logo (stylized abbreviation badge) ────────────────────────────────
+// ── Team Badge — shows actual logo when available, coloured badge otherwise ─
 function TeamBadge({ team, size = 72 }) {
+  const logos = useTeamLogos()
+  const url   = logos[team.id]
   return (
     <div style={{
       width: size, height: size, borderRadius: size * 0.22,
-      background: `linear-gradient(135deg, ${team.color}ee, ${team.color}88)`,
-      border: `2px solid ${team.color}`,
-      boxShadow: `0 0 20px ${team.color}44`,
+      background: url
+        ? `${team.color}14`
+        : `linear-gradient(135deg, ${team.color}ee, ${team.color}88)`,
+      border: `2px solid ${url ? team.color + '55' : team.color}`,
+      boxShadow: `0 0 20px ${team.color}33`,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      flexShrink: 0,
+      flexShrink: 0, overflow: 'hidden',
+      padding: url ? size * 0.1 : 0, boxSizing: 'border-box',
     }}>
-      <span style={{
-        fontFamily: "'Bebas Neue', sans-serif",
-        fontSize: size * 0.3,
-        color: '#fff',
-        letterSpacing: 1,
-        textShadow: '0 2px 8px rgba(0,0,0,0.5)',
-      }}>{team.id}</span>
+      {url
+        ? <img src={url} alt={team.id} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+        : <span style={{
+            fontFamily: "'Bebas Neue', sans-serif",
+            fontSize: size * 0.3, color: '#fff',
+            letterSpacing: 1, textShadow: '0 2px 8px rgba(0,0,0,0.5)',
+          }}>{team.id}</span>
+      }
     </div>
   )
 }

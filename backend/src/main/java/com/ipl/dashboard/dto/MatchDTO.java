@@ -18,7 +18,9 @@ public class MatchDTO {
     @NotNull(message = "Date is required")
     private LocalDate date;
 
-    private String venue;
+    private Long   venueId;
+    private String venueName;
+    private String venueCity;
 
     @NotBlank(message = "Team 1 is required")
     private String team1;

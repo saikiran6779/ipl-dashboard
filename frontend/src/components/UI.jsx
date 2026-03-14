@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { getTeam } from '../services/constants'
+import { useTeamLogos } from '../context/TeamsContext'
 
 // ── Layout ─────────────────────────────────────────────────────────────────
 
@@ -57,10 +58,10 @@ const baseInput = {
   transition: 'border-color 0.2s',
 }
 
-export function Input({ label, ...props }) {
+export function Input({ label, hint = null, ...props }) {
   return (
     <div>
-      {label && <Label>{label}</Label>}
+      {label && <LabelRow label={label} hint={hint} />}
       <input
         style={baseInput}
         onFocus={e => (e.target.style.borderColor = '#f97316')}
@@ -71,10 +72,10 @@ export function Input({ label, ...props }) {
   )
 }
 
-export function Select({ label, children, ...props }) {
+export function Select({ label, hint = null, children, ...props }) {
   return (
     <div>
-      {label && <Label>{label}</Label>}
+      {label && <LabelRow label={label} hint={hint} />}
       <select
         style={{ ...baseInput, cursor: 'pointer' }}
         onFocus={e => (e.target.style.borderColor = '#f97316')}
@@ -92,6 +93,35 @@ export function Label({ children }) {
     <label style={{ display: 'block', fontSize: 10, fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>
       {children}
     </label>
+  )
+}
+
+// ── Internal: label + optional inline hint badge ─────────────────────────────
+
+function HintBadge({ matched, text }) {
+  return (
+    <span style={{
+      fontSize: 10, fontWeight: 600,
+      color:      matched ? '#22c55e' : '#14b8a6',
+      background: matched ? 'rgba(34,197,94,0.1)' : 'rgba(20,184,166,0.1)',
+      border:     `1px solid ${matched ? 'rgba(34,197,94,0.3)' : 'rgba(20,184,166,0.3)'}`,
+      borderRadius: 4, padding: '1px 6px',
+      maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+      display: 'inline-block', verticalAlign: 'middle',
+    }} title={text}>
+      {matched ? '✓ auto' : `📂 ${text}`}
+    </span>
+  )
+}
+
+function LabelRow({ label, hint }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginBottom: 4, minHeight: 18 }}>
+      <label style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.1em', lineHeight: '18px' }}>
+        {label}
+      </label>
+      {hint && <HintBadge matched={hint.matched} text={hint.text} />}
+    </div>
   )
 }
 
@@ -124,7 +154,7 @@ export function Button({ children, variant = 'primary', onClick, type = 'button'
 
 // ── Player Combobox ──────────────────────────────────────────────────────────
 
-export function PlayerCombobox({ label, players = [], value, onChange }) {
+export function PlayerCombobox({ label, players = [], value, onChange, hint = null }) {
   const [query,  setQuery]  = useState('')
   const [open,   setOpen]   = useState(false)
 
@@ -148,7 +178,7 @@ export function PlayerCombobox({ label, players = [], value, onChange }) {
 
   return (
     <div style={{ position: 'relative' }}>
-      {label && <Label>{label}</Label>}
+      {label && <LabelRow label={label} hint={hint} />}
       <div style={{ position: 'relative' }}>
         <input
           value={open ? query : selectedName}
@@ -212,14 +242,43 @@ export function PlayerCombobox({ label, players = [], value, onChange }) {
   )
 }
 
+// ── Team Logo ───────────────────────────────────────────────────────────────
+// Shows the team's actual logo if one has been configured; falls back to a
+// coloured badge with the team abbreviation so layout is always stable.
+
+export function TeamLogo({ teamId, size = 28 }) {
+  const logos = useTeamLogos()
+  const team  = getTeam(teamId)
+  const url   = logos[teamId]
+
+  if (url) {
+    return (
+      <div style={{ width: size, height: size, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <img src={url} alt={teamId} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+      </div>
+    )
+  }
+
+  return (
+    <div style={{
+      width: size, height: size, flexShrink: 0, borderRadius: size * 0.18,
+      background: `linear-gradient(135deg, ${team.color}dd, ${team.color}99)`,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      fontSize: Math.max(7, Math.floor(size * 0.32)), fontWeight: 800,
+      fontFamily: "'Bebas Neue', sans-serif", color: '#fff', letterSpacing: 0.5,
+    }}>
+      {teamId}
+    </div>
+  )
+}
+
 // ── Team Chip ───────────────────────────────────────────────────────────────
 
 export function TeamChip({ teamId, score, wickets, overs, won, size = 'sm' }) {
-  const team = getTeam(teamId)
   const big = size === 'lg'
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, opacity: won ? 1 : 0.6 }}>
-      <div style={{ width: 4, height: big ? 32 : 24, borderRadius: 2, background: team.color, flexShrink: 0 }} />
+      <TeamLogo teamId={teamId} size={big ? 36 : 28} />
       <div>
         <div style={{ fontWeight: 700, fontSize: big ? 15 : 13, color: won ? 'var(--text-primary)' : 'var(--text-secondary)' }}>{teamId}</div>
         {score != null && (

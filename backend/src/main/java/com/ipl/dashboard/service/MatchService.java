@@ -4,8 +4,10 @@ import com.ipl.dashboard.dto.MatchDTO;
 import com.ipl.dashboard.dto.StatsDTO;
 import com.ipl.dashboard.model.Match;
 import com.ipl.dashboard.model.Player;
+import com.ipl.dashboard.model.Venue;
 import com.ipl.dashboard.repository.MatchRepository;
 import com.ipl.dashboard.repository.PlayerRepository;
+import com.ipl.dashboard.repository.VenueRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +22,7 @@ public class MatchService {
 
     private final MatchRepository  matchRepository;
     private final PlayerRepository playerRepository;
+    private final VenueRepository  venueRepository;
 
     private static final Map<String, String> TEAM_NAMES = Map.ofEntries(
         Map.entry("MI",   "Mumbai Indians"),
@@ -218,8 +221,12 @@ public class MatchService {
     // ── MAPPER ────────────────────────────────────────────────────────────────
 
     private MatchDTO toDTO(Match m) {
+        Venue v = m.getVenue();
         return MatchDTO.builder()
-                .id(m.getId()).matchNo(m.getMatchNo()).date(m.getDate()).venue(m.getVenue())
+                .id(m.getId()).matchNo(m.getMatchNo()).date(m.getDate())
+                .venueId(v != null ? v.getId() : null)
+                .venueName(v != null ? v.getName() : null)
+                .venueCity(v != null ? v.getCity() : null)
                 .team1(m.getTeam1()).team2(m.getTeam2())
                 .team1Score(m.getTeam1Score()).team1Wickets(m.getTeam1Wickets()).team1Overs(m.getTeam1Overs())
                 .team2Score(m.getTeam2Score()).team2Wickets(m.getTeam2Wickets()).team2Overs(m.getTeam2Overs())
@@ -240,9 +247,12 @@ public class MatchService {
         Player mom          = resolvePlayer(dto.getPlayerOfMatchId());
         Player topScorer    = resolvePlayer(dto.getTopScorerId());
         Player topWktTaker  = resolvePlayer(dto.getTopWicketTakerId());
+        Venue  venue        = dto.getVenueId() != null
+                                ? venueRepository.findById(dto.getVenueId()).orElse(null)
+                                : null;
 
         return Match.builder()
-                .matchNo(dto.getMatchNo()).date(dto.getDate()).venue(dto.getVenue())
+                .matchNo(dto.getMatchNo()).date(dto.getDate()).venue(venue)
                 .team1(dto.getTeam1()).team2(dto.getTeam2())
                 .team1Score(dto.getTeam1Score()).team1Wickets(dto.getTeam1Wickets()).team1Overs(dto.getTeam1Overs())
                 .team2Score(dto.getTeam2Score()).team2Wickets(dto.getTeam2Wickets()).team2Overs(dto.getTeam2Overs())

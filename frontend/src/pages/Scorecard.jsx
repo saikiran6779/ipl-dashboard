@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import toast from 'react-hot-toast'
-import { Spinner, Button, Input, Select } from '../components/UI'
+import { Spinner, Button, Input, Select, TeamLogo } from '../components/UI'
 import { getSquad, getScorecard, saveScorecard, createPlayer } from '../services/api'
 import { getTeam, formatDate } from '../services/constants'
 
@@ -43,13 +43,15 @@ function TeamTabs({ teams, active, onChange }) {
                 const isActive = active === tid
                 return (
                     <button key={tid} onClick={() => onChange(tid)} style={{
-                        flex: 1, padding: '12px 16px', border: 'none', cursor: 'pointer',
+                        flex: 1, padding: '10px 16px', border: 'none', cursor: 'pointer',
                         background: isActive ? 'var(--bg-elevated)' : 'var(--bg-subtle)',
                         borderBottom: isActive ? `2px solid ${team.color}` : '2px solid transparent',
                         color: isActive ? team.color : 'var(--text-secondary)',
-                        fontFamily: "'Bebas Neue',sans-serif", fontSize: 17, letterSpacing: 1.5,
+                        fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, letterSpacing: 1.5,
                         transition: 'all 0.2s', marginBottom: -1,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                     }}>
+                        <TeamLogo teamId={tid} size={20} />
                         {tid}
                     </button>
                 )
