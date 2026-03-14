@@ -1,0 +1,4 @@
+IPL Dashboard
+Branch : ${git.branch}
+Commit : ${git.commit.id.abbrev}  (${git.commit.time})
+Built  : ${git.build.time}
