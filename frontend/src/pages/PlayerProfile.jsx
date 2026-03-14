@@ -4,6 +4,7 @@ import { GiCricketBat, GiCricket, GiTennisBall, GiGloves } from 'react-icons/gi'
 import { Spinner } from '../components/UI'
 import { getProfile, updatePlayer } from '../services/api'
 import { getTeam, formatDate } from '../services/constants'
+import { useAuth } from '../context/AuthContext'
 
 const IPL_PLACEHOLDER = 'https://documents.iplt20.com/ipl/assets/images/Default-Men.png'
 
@@ -399,6 +400,7 @@ function MatchLog({ log }) {
 
 // ── Main Profile Page ─────────────────────────────────────────────────────
 export default function PlayerProfile({ playerId, onBack, onOpenTeam }) {
+    const { isAdmin } = useAuth()
     const [profile,    setProfile]    = useState(null)
     const [loading,    setLoading]    = useState(true)
     const [editingUrl, setEditingUrl] = useState(false)
@@ -494,17 +496,19 @@ export default function PlayerProfile({ playerId, onBack, onOpenTeam }) {
                                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                             />
                         </div>
-                        <button
-                            onClick={() => { setUrlInput(profile.profilePictureUrl || ''); setEditingUrl(true) }}
-                            title="Set photo URL"
-                            style={{
-                                position: 'absolute', bottom: 2, right: 2,
-                                width: 28, height: 28, borderRadius: '50%',
-                                background: team.color, border: '2px solid var(--bg-base)',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                cursor: 'pointer', fontSize: 12, color: '#fff',
-                            }}
-                        >✎</button>
+                        {isAdmin && (
+                            <button
+                                onClick={() => { setUrlInput(profile.profilePictureUrl || ''); setEditingUrl(true) }}
+                                title="Set photo URL"
+                                style={{
+                                    position: 'absolute', bottom: 2, right: 2,
+                                    width: 28, height: 28, borderRadius: '50%',
+                                    background: team.color, border: '2px solid var(--bg-base)',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    cursor: 'pointer', fontSize: 12, color: '#fff',
+                                }}
+                            >✎</button>
+                        )}
                         {/* overseas badge */}
                         {profile.nationality && profile.nationality !== 'Indian' && (
                             <div title={`Overseas · ${profile.nationality}`} style={{
