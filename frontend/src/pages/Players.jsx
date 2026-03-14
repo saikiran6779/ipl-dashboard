@@ -5,6 +5,8 @@ import { getPlayers, createPlayer, deletePlayer } from '../services/api'
 import { TEAMS, getTeam } from '../services/constants'
 import { useAuth } from '../context/AuthContext'
 
+const IPL_PLACEHOLDER = 'https://documents.iplt20.com/ipl/assets/images/Default-Men.png'
+
 const ROLES = ['BAT', 'BOWL', 'ALL', 'WK']
 const ROLE_LABELS = { BAT: 'Batter', BOWL: 'Bowler', ALL: 'All-rounder', WK: 'Wicket-keeper' }
 const ROLE_COLORS = { BAT: '#f97316', BOWL: '#8b5cf6', ALL: '#22c55e', WK: '#3b82f6' }
@@ -104,10 +106,10 @@ function PlayerCard({ player, onOpenProfile, onOpenTeam, onDelete, canDelete }) 
             style={{
                 background: 'var(--bg-elevated)',
                 border: `1px solid ${hover ? team.color + '66' : 'var(--border-subtle)'}`,
-                borderRadius: 12, padding: '16px', cursor: 'pointer',
+                borderRadius: 14, padding: '16px', cursor: 'pointer',
                 transition: 'border-color 0.2s, transform 0.2s, box-shadow 0.2s',
-                transform: hover ? 'translateY(-2px)' : 'none',
-                boxShadow: hover ? `0 4px 20px ${team.color}22` : 'none',
+                transform: hover ? 'translateY(-3px)' : 'none',
+                boxShadow: hover ? `0 6px 24px ${team.color}33` : 'none',
                 position: 'relative', overflow: 'hidden',
             }}
             onClick={() => onOpenProfile(player.id)}
@@ -115,45 +117,46 @@ function PlayerCard({ player, onOpenProfile, onOpenTeam, onDelete, canDelete }) 
             {/* team color strip */}
             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: team.color }} />
 
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginTop: 6 }}>
+            {/* player info */}
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginTop: 6, gap: 12 }}>
                 {/* avatar */}
                 <div style={{
-                    width: 40, height: 40, borderRadius: '50%', flexShrink: 0, marginRight: 10,
-                    background: `linear-gradient(135deg, ${team.color}44, ${team.color}11)`,
-                    border: `1.5px solid ${team.color}66`,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    overflow: 'hidden',
+                    width: 56, height: 56, borderRadius: '50%', flexShrink: 0,
+                    border: `2px solid ${team.color}55`,
+                    boxShadow: hover ? `0 0 12px ${team.color}44` : 'none',
+                    transition: 'box-shadow 0.2s',
+                    overflow: 'hidden', background: `${team.color}11`,
                 }}>
-                    {player.profilePictureUrl
-                        ? <img src={player.profilePictureUrl} alt={player.name}
-                               style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        : <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: team.color }}>
-                            {player.name.charAt(0)}
-                          </span>
-                    }
+                    <img
+                        src={player.profilePictureUrl || IPL_PLACEHOLDER}
+                        alt={player.name}
+                        onError={e => { e.target.src = IPL_PLACEHOLDER }}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
                 </div>
 
                 <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--text-primary)', marginBottom: 4,
+                    <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--text-primary)', marginBottom: 6,
                         whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {player.name}
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexWrap: 'wrap' }}>
                         <div
                             onClick={e => { e.stopPropagation(); onOpenTeam(player.teamId) }}
                             title={`View ${team.name}`}
                             style={{ fontSize: 10, fontWeight: 700, color: team.color,
-                                background: team.color + '22', borderRadius: 4, padding: '2px 6px',
-                                cursor: 'pointer', transition: 'background 0.15s' }}
+                                background: team.color + '22', borderRadius: 10, padding: '2px 8px',
+                                cursor: 'pointer', transition: 'background 0.15s', border: `1px solid ${team.color}33` }}
                             onMouseEnter={e => e.currentTarget.style.background = team.color + '44'}
                             onMouseLeave={e => e.currentTarget.style.background = team.color + '22'}
                         >
                             {player.teamId}
                         </div>
                         <div title={ROLE_LABELS[player.role]}
-                            style={{ fontSize: 9, fontWeight: 700, letterSpacing: 0.5,
+                            style={{ fontSize: 9, fontWeight: 700, letterSpacing: 0.4,
                                 color: ROLE_COLORS[player.role],
-                                background: ROLE_COLORS[player.role] + '22', borderRadius: 4, padding: '2px 5px' }}>
+                                background: ROLE_COLORS[player.role] + '1a', borderRadius: 10, padding: '2px 7px',
+                                border: `1px solid ${ROLE_COLORS[player.role]}33` }}>
                             {ROLE_SHORT[player.role]}
                         </div>
                     </div>
@@ -289,7 +292,7 @@ export default function Players({ onOpenProfile, onOpenTeam }) {
                                 {grouped[teamId].length} player{grouped[teamId].length !== 1 ? 's' : ''}
                             </div>
                         </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px,1fr))', gap: 10 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(190px,1fr))', gap: 10 }}>
                             {grouped[teamId].map((p, i) => (
                                 <PlayerCard
                                     key={p.id}
