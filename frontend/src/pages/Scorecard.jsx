@@ -188,17 +188,49 @@ function AddPlayerInline({ teamId, onAdded }) {
 }
 
 // ── Read-only scorecard view ──────────────────────────────────────────────
+// ── Format dismissal with bowler / catcher names ──────────────────────────
+function fmtDismissal(e) {
+    const d = e.dismissal
+    if (!d || d === 'not out') return { label: 'not out', detail: null }
+    const b = e.dismissedByName
+    const c = e.caughtByName
+    switch (d) {
+        case 'bowled':          return { label: 'b.', detail: b }
+        case 'lbw':             return { label: 'lbw b.', detail: b }
+        case 'caught':          return { label: c ? `c. ${c}` : 'caught', detail: b ? `b. ${b}` : null }
+        case 'caught and bowled': return { label: 'c&b', detail: b }
+        case 'stumped':         return { label: c ? `st. ${c}` : 'stumped', detail: b ? `b. ${b}` : null }
+        case 'run out':         return { label: 'run out', detail: c ? `(${c})` : null }
+        case 'hit wicket':      return { label: 'hit wkt b.', detail: b }
+        case 'retired hurt':    return { label: 'retired hurt', detail: null }
+        default:                return { label: d, detail: null }
+    }
+}
+
 function ScorecardView({ entries, teams }) {
     const [teamTab,    setTeamTab]    = useState(teams[0])
     const [sectionTab, setSectionTab] = useState('batting')
 
     const teamEntries = entries.filter(e => e.teamId === teamTab)
 
+    // ── Per-tab filtered sets ──────────────────────────────────────────────
+    const battedEntries   = teamEntries.filter(e => e.balls != null || e.runs != null)
+    const yetToBatEntries = teamEntries.filter(e => e.balls == null && e.runs == null)
+    // If 11 batters already recorded, suppress "yet to bat" (impact player slot)
+    const showYetToBat    = battedEntries.length < 11 && yetToBatEntries.length > 0
+
+    const bowlingEntries  = teamEntries.filter(e => e.oversBowled != null)
+    const fieldingEntries = teamEntries.filter(e => (e.catches ?? 0) > 0 || (e.runOuts ?? 0) > 0)
+
     const SECTION_TABS = [
         { id: 'batting',  label: '🏏 Batting' },
         { id: 'bowling',  label: '⚡ Bowling' },
         { id: 'fielding', label: '🧤 Fielding' },
     ]
+
+    const activeRows = sectionTab === 'batting'  ? battedEntries
+                     : sectionTab === 'bowling'  ? bowlingEntries
+                     :                             fieldingEntries
 
     return (
         <div>
@@ -220,19 +252,25 @@ function ScorecardView({ entries, teams }) {
                 </div>
             )}
 
-            {teamEntries.length > 0 && (
+            {teamEntries.length > 0 && activeRows.length === 0 && (
+                <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-secondary)', fontSize: 13 }}>
+                    No {sectionTab} data recorded
+                </div>
+            )}
+
+            {activeRows.length > 0 && (
                 <div style={{ overflowX: 'auto' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                         <thead>
                         <tr style={{ background: 'var(--bg-subtle)' }}>
                             <th style={thStyle('left')}>Player</th>
                             {sectionTab === 'batting'  && ['Runs','Balls','4s','6s','SR','Dismissal'].map((h,i) => <th key={i} style={thStyle()}>{h}</th>)}
-                            {sectionTab === 'bowling'  && ['Overs','Wickets','Runs','Economy'].map((h,i)         => <th key={i} style={thStyle()}>{h}</th>)}
-                            {sectionTab === 'fielding' && ['Catches','Run Outs'].map((h,i)                        => <th key={i} style={thStyle()}>{h}</th>)}
+                            {sectionTab === 'bowling'  && ['Overs','Wickets','Runs','Economy'].map((h,i)        => <th key={i} style={thStyle()}>{h}</th>)}
+                            {sectionTab === 'fielding' && ['Catches','Run Outs'].map((h,i)                      => <th key={i} style={thStyle()}>{h}</th>)}
                         </tr>
                         </thead>
                         <tbody>
-                        {teamEntries.map(e => (
+                        {activeRows.map(e => (
                             <tr key={e.statsId} style={{ borderTop: '1px solid var(--border-subtle)', transition: 'background 0.15s' }}
                                 onMouseEnter={ev => ev.currentTarget.style.background = 'var(--bg-hover)'}
                                 onMouseLeave={ev => ev.currentTarget.style.background = 'transparent'}
@@ -241,14 +279,27 @@ function ScorecardView({ entries, teams }) {
                                     <div style={{ fontWeight: 600, fontSize: 13 }}>{e.playerName}</div>
                                     <div style={{ fontSize: 10, color: ROLE_COLORS[e.role] }}>{ROLE_LABELS[e.role]}</div>
                                 </td>
-                                {sectionTab === 'batting' && <>
-                                    <td style={tdStyle(e.runs >= 50 ? '#f97316' : e.runs >= 30 ? '#22c55e' : 'var(--text-primary)', true)}>{e.runs ?? '—'}</td>
-                                    <td style={tdStyle()}>{e.balls ?? '—'}</td>
-                                    <td style={tdStyle('#22c55e')}>{e.fours ?? '—'}</td>
-                                    <td style={tdStyle('#f97316')}>{e.sixes ?? '—'}</td>
-                                    <td style={tdStyle()}>{e.strikeRate?.toFixed(1) ?? '—'}</td>
-                                    <td style={{ padding: '10px 12px', fontSize: 11, color: e.dismissal === 'not out' ? '#22c55e' : 'var(--text-secondary)' }}>{e.dismissal ?? '—'}</td>
-                                </>}
+                                {sectionTab === 'batting' && (() => {
+                                    const dis = fmtDismissal(e)
+                                    const isNotOut = dis.label === 'not out'
+                                    return (<>
+                                        <td style={tdStyle(e.runs >= 50 ? '#f97316' : e.runs >= 30 ? '#22c55e' : 'var(--text-primary)', true)}>{e.runs ?? '—'}</td>
+                                        <td style={tdStyle()}>{e.balls ?? '—'}</td>
+                                        <td style={tdStyle('#22c55e')}>{e.fours ?? '—'}</td>
+                                        <td style={tdStyle('#f97316')}>{e.sixes ?? '—'}</td>
+                                        <td style={tdStyle()}>{e.strikeRate?.toFixed(1) ?? '—'}</td>
+                                        <td style={{ padding: '10px 12px', fontSize: 11, whiteSpace: 'nowrap' }}>
+                                            <span style={{ color: isNotOut ? '#22c55e' : 'var(--text-secondary)' }}>
+                                                {dis.label}
+                                            </span>
+                                            {dis.detail && (
+                                                <span style={{ color: 'var(--text-muted)', marginLeft: 4 }}>
+                                                    {dis.detail}
+                                                </span>
+                                            )}
+                                        </td>
+                                    </>)
+                                })()}
                                 {sectionTab === 'bowling' && <>
                                     <td style={tdStyle()}>{e.oversBowled ?? '—'}</td>
                                     <td style={tdStyle(e.wickets >= 3 ? '#8b5cf6' : 'var(--text-primary)', true)}>{e.wickets ?? '—'}</td>
@@ -261,6 +312,23 @@ function ScorecardView({ entries, teams }) {
                                 </>}
                             </tr>
                         ))}
+
+                        {/* Yet to bat row — only shown when fewer than 11 batters recorded */}
+                        {sectionTab === 'batting' && showYetToBat && (
+                            <tr style={{ borderTop: '2px dashed var(--border-subtle)' }}>
+                                <td colSpan={7} style={{ padding: '10px 12px' }}>
+                                    <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1, marginRight: 8 }}>
+                                        Yet to bat
+                                    </span>
+                                    {yetToBatEntries.map((e, i) => (
+                                        <span key={e.statsId} style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+                                            {i > 0 && <span style={{ color: 'var(--border-input)', margin: '0 4px' }}>·</span>}
+                                            {e.playerName}
+                                        </span>
+                                    ))}
+                                </td>
+                            </tr>
+                        )}
                         </tbody>
                     </table>
                 </div>
