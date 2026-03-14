@@ -282,15 +282,15 @@ export default function MatchForm({ editMatch, onSubmit, onCancel, loading }) {
           onClick={() => fileInputRef.current?.click()}
           style={{
             padding: '8px 16px', borderRadius: 8,
-            border: '1px solid rgba(20,184,166,0.5)',
-            background: 'rgba(20,184,166,0.08)',
-            color: '#14b8a6', cursor: 'pointer',
+            border: '1px solid rgba(13,148,136,0.5)',
+            background: 'rgba(13,148,136,0.08)',
+            color: '#0d9488', cursor: 'pointer',
             fontWeight: 600, fontSize: 13,
             fontFamily: 'DM Sans, sans-serif',
             transition: 'all 0.2s',
           }}
-          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(20,184,166,0.15)'; e.currentTarget.style.borderColor = '#14b8a6' }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(20,184,166,0.08)'; e.currentTarget.style.borderColor = 'rgba(20,184,166,0.5)' }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(13,148,136,0.15)'; e.currentTarget.style.borderColor = '#0d9488' }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(13,148,136,0.08)'; e.currentTarget.style.borderColor = 'rgba(13,148,136,0.5)' }}
         >
           📂 Load from JSON
         </button>
@@ -301,14 +301,14 @@ export default function MatchForm({ editMatch, onSubmit, onCancel, loading }) {
         <SectionLabel>Match Info</SectionLabel>
         {jsonWarnings.length > 0 && (
           <div style={{
-            background: 'rgba(234,179,8,0.08)', border: '1px solid rgba(234,179,8,0.3)',
+            background: 'rgba(217,119,6,0.1)', border: '1px solid rgba(217,119,6,0.4)',
             borderRadius: 8, padding: '10px 14px', marginBottom: 16,
           }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: '#eab308', marginBottom: 6 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: '#d97706', marginBottom: 6 }}>
               ⚠️ Some fields need manual input:
             </div>
             {jsonWarnings.map((w, i) => (
-              <div key={i} style={{ fontSize: 11, color: '#ca8a04', marginTop: 3 }}>• {w}</div>
+              <div key={i} style={{ fontSize: 11, color: '#d97706', marginTop: 3 }}>• {w}</div>
             ))}
           </div>
         )}
@@ -348,7 +348,7 @@ export default function MatchForm({ editMatch, onSubmit, onCancel, loading }) {
         {/* Result */}
         <SectionLabel>Result</SectionLabel>
         <div style={{ marginBottom: 14 }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13, color: '#c9d1d9' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13, color: 'var(--text-primary)' }}>
             <input
               type="checkbox"
               name="noResult"
@@ -391,25 +391,25 @@ export default function MatchForm({ editMatch, onSubmit, onCancel, loading }) {
         )}
         {(jsonHints.playerOfMatchName || jsonHints.topScorerName || jsonHints.topWicketTakerName) && (
           <div style={{
-            background: 'rgba(20,184,166,0.06)', border: '1px solid rgba(20,184,166,0.25)',
+            background: 'rgba(13,148,136,0.1)', border: '1px solid rgba(13,148,136,0.35)',
             borderRadius: 8, padding: '10px 14px', marginBottom: 16,
           }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: '#14b8a6', marginBottom: 6 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: '#0d9488', marginBottom: 6 }}>
               📂 JSON suggestions — search and select below:
             </div>
             {jsonHints.playerOfMatchName && (
-              <div style={{ fontSize: 11, color: '#5eead4', marginTop: 3 }}>
-                • Player of Match: <span style={{ color: '#ccfbf1', fontWeight: 600 }}>{jsonHints.playerOfMatchName}</span>
+              <div style={{ fontSize: 11, color: '#0d9488', marginTop: 3 }}>
+                • Player of Match: <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{jsonHints.playerOfMatchName}</span>
               </div>
             )}
             {jsonHints.topScorerName && (
-              <div style={{ fontSize: 11, color: '#5eead4', marginTop: 3 }}>
-                • Top Scorer: <span style={{ color: '#ccfbf1', fontWeight: 600 }}>{jsonHints.topScorerName}</span>
+              <div style={{ fontSize: 11, color: '#0d9488', marginTop: 3 }}>
+                • Top Scorer: <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{jsonHints.topScorerName}</span>
               </div>
             )}
             {jsonHints.topWicketTakerName && (
-              <div style={{ fontSize: 11, color: '#5eead4', marginTop: 3 }}>
-                • Top Wicket Taker: <span style={{ color: '#ccfbf1', fontWeight: 600 }}>{jsonHints.topWicketTakerName}</span>
+              <div style={{ fontSize: 11, color: '#0d9488', marginTop: 3 }}>
+                • Top Wicket Taker: <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{jsonHints.topWicketTakerName}</span>
               </div>
             )}
           </div>
