@@ -78,8 +78,7 @@ public class AuthService {
         }
 
         User user = stored.getUser();
-        // Rotate the refresh token
-        refreshTokenRepository.delete(stored);
+        // Rotate the refresh token (buildTokenResponse will update the existing record)
         return buildTokenResponse(user);
     }
 
@@ -142,13 +141,19 @@ public class AuthService {
         String accessToken = jwtService.generateToken(user);
         String refreshTokenValue = UUID.randomUUID().toString();
 
-        // Upsert refresh token (one per user)
-        refreshTokenRepository.deleteByUser(user);
-        RefreshToken refreshToken = RefreshToken.builder()
-                .token(refreshTokenValue)
-                .user(user)
-                .expiresAt(LocalDateTime.now().plusDays(refreshExpirationDays))
-                .build();
+        // Upsert refresh token (one per user) — update existing to avoid race condition
+        // on the unique user_id constraint when concurrent logins arrive simultaneously
+        RefreshToken refreshToken = refreshTokenRepository.findByUser(user)
+                .map(existing -> {
+                    existing.setToken(refreshTokenValue);
+                    existing.setExpiresAt(LocalDateTime.now().plusDays(refreshExpirationDays));
+                    return existing;
+                })
+                .orElseGet(() -> RefreshToken.builder()
+                        .token(refreshTokenValue)
+                        .user(user)
+                        .expiresAt(LocalDateTime.now().plusDays(refreshExpirationDays))
+                        .build());
         refreshTokenRepository.save(refreshToken);
 
         return AuthDTO.TokenResponse.builder()
