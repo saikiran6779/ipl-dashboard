@@ -466,6 +466,8 @@ export default function ScorecardImportModal({
           entry.runsConceded      = row.runsConceded
           entry.wides             = row.wides
           entry.noBalls           = row.noBalls
+          entry.byes              = row.byes
+          entry.legByes           = row.legByes
           entry.maidens           = row.maidens
           entry.dotBalls          = row.dotBalls
           entry.ppRunsConceded    = row.ppRuns             // bowling ppRuns → ppRunsConceded

@@ -347,7 +347,7 @@ function _parseBowling(inn) {
       bowlers[name] = {
         bowlingOrder: bowlingOrderCounter,  // 1 = opened bowling
         balls: 0, runs: 0, wickets: 0,
-        wides: 0, noBalls: 0, maidens: 0, dotBalls: 0,
+        wides: 0, noBalls: 0, byes: 0, legByes: 0, maidens: 0, dotBalls: 0,
         ppRuns: 0, ppBalls: 0,
         midRuns: 0, midBalls: 0,
         deathRuns: 0, deathBalls: 0,
@@ -389,6 +389,9 @@ function _parseBowling(inn) {
 
         bl.runs        += bowlerRuns
         overBowlerRuns += bowlerRuns
+
+        if (extras.byes    > 0) bl.byes    += extras.byes
+        if (extras.legbyes > 0) bl.legByes += extras.legbyes
 
         if (isWide) {
           bl.wides++
@@ -444,6 +447,8 @@ function _parseBowling(inn) {
         runsConceded:  s.runs,
         wides:         s.wides    || null,
         noBalls:       s.noBalls  || null,
+        byes:          s.byes     || null,
+        legByes:       s.legByes  || null,
         maidens:       s.maidens  || null,
         dotBalls:      s.dotBalls || null,
         ppRuns:        s.ppRuns   || null,

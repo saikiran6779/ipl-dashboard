@@ -60,6 +60,8 @@ public class PlayerMatchStats {
     private Integer runsConceded;
     private Integer wides;
     private Integer noBalls;
+    private Integer byes;
+    private Integer legByes;
     private Integer maidens;
     private Integer dotBalls;
 

@@ -202,6 +202,8 @@ public class PlayerService {
             stats.setRunsConceded(e.getRunsConceded());
             stats.setWides(e.getWides());
             stats.setNoBalls(e.getNoBalls());
+            stats.setByes(e.getByes());
+            stats.setLegByes(e.getLegByes());
             stats.setMaidens(e.getMaidens());
             stats.setDotBalls(e.getDotBalls());
 
@@ -297,6 +299,7 @@ public class PlayerService {
                 .wickets(s.getWickets())
                 .runsConceded(s.getRunsConceded())
                 .wides(s.getWides()).noBalls(s.getNoBalls())
+                .byes(s.getByes()).legByes(s.getLegByes())
                 .maidens(s.getMaidens()).dotBalls(s.getDotBalls())
                 .economy(s.getEconomy())
                 // Bowling phases

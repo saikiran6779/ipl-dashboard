@@ -248,7 +248,9 @@ function ScorecardView({ entries, teams }) {
 
     const totalWides   = oppBowlers.reduce((s, e) => s + (e.wides   ?? 0), 0)
     const totalNoBalls = oppBowlers.reduce((s, e) => s + (e.noBalls ?? 0), 0)
-    const totalExtras  = totalWides + totalNoBalls
+    const totalByes    = oppBowlers.reduce((s, e) => s + (e.byes    ?? 0), 0)
+    const totalLegByes = oppBowlers.reduce((s, e) => s + (e.legByes ?? 0), 0)
+    const totalExtras  = totalWides + totalNoBalls + totalByes + totalLegByes
 
     const battingRuns  = battedEntries.reduce((s, e) => s + (e.runs ?? 0), 0)
     const totalScore   = battingRuns + totalExtras
@@ -306,6 +308,8 @@ function ScorecardView({ entries, teams }) {
                         const parts = []
                         if (totalWides   > 0) parts.push(`W: ${totalWides}`)
                         if (totalNoBalls > 0) parts.push(`NB: ${totalNoBalls}`)
+                        if (totalByes    > 0) parts.push(`B: ${totalByes}`)
+                        if (totalLegByes > 0) parts.push(`LB: ${totalLegByes}`)
                         return (
                             <span style={{ fontSize: 12, color: 'var(--text-muted)', marginLeft: 'auto' }}>
                                 Extras {totalExtras} ({parts.join(', ')})

@@ -119,6 +119,8 @@ public class PlayerDTO {
         private Integer runsConceded;
         private Integer wides;
         private Integer noBalls;
+        private Integer byes;
+        private Integer legByes;
         private Integer maidens;
         private Integer dotBalls;
 
@@ -175,6 +177,8 @@ public class PlayerDTO {
         private Integer runsConceded;
         private Integer wides;
         private Integer noBalls;
+        private Integer byes;
+        private Integer legByes;
         private Integer maidens;
         private Integer dotBalls;
         private Double  economy;
