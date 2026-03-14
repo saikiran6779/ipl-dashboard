@@ -7,8 +7,9 @@ export default function SuperAdminTeams() {
   const [teams,   setTeams]   = useState([])
   const [loading, setLoading] = useState(true)
   // logoUrls: { [teamId]: string } — tracks draft values before saving
-  const [logoUrls, setLogoUrls] = useState({})
-  const [busy,     setBusy]     = useState(null)  // teamId being saved
+  const [logoUrls,   setLogoUrls]   = useState({})
+  const [busy,       setBusy]       = useState(null)   // teamId being saved
+  const [imgErrors,  setImgErrors]  = useState({})     // teamIds whose preview failed
 
   useEffect(() => {
     getTeams()
@@ -28,8 +29,9 @@ export default function SuperAdminTeams() {
     try {
       await updateTeamLogo(teamId, logoUrls[teamId])
       toast.success(`${teamId} logo updated`)
-      // reflect saved value back into teams list
+      // reflect saved value back into teams list and clear any prior load error
       setTeams(prev => prev.map(t => t.id === teamId ? { ...t, logoUrl: logoUrls[teamId] || null } : t))
+      setImgErrors(prev => ({ ...prev, [teamId]: false }))
     } catch (err) {
       toast.error(err.response?.data?.error || 'Failed to update logo')
     } finally {
@@ -76,12 +78,12 @@ export default function SuperAdminTeams() {
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   overflow: 'hidden', flexShrink: 0,
                 }}>
-                  {team.logoUrl ? (
+                  {team.logoUrl && !imgErrors[team.id] ? (
                     <img
                       src={team.logoUrl}
                       alt={team.id}
                       style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                      onError={e => { e.currentTarget.style.display = 'none' }}
+                      onError={() => setImgErrors(prev => ({ ...prev, [team.id]: true }))}
                     />
                   ) : (
                     <span style={{ fontSize: 11, color: 'var(--text-secondary)', fontWeight: 700 }}>{team.id}</span>
