@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react'
 import toast from 'react-hot-toast'
 import { Spinner, Button, Input, Select, TeamLogo } from '../components/UI'
-import { getSquad, getScorecard, saveScorecard, createPlayer } from '../services/api'
+import { getSquad, getScorecard, saveScorecard, createPlayer, getPlayers } from '../services/api'
 import { getTeam, formatDate } from '../services/constants'
+import ScorecardImportModal from './ScorecardImportModal'
+
+const TEAL = '#0d9488'
 
 const ROLES      = ['BAT', 'BOWL', 'ALL', 'WK']
 const ROLE_LABELS = { BAT: 'Batter', BOWL: 'Bowler', ALL: 'All-rounder', WK: 'Wicket-keeper' }
@@ -277,7 +280,7 @@ const tdStyle = (color = 'var(--text-primary)', bold = false) => ({
 })
 
 // ── Entry form (edit mode) ────────────────────────────────────────────────
-function ScorecardEntry({ matchId, teams, onSaved }) {
+function ScorecardEntry({ matchId, teams, onSaved, match, allPlayers }) {
     const [squadA,     setSquadA]     = useState([])   // team1 squad
     const [squadB,     setSquadB]     = useState([])   // team2 squad
     const [entries,    setEntries]    = useState({})   // { playerId: entryObj }
@@ -286,6 +289,7 @@ function ScorecardEntry({ matchId, teams, onSaved }) {
     const [sectionTab, setSectionTab] = useState('batting')
     const [loadingSquad, setLoadingSquad] = useState(true)
     const [saving,     setSaving]     = useState(false)
+    const [showImport, setShowImport] = useState(false)
 
     const currentSquad = teamTab === teams[0] ? squadA : squadB
 
@@ -462,31 +466,66 @@ function ScorecardEntry({ matchId, teams, onSaved }) {
                 </div>
             )}
 
-            {/* Save */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: 16,
-                borderTop: '1px solid var(--border-subtle)', marginTop: 12 }}>
+            {/* Save / Import row */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                paddingTop: 16, borderTop: '1px solid var(--border-subtle)', marginTop: 12, gap: 10, flexWrap: 'wrap' }}>
+
+                {/* Import from JSON button */}
+                <button onClick={() => setShowImport(true)} style={{
+                    padding: '8px 18px', borderRadius: 8, border: `1px solid ${TEAL}`,
+                    background: `${TEAL}15`, color: TEAL, cursor: 'pointer',
+                    fontWeight: 600, fontSize: 13, fontFamily: 'DM Sans,sans-serif',
+                    transition: 'all 0.2s',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = `${TEAL}30` }}
+                onMouseLeave={e => { e.currentTarget.style.background = `${TEAL}15` }}
+                >
+                    📂 Import from JSON
+                </button>
+
                 <Button variant="primary" onClick={handleSave} disabled={saving}>
                     {saving ? 'Saving…' : '💾 Save Scorecard'}
                 </Button>
             </div>
+
+            {/* Scorecard Import Modal */}
+            {showImport && match && (
+                <ScorecardImportModal
+                    match={match}
+                    allPlayers={allPlayers || []}
+                    onImported={() => { setShowImport(false); onSaved() }}
+                    onClose={() => setShowImport(false)}
+                />
+            )}
         </div>
     )
 }
 
 // ── Main Scorecard Modal ──────────────────────────────────────────────────
-export default function ScorecardModal({ match, onClose, isAdmin = false }) {
-    const [mode,        setMode]        = useState('loading')  // loading | view | edit
+export default function ScorecardModal({ match, onClose, isAdmin = false, openImportDirectly = false }) {
+    const [mode,        setMode]        = useState('loading')  // loading | view | edit | import
     const [entries,     setEntries]     = useState([])
+    const [allPlayers,  setAllPlayers]  = useState([])
 
     const teams = [match.team1, match.team2]
 
     useEffect(() => {
+        // Load all players for import resolution
+        getPlayers().then(setAllPlayers).catch(() => {})
+
         getScorecard(match.id)
             .then(data => {
                 setEntries(data)
-                setMode(data.length > 0 ? 'view' : isAdmin ? 'edit' : 'view')
+                if (openImportDirectly) {
+                    setMode('import')
+                } else {
+                    setMode(data.length > 0 ? 'view' : isAdmin ? 'edit' : 'view')
+                }
             })
-            .catch(() => setMode(isAdmin ? 'edit' : 'view'))
+            .catch(() => {
+                if (openImportDirectly) setMode('import')
+                else setMode(isAdmin ? 'edit' : 'view')
+            })
     }, [match.id])
 
     const handleSaved = () => {
@@ -495,6 +534,18 @@ export default function ScorecardModal({ match, onClose, isAdmin = false }) {
             setEntries(data)
             setMode('view')
         })
+    }
+
+    // If import mode was opened directly (from Matches.jsx), show the import modal
+    if (mode === 'import') {
+        return (
+            <ScorecardImportModal
+                match={match}
+                allPlayers={allPlayers}
+                onImported={() => { handleSaved() }}
+                onClose={onClose}
+            />
+        )
     }
 
     return (
@@ -551,7 +602,7 @@ export default function ScorecardModal({ match, onClose, isAdmin = false }) {
                         <ScorecardView entries={entries} teams={teams} />
                     )}
                     {mode === 'edit' && (
-                        <ScorecardEntry matchId={match.id} teams={teams} onSaved={handleSaved} />
+                        <ScorecardEntry matchId={match.id} teams={teams} onSaved={handleSaved} match={match} allPlayers={allPlayers} />
                     )}
                 </div>
             </div>

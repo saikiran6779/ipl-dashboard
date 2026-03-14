@@ -6,7 +6,9 @@ import { getTeam, formatDate } from '../services/constants'
 
 // ── Single match card ──────────────────────────────────────────────────────
 
-function MatchCard({ m, onEdit, onDelete, onScorecard, isAdmin }) {
+const TEAL = '#0d9488'
+
+function MatchCard({ m, onEdit, onDelete, onScorecard, onImport, isAdmin }) {
   const [hovered, setHovered] = useState(false)
 
   const team1Won = !m.noResult && m.winner === m.team1
@@ -69,6 +71,17 @@ function MatchCard({ m, onEdit, onDelete, onScorecard, isAdmin }) {
               onMouseLeave={e => { e.currentTarget.style.background = 'var(--bg-hover)'; e.currentTarget.style.borderColor = 'var(--border-input)' }}
             >📋 Scorecard</button>
             {isAdmin && <>
+              <button
+                onClick={onImport}
+                style={{
+                  padding: '4px 10px', background: `${TEAL}15`,
+                  border: `1px solid ${TEAL}55`, borderRadius: 6, color: TEAL,
+                  cursor: 'pointer', fontSize: 12, fontWeight: 600,
+                  transition: 'background 0.15s',
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = `${TEAL}30`}
+                onMouseLeave={e => e.currentTarget.style.background = `${TEAL}15`}
+              >📂 Import</button>
               <button
                 onClick={onEdit}
                 style={{ padding: '4px 10px', background: 'var(--bg-hover)', border: '1px solid var(--border-input)', borderRadius: 6, color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 12 }}
@@ -253,6 +266,7 @@ function WinnerBadge({ match: m }) {
 export default function Matches({ matches, loading, onEdit, onDelete }) {
   const { isAdmin } = useAuth()
   const [scorecardMatch, setScorecardMatch] = useState(null)
+  const [importMatch,    setImportMatch]    = useState(null)
 
   if (loading) return <Spinner />
 
@@ -263,6 +277,14 @@ export default function Matches({ matches, loading, onEdit, onDelete }) {
           match={scorecardMatch}
           onClose={() => setScorecardMatch(null)}
           isAdmin={isAdmin}
+        />
+      )}
+      {importMatch && (
+        <ScorecardModal
+          match={importMatch}
+          onClose={() => setImportMatch(null)}
+          isAdmin={isAdmin}
+          openImportDirectly={true}
         />
       )}
 
@@ -285,6 +307,7 @@ export default function Matches({ matches, loading, onEdit, onDelete }) {
                 m={m}
                 isAdmin={isAdmin}
                 onScorecard={() => setScorecardMatch(m)}
+                onImport={() => setImportMatch(m)}
                 onEdit={() => onEdit(m)}
                 onDelete={() => onDelete(m.id)}
               />

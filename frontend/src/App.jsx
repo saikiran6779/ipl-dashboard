@@ -78,7 +78,9 @@ export default function App() {
 
   const handleDelete = async (id) => {
     if (!isAdmin) return
-    if (!window.confirm('Delete this match?')) return
+    if (!window.confirm(
+      'Delete this match?\n\nThis will also permanently delete all scorecard / player stats for this match.\nYou can re-import them later using "Import from JSON".'
+    )) return
     try {
       await deleteMatch(id)
       toast.success('Match deleted')

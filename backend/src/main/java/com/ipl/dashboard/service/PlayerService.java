@@ -146,6 +146,12 @@ public class PlayerService {
             Player player = playerRepo.findById(e.getPlayerId())
                     .orElseThrow(() -> new NoSuchElementException("Player not found: " + e.getPlayerId()));
 
+            // Resolve optional FK players
+            Player dismissedBy = e.getDismissedById() != null
+                    ? playerRepo.findById(e.getDismissedById()).orElse(null) : null;
+            Player caughtBy = e.getCaughtById() != null
+                    ? playerRepo.findById(e.getCaughtById()).orElse(null) : null;
+
             // Upsert: update existing row if present
             PlayerMatchStats stats = statsRepo
                     .findByPlayerIdAndMatchId(e.getPlayerId(), matchId)
@@ -154,14 +160,43 @@ public class PlayerService {
             stats.setPlayer(player);
             stats.setMatch(match);
             stats.setTeamId(player.getTeamId());
+
+            // Batting
+            stats.setBattingPosition(e.getBattingPosition());
             stats.setRuns(e.getRuns());
             stats.setBalls(e.getBalls());
             stats.setFours(e.getFours());
             stats.setSixes(e.getSixes());
             stats.setDismissal(e.getDismissal());
+            stats.setDismissedBy(dismissedBy);
+            stats.setCaughtBy(caughtBy);
+
+            // Batting phases
+            stats.setPpRuns(e.getPpRuns());
+            stats.setPpBalls(e.getPpBalls());
+            stats.setMidRuns(e.getMidRuns());
+            stats.setMidBalls(e.getMidBalls());
+            stats.setDeathRuns(e.getDeathRuns());
+            stats.setDeathBalls(e.getDeathBalls());
+
+            // Bowling
             stats.setOversBowled(e.getOversBowled());
             stats.setWickets(e.getWickets());
             stats.setRunsConceded(e.getRunsConceded());
+            stats.setWides(e.getWides());
+            stats.setNoBalls(e.getNoBalls());
+            stats.setMaidens(e.getMaidens());
+            stats.setDotBalls(e.getDotBalls());
+
+            // Bowling phases
+            stats.setPpRunsConceded(e.getPpRunsConceded());
+            stats.setPpBallsBowled(e.getPpBallsBowled());
+            stats.setMidRunsConceded(e.getMidRunsConceded());
+            stats.setMidBallsBowled(e.getMidBallsBowled());
+            stats.setDeathRunsConceded(e.getDeathRunsConceded());
+            stats.setDeathBallsBowled(e.getDeathBallsBowled());
+
+            // Fielding
             stats.setCatches(e.getCatches());
             stats.setRunOuts(e.getRunOuts());
 
@@ -225,14 +260,32 @@ public class PlayerService {
                 .playerName(s.getPlayer().getName())
                 .teamId(s.getTeamId())
                 .role(s.getPlayer().getRole())
+                // Batting
+                .battingPosition(s.getBattingPosition())
                 .runs(s.getRuns()).balls(s.getBalls())
                 .fours(s.getFours()).sixes(s.getSixes())
                 .dismissal(s.getDismissal())
+                .dismissedById(s.getDismissedBy() != null ? s.getDismissedBy().getId() : null)
+                .dismissedByName(s.getDismissedBy() != null ? s.getDismissedBy().getName() : null)
+                .caughtById(s.getCaughtBy() != null ? s.getCaughtBy().getId() : null)
+                .caughtByName(s.getCaughtBy() != null ? s.getCaughtBy().getName() : null)
                 .strikeRate(s.getStrikeRate())
+                // Batting phases
+                .ppRuns(s.getPpRuns()).ppBalls(s.getPpBalls()).ppStrikeRate(s.getPpStrikeRate())
+                .midRuns(s.getMidRuns()).midBalls(s.getMidBalls()).midStrikeRate(s.getMidStrikeRate())
+                .deathRuns(s.getDeathRuns()).deathBalls(s.getDeathBalls()).deathStrikeRate(s.getDeathStrikeRate())
+                // Bowling
                 .oversBowled(s.getOversBowled())
                 .wickets(s.getWickets())
                 .runsConceded(s.getRunsConceded())
+                .wides(s.getWides()).noBalls(s.getNoBalls())
+                .maidens(s.getMaidens()).dotBalls(s.getDotBalls())
                 .economy(s.getEconomy())
+                // Bowling phases
+                .ppRunsConceded(s.getPpRunsConceded()).ppBallsBowled(s.getPpBallsBowled()).ppEconomy(s.getPpEconomy())
+                .midRunsConceded(s.getMidRunsConceded()).midBallsBowled(s.getMidBallsBowled()).midEconomy(s.getMidEconomy())
+                .deathRunsConceded(s.getDeathRunsConceded()).deathBallsBowled(s.getDeathBallsBowled()).deathEconomy(s.getDeathEconomy())
+                // Fielding
                 .catches(s.getCatches()).runOuts(s.getRunOuts())
                 .build();
     }

@@ -1,0 +1,590 @@
+/**
+ * ScorecardImportModal — 3-step Cricsheet JSON import for a single match.
+ *
+ * Step 1 (upload):  Drop / select a Cricsheet JSON file.
+ *                   On load, all player names are auto-resolved via resolvePlayerFromJson.
+ * Step 2 (preview): Full batting + bowling tables per innings.
+ *                   Green chip   = auto-matched (click to override)
+ *                   Red combobox = unresolved (admin picks)
+ *                   Gray text    = non-striker only (never batted/bowled) — skipped
+ *                   Import button disabled until every non-skipped row is resolved.
+ * Step 3 (done):    Success confirmation.
+ *
+ * Props:
+ *   match        – match object { id, team1, team2, matchNo, date }
+ *   allPlayers   – full player list from GET /api/players (for combobox)
+ *   onImported() – called after successful save
+ *   onClose()    – called to close the modal
+ */
+
+import { useState, useRef, useCallback } from 'react'
+import toast from 'react-hot-toast'
+import { parseScorecardFromJson } from '../services/cricsheet'
+import { resolvePlayerFromJson } from '../services/constants'
+import { saveScorecard } from '../services/api'
+import { Button, PlayerCombobox } from '../components/UI'
+import { formatDate } from '../services/constants'
+
+// ── Teal colour (import actions) ──────────────────────────────────────────
+const TEAL = '#0d9488'
+
+// ── Helper: overs float → display string ─────────────────────────────────
+function fmtOvers(v) {
+  if (v == null) return '—'
+  return Number.isInteger(v) ? `${v}.0` : String(v)
+}
+
+// ── Inline player resolution chip / combobox ──────────────────────────────
+function PlayerResolver({ cricsheetName, resolvedId, allPlayers, onChange, skipped, onSkip }) {
+  const [overriding, setOverriding] = useState(false)
+
+  if (skipped) {
+    return (
+      <span style={{ fontSize: 11, color: 'var(--text-muted)', fontStyle: 'italic' }}>
+        not played
+      </span>
+    )
+  }
+
+  // Green chip: auto-matched or manually chosen
+  if (resolvedId && !overriding) {
+    const p = allPlayers.find(x => x.id === resolvedId)
+    return (
+      <span
+        title="Click to change"
+        onClick={() => setOverriding(true)}
+        style={{
+          display: 'inline-flex', alignItems: 'center', gap: 4,
+          fontSize: 11, fontWeight: 600,
+          color: TEAL, background: `${TEAL}18`,
+          border: `1px solid ${TEAL}55`,
+          borderRadius: 4, padding: '2px 7px',
+          cursor: 'pointer', whiteSpace: 'nowrap',
+        }}
+      >
+        ✓ {p ? p.name : `#${resolvedId}`}
+      </span>
+    )
+  }
+
+  // Red: unresolved or overriding
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 180 }}>
+      <div style={{ flex: 1 }}>
+        <PlayerCombobox
+          players={allPlayers}
+          value={resolvedId}
+          onChange={id => { onChange(id); setOverriding(false) }}
+        />
+      </div>
+      {onSkip && (
+        <button
+          title="Skip this player"
+          onClick={onSkip}
+          style={{
+            background: 'none', border: 'none', color: 'var(--text-muted)',
+            cursor: 'pointer', fontSize: 11, padding: '2px 4px',
+          }}
+        >skip</button>
+      )}
+    </div>
+  )
+}
+
+// ── Batting preview table for one innings ─────────────────────────────────
+function BattingTable({ rows, resolutions, allPlayers, onResolve, onSkip }) {
+  const thS = { padding: '7px 10px', fontSize: 10, fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: 1.2, whiteSpace: 'nowrap', textAlign: 'center' }
+  const tdS = (bold) => ({ padding: '8px 10px', textAlign: 'center', fontSize: bold ? 15 : 12, fontFamily: bold ? "'Bebas Neue',sans-serif" : 'inherit', color: 'var(--text-primary)' })
+
+  return (
+    <div style={{ overflowX: 'auto', marginBottom: 8 }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+        <thead>
+          <tr style={{ background: 'var(--bg-subtle)' }}>
+            <th style={{ ...thS, textAlign: 'left' }}>#</th>
+            <th style={{ ...thS, textAlign: 'left' }}>Batter (Cricsheet)</th>
+            <th style={{ ...thS, textAlign: 'left' }}>DB Player</th>
+            <th style={thS}>R</th>
+            <th style={thS}>B</th>
+            <th style={thS}>4s</th>
+            <th style={thS}>6s</th>
+            <th style={thS}>Dismissal</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map(row => {
+            const res = resolutions[row.cricsheetName] || {}
+            const isSkipped = res.skipped
+            return (
+              <tr key={row.cricsheetName}
+                style={{ borderTop: '1px solid var(--border-subtle)', opacity: isSkipped ? 0.45 : 1, transition: 'background 0.15s' }}
+                onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
+                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+              >
+                <td style={{ ...tdS(false), color: 'var(--text-muted)' }}>{row.position ?? '—'}</td>
+                <td style={{ padding: '8px 10px', fontSize: 12, color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
+                  {row.cricsheetName}
+                </td>
+                <td style={{ padding: '8px 10px' }}>
+                  <PlayerResolver
+                    cricsheetName={row.cricsheetName}
+                    resolvedId={res.playerId ?? null}
+                    allPlayers={allPlayers}
+                    onChange={id => onResolve(row.cricsheetName, id)}
+                    skipped={isSkipped}
+                    onSkip={() => onSkip(row.cricsheetName)}
+                  />
+                </td>
+                <td style={tdS(true)}>{row.runs}</td>
+                <td style={tdS(false)}>{row.balls}</td>
+                <td style={{ ...tdS(false), color: '#22c55e' }}>{row.fours}</td>
+                <td style={{ ...tdS(false), color: '#f97316' }}>{row.sixes}</td>
+                <td style={{ padding: '8px 10px', fontSize: 11, color: row.dismissal === 'not out' ? '#22c55e' : 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
+                  {row.dismissal}
+                  {row.dismissedBy && <span style={{ color: 'var(--text-muted)' }}> b. {row.dismissedBy}</span>}
+                  {row.caughtBy    && <span style={{ color: 'var(--text-muted)' }}> c. {row.caughtBy}</span>}
+                </td>
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+// ── Bowling preview table for one innings ─────────────────────────────────
+function BowlingTable({ rows, resolutions, allPlayers, onResolve, onSkip }) {
+  const thS = { padding: '7px 10px', fontSize: 10, fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: 1.2, whiteSpace: 'nowrap', textAlign: 'center' }
+  const tdS = (bold) => ({ padding: '8px 10px', textAlign: 'center', fontSize: bold ? 15 : 12, fontFamily: bold ? "'Bebas Neue',sans-serif" : 'inherit', color: 'var(--text-primary)' })
+
+  return (
+    <div style={{ overflowX: 'auto' }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+        <thead>
+          <tr style={{ background: 'var(--bg-subtle)' }}>
+            <th style={{ ...thS, textAlign: 'left' }}>Bowler (Cricsheet)</th>
+            <th style={{ ...thS, textAlign: 'left' }}>DB Player</th>
+            <th style={thS}>O</th>
+            <th style={thS}>R</th>
+            <th style={thS}>W</th>
+            <th style={thS}>Wd</th>
+            <th style={thS}>Nb</th>
+            <th style={thS}>Dots</th>
+            <th style={thS}>Econ</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map(row => {
+            const res = resolutions[row.cricsheetName] || {}
+            const isSkipped = res.skipped
+            const econ = row.oversBowled > 0
+              ? (row.runsConceded / row.oversBowled).toFixed(2) : '—'
+            return (
+              <tr key={row.cricsheetName}
+                style={{ borderTop: '1px solid var(--border-subtle)', opacity: isSkipped ? 0.45 : 1, transition: 'background 0.15s' }}
+                onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
+                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+              >
+                <td style={{ padding: '8px 10px', fontSize: 12, color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
+                  {row.cricsheetName}
+                </td>
+                <td style={{ padding: '8px 10px' }}>
+                  <PlayerResolver
+                    cricsheetName={row.cricsheetName}
+                    resolvedId={res.playerId ?? null}
+                    allPlayers={allPlayers}
+                    onChange={id => onResolve(row.cricsheetName, id)}
+                    skipped={isSkipped}
+                    onSkip={() => onSkip(row.cricsheetName)}
+                  />
+                </td>
+                <td style={tdS(false)}>{fmtOvers(row.oversBowled)}</td>
+                <td style={tdS(true)}>{row.runsConceded}</td>
+                <td style={{ ...tdS(true), color: row.wickets >= 3 ? '#8b5cf6' : 'var(--text-primary)' }}>{row.wickets}</td>
+                <td style={tdS(false)}>{row.wides ?? 0}</td>
+                <td style={tdS(false)}>{row.noBalls ?? 0}</td>
+                <td style={tdS(false)}>{row.dotBalls ?? 0}</td>
+                <td style={{ ...tdS(false), color: parseFloat(econ) < 7 ? '#22c55e' : parseFloat(econ) < 9 ? 'var(--text-primary)' : '#ef4444' }}>{econ}</td>
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+// ── Main modal ────────────────────────────────────────────────────────────
+export default function ScorecardImportModal({ match, allPlayers, onImported, onClose }) {
+  const [step,        setStep]        = useState('upload')  // upload | preview | done
+  const [parsedData,  setParsedData]  = useState(null)      // { innings: [...] }
+  const [resolutions, setResolutions] = useState({})        // { cricsheetName: { playerId, skipped } }
+  const [dragging,    setDragging]    = useState(false)
+  const [importing,   setImporting]   = useState(false)
+  const fileRef = useRef(null)
+
+  // ── Parse JSON and auto-resolve players ──────────────────────────────────
+  const processFile = useCallback((file) => {
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      try {
+        const json = JSON.parse(e.target.result)
+        const parsed = parseScorecardFromJson(json)
+
+        // Collect every unique cricsheet name across all innings
+        const allNames = new Set()
+        for (const inn of parsed.innings) {
+          inn.battingRows.forEach(r => allNames.add(r.cricsheetName))
+          inn.bowlingRows.forEach(r => allNames.add(r.cricsheetName))
+        }
+
+        // Auto-resolve via constants.js helper
+        const res = {}
+        for (const name of allNames) {
+          const player = resolvePlayerFromJson(name, allPlayers)
+          res[name] = { playerId: player?.id ?? null, skipped: false }
+        }
+
+        setParsedData(parsed)
+        setResolutions(res)
+        setStep('preview')
+      } catch {
+        toast.error('Invalid JSON file — could not parse')
+      }
+    }
+    reader.readAsText(file)
+  }, [allPlayers])
+
+  const handleFilePick = (e) => processFile(e.target.files?.[0])
+
+  const handleDrop = (e) => {
+    e.preventDefault()
+    setDragging(false)
+    processFile(e.dataTransfer.files?.[0])
+  }
+
+  // ── Resolution helpers ────────────────────────────────────────────────────
+  const resolvePlayer = (cricsheetName, playerId) => {
+    setResolutions(r => ({ ...r, [cricsheetName]: { ...r[cricsheetName], playerId, skipped: false } }))
+  }
+
+  const skipPlayer = (cricsheetName) => {
+    setResolutions(r => ({ ...r, [cricsheetName]: { ...r[cricsheetName], skipped: true } }))
+  }
+
+  // ── Validation: all non-skipped rows must be resolved ────────────────────
+  const canImport = parsedData && Object.values(resolutions).every(r => r.skipped || r.playerId)
+
+  // Count auto-matched vs manual
+  const { autoCount, unresolvedCount } = Object.values(resolutions).reduce(
+    (acc, r) => {
+      if (r.skipped) return acc
+      if (r.playerId) acc.autoCount++
+      else acc.unresolvedCount++
+      return acc
+    },
+    { autoCount: 0, unresolvedCount: 0 }
+  )
+
+  // ── Import: merge batting + bowling per player, then call API ─────────────
+  const handleImport = async () => {
+    if (!canImport) return
+    setImporting(true)
+
+    try {
+      // Build a map of playerId → merged stat entry
+      const playerMap = {}   // playerId → entry
+
+      // Helper to get or create entry
+      const getEntry = (playerId) => {
+        if (!playerMap[playerId]) {
+          playerMap[playerId] = { playerId }
+        }
+        return playerMap[playerId]
+      }
+
+      // Build reverse map: cricsheetName → playerId (skipped names excluded)
+      const idByName = {}
+      for (const [name, r] of Object.entries(resolutions)) {
+        if (!r.skipped && r.playerId) idByName[name] = r.playerId
+      }
+
+      for (const inn of parsedData.innings) {
+        // Batting rows
+        for (const row of inn.battingRows) {
+          const pid = idByName[row.cricsheetName]
+          if (!pid) continue
+          const entry = getEntry(pid)
+
+          entry.battingPosition = row.position ?? null
+          entry.runs            = row.runs
+          entry.balls           = row.balls
+          entry.fours           = row.fours
+          entry.sixes           = row.sixes
+          entry.dismissal       = row.dismissal
+          entry.ppRuns          = row.ppRuns
+          entry.ppBalls         = row.ppBalls
+          entry.midRuns         = row.midRuns
+          entry.midBalls        = row.midBalls
+          entry.deathRuns       = row.deathRuns
+          entry.deathBalls      = row.deathBalls
+
+          // Dismissal FKs — resolve from parsed names
+          if (row.dismissedBy) {
+            entry.dismissedById = idByName[row.dismissedBy] ?? null
+          }
+          if (row.caughtBy) {
+            entry.caughtById = idByName[row.caughtBy] ?? null
+          }
+        }
+
+        // Bowling rows
+        for (const row of inn.bowlingRows) {
+          const pid = idByName[row.cricsheetName]
+          if (!pid) continue
+          const entry = getEntry(pid)
+
+          entry.oversBowled        = row.oversBowled
+          entry.wickets            = row.wickets
+          entry.runsConceded       = row.runsConceded
+          entry.wides              = row.wides
+          entry.noBalls            = row.noBalls
+          entry.maidens            = row.maidens
+          entry.dotBalls           = row.dotBalls
+          entry.ppRunsConceded     = row.ppRunsConceded
+          entry.ppBallsBowled      = row.ppBallsBowled
+          entry.midRunsConceded    = row.midRunsConceded
+          entry.midBallsBowled     = row.midBallsBowled
+          entry.deathRunsConceded  = row.deathRunsConceded
+          entry.deathBallsBowled   = row.deathBallsBowled
+        }
+
+        // Attribute catches / run-outs from dismissal fielding data
+        for (const row of inn.battingRows) {
+          if (!row.caughtBy) continue
+          const fielderId = idByName[row.caughtBy]
+          if (!fielderId) continue
+          const fielderEntry = getEntry(fielderId)
+
+          if (row.dismissal === 'caught') {
+            fielderEntry.catches = (fielderEntry.catches ?? 0) + 1
+          } else if (row.dismissal === 'run out') {
+            fielderEntry.runOuts = (fielderEntry.runOuts ?? 0) + 1
+          }
+        }
+      }
+
+      const payload = Object.values(playerMap)
+      await saveScorecard(match.id, payload)
+      setStep('done')
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Import failed')
+    } finally {
+      setImporting(false)
+    }
+  }
+
+  // ── Render ────────────────────────────────────────────────────────────────
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)',
+      backdropFilter: 'blur(4px)', zIndex: 300,
+      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
+    }} onClick={onClose}>
+      <div style={{
+        background: 'var(--bg-elevated)', border: `1px solid ${TEAL}44`,
+        borderRadius: 16, width: '100%', maxWidth: 860, maxHeight: '92vh',
+        display: 'flex', flexDirection: 'column', overflow: 'hidden',
+        animation: 'fadeUp 0.2s ease',
+      }} onClick={e => e.stopPropagation()}>
+
+        {/* ── Header ── */}
+        <div style={{ padding: '16px 22px', borderBottom: '1px solid var(--border-subtle)', flexShrink: 0,
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div>
+            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, letterSpacing: 1.5, color: TEAL }}>
+              Import Scorecard from JSON
+            </div>
+            <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2 }}>
+              {match.team1} vs {match.team2}
+              {match.matchNo ? ` · Match ${match.matchNo}` : ''}
+              {match.date ? ` · ${formatDate(match.date)}` : ''}
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            {/* Step indicator */}
+            <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+              {['upload', 'preview', 'done'].map((s, i) => (
+                <div key={s} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <div style={{
+                    width: 22, height: 22, borderRadius: '50%', display: 'flex', alignItems: 'center',
+                    justifyContent: 'center', fontSize: 10, fontWeight: 700,
+                    background: step === s ? TEAL : (i < ['upload','preview','done'].indexOf(step) ? `${TEAL}55` : 'var(--bg-subtle)'),
+                    color: step === s ? '#fff' : 'var(--text-muted)',
+                    border: `1px solid ${step === s ? TEAL : 'var(--border-subtle)'}`,
+                  }}>{i + 1}</div>
+                  {i < 2 && <div style={{ width: 16, height: 1, background: 'var(--border-subtle)' }} />}
+                </div>
+              ))}
+            </div>
+            <button onClick={onClose} style={{
+              background: 'var(--border-subtle)', border: '1px solid var(--border-input)',
+              borderRadius: 8, color: 'var(--text-secondary)', fontSize: 18, cursor: 'pointer',
+              width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>✕</button>
+          </div>
+        </div>
+
+        {/* ── Body ── */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '20px 22px' }}>
+
+          {/* ── Step 1: Upload ── */}
+          {step === 'upload' && (
+            <div>
+              <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 16 }}>
+                Drop a Cricsheet match JSON file to auto-parse batting and bowling stats.
+                Player names will be matched against the DB automatically.
+              </div>
+
+              {/* Drop zone */}
+              <div
+                onDragOver={e => { e.preventDefault(); setDragging(true) }}
+                onDragLeave={() => setDragging(false)}
+                onDrop={handleDrop}
+                onClick={() => fileRef.current?.click()}
+                style={{
+                  border: `2px dashed ${dragging ? TEAL : 'var(--border-input)'}`,
+                  borderRadius: 12, padding: '48px 24px',
+                  textAlign: 'center', cursor: 'pointer',
+                  background: dragging ? `${TEAL}08` : 'var(--bg-subtle)',
+                  transition: 'all 0.2s',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = TEAL; e.currentTarget.style.background = `${TEAL}08` }}
+                onMouseLeave={e => { if (!dragging) { e.currentTarget.style.borderColor = 'var(--border-input)'; e.currentTarget.style.background = 'var(--bg-subtle)' } }}
+              >
+                <div style={{ fontSize: 36, marginBottom: 10 }}>📂</div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>
+                  Drop Cricsheet JSON here
+                </div>
+                <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+                  or click to browse
+                </div>
+              </div>
+              <input ref={fileRef} type="file" accept=".json" onChange={handleFilePick} style={{ display: 'none' }} />
+            </div>
+          )}
+
+          {/* ── Step 2: Preview ── */}
+          {step === 'preview' && parsedData && (
+            <div>
+              {/* Resolution summary */}
+              <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
+                <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Player resolution:</span>
+                <span style={{ fontSize: 11, fontWeight: 600, color: TEAL, background: `${TEAL}15`, border: `1px solid ${TEAL}44`, borderRadius: 4, padding: '2px 8px' }}>
+                  ✓ {autoCount} auto-matched
+                </span>
+                {unresolvedCount > 0 && (
+                  <span style={{ fontSize: 11, fontWeight: 600, color: '#ef4444', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 4, padding: '2px 8px' }}>
+                    ⚠ {unresolvedCount} need manual selection
+                  </span>
+                )}
+                <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                  (click a green chip to override · click skip to exclude a player)
+                </span>
+              </div>
+
+              {parsedData.innings.map((inn, idx) => (
+                <div key={idx} style={{ marginBottom: 28 }}>
+                  {/* Innings heading */}
+                  <div style={{
+                    fontSize: 11, fontWeight: 700, color: TEAL,
+                    textTransform: 'uppercase', letterSpacing: 1.5,
+                    marginBottom: 10, display: 'flex', alignItems: 'center', gap: 8,
+                  }}>
+                    <div style={{ height: 1, width: 20, background: TEAL, opacity: 0.5 }} />
+                    Innings {idx + 1} — {inn.team}
+                    <div style={{ height: 1, flex: 1, background: 'var(--border-subtle)' }} />
+                  </div>
+
+                  {/* Batting */}
+                  {inn.battingRows.length > 0 && (
+                    <>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 6 }}>
+                        🏏 Batting
+                      </div>
+                      <BattingTable
+                        rows={inn.battingRows}
+                        resolutions={resolutions}
+                        allPlayers={allPlayers}
+                        onResolve={resolvePlayer}
+                        onSkip={skipPlayer}
+                      />
+                    </>
+                  )}
+
+                  {/* Bowling */}
+                  {inn.bowlingRows.length > 0 && (
+                    <>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: 1.2, marginTop: 14, marginBottom: 6 }}>
+                        ⚡ Bowling
+                      </div>
+                      <BowlingTable
+                        rows={inn.bowlingRows}
+                        resolutions={resolutions}
+                        allPlayers={allPlayers}
+                        onResolve={resolvePlayer}
+                        onSkip={skipPlayer}
+                      />
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* ── Step 3: Done ── */}
+          {step === 'done' && (
+            <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+              <div style={{ fontSize: 48, marginBottom: 12 }}>✅</div>
+              <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 6 }}>
+                Scorecard imported successfully!
+              </div>
+              <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 28 }}>
+                All player stats have been saved to the database.
+              </div>
+              <Button
+                style={{ background: TEAL, border: 'none', color: '#fff' }}
+                onClick={() => { onImported(); onClose() }}
+              >
+                Close
+              </Button>
+            </div>
+          )}
+        </div>
+
+        {/* ── Footer (preview step) ── */}
+        {step === 'preview' && (
+          <div style={{ padding: '14px 22px', borderTop: '1px solid var(--border-subtle)', flexShrink: 0,
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <button onClick={() => setStep('upload')} style={{
+              background: 'none', border: '1px solid var(--border-input)', borderRadius: 8,
+              color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 12, fontWeight: 600,
+              padding: '7px 16px', fontFamily: 'DM Sans,sans-serif',
+            }}>
+              ← Back
+            </button>
+            <Button
+              disabled={!canImport || importing}
+              onClick={handleImport}
+              style={{ background: canImport && !importing ? TEAL : undefined, border: 'none', color: '#fff' }}
+            >
+              {importing ? '⏳ Importing…' : `⬆ Import ${Object.values(resolutions).filter(r => !r.skipped && r.playerId).length} players`}
+            </Button>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
