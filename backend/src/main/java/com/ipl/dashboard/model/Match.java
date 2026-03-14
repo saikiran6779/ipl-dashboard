@@ -6,6 +6,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "matches")
@@ -71,4 +73,9 @@ public class Match {
     private Player topWicketTaker;
 
     private Integer topWicketTakerWickets;
+
+    // ── Cascade: deleting a match removes all its scorecard rows ──────────
+    @OneToMany(mappedBy = "match", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<PlayerMatchStats> stats = new ArrayList<>();
 }

@@ -18,6 +18,9 @@ public interface PlayerMatchStatsRepository extends JpaRepository<PlayerMatchSta
     // All stats for one match (for scorecard view)
     List<PlayerMatchStats> findByMatchId(Long matchId);
 
+    // Delete all stats for a match (scorecard wipe)
+    void deleteByMatchId(Long matchId);
+
     // Exists check (to prevent duplicate entry per player per match)
     Optional<PlayerMatchStats> findByPlayerIdAndMatchId(Long playerId, Long matchId);
 

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { Users, Shield } from 'lucide-react'
 import toast from 'react-hot-toast'
 import Header from './components/Header'
 import Dashboard from './pages/Dashboard'
@@ -13,6 +14,8 @@ import ResetPassword from './pages/ResetPassword'
 import SuperAdminUsers from './pages/SuperAdminUsers'
 import SuperAdminTeams from './pages/SuperAdminTeams'
 import Teams from './pages/Teams'
+import Venues from './pages/Venues'
+import MatchPage from './pages/MatchPage'
 import { getMatches, getStats, createMatch, updateMatch, deleteMatch } from './services/api'
 import { useAuth } from './context/AuthContext'
 
@@ -33,6 +36,7 @@ export default function App() {
   const [saving,    setSaving]    = useState(false)
   const [profileId,      setProfileId]      = useState(null)
   const [teamId,         setTeamId]         = useState(null)
+  const [matchObj,       setMatchObj]       = useState(null)
   const [superAdminTab,  setSuperAdminTab]  = useState('users')  // 'users' | 'teams'
 
   // ── Data fetching ──────────────────────────────────────────────────────────
@@ -78,7 +82,9 @@ export default function App() {
 
   const handleDelete = async (id) => {
     if (!isAdmin) return
-    if (!window.confirm('Delete this match?')) return
+    if (!window.confirm(
+      'Delete this match?\n\nThis will also permanently delete all scorecard / player stats for this match.\nYou can re-import them later using "Import from JSON".'
+    )) return
     try {
       await deleteMatch(id)
       toast.success('Match deleted')
@@ -118,6 +124,24 @@ export default function App() {
   const handleOpenTeam = (id) => { setTeamId(id); setView('teams') }
   const handleBackFromTeam = () => { setTeamId(null); setView('teams') }
 
+  const handleOpenMatch = (match) => { setMatchObj(match); setView('match') }
+  const handleBackFromMatch = () => { setMatchObj(null); setView('matches') }
+
+  const handleDeleteFromMatchPage = async (id) => {
+    if (!window.confirm(
+      'Delete this match?\n\nThis will also permanently delete all scorecard / player stats for this match.'
+    )) return
+    try {
+      await deleteMatch(id)
+      toast.success('Match deleted')
+      setMatchObj(null)
+      setView('matches')
+      fetchAll()
+    } catch {
+      toast.error('Failed to delete match')
+    }
+  }
+
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
@@ -138,21 +162,23 @@ export default function App() {
             {/* Tab bar */}
             <div style={{ display: 'flex', gap: 4, marginBottom: 28, borderBottom: '1px solid var(--border-subtle)', paddingBottom: 0 }}>
               {[
-                { key: 'users', label: '👥 Users' },
-                { key: 'teams', label: '🏏 Team Logos' },
+                { key: 'users', label: 'Users', Icon: Users },
+                { key: 'teams', label: 'Team Logos', Icon: Shield },
               ].map(tab => (
                 <button
                   key={tab.key}
                   onClick={() => setSuperAdminTab(tab.key)}
                   style={{
                     padding: '8px 18px', border: 'none', cursor: 'pointer',
-                    background: 'transparent', fontFamily: 'DM Sans, sans-serif',
-                    fontWeight: 600, fontSize: 13,
+                    background: 'transparent', fontFamily: 'var(--font-body)',
+                    fontWeight: 600, fontSize: 'var(--text-sm)',
                     color: superAdminTab === tab.key ? '#f97316' : 'var(--text-secondary)',
                     borderBottom: superAdminTab === tab.key ? '2px solid #f97316' : '2px solid transparent',
                     marginBottom: -1, transition: 'color 0.15s',
+                    display: 'flex', alignItems: 'center', gap: 6,
                   }}
                 >
+                  <tab.Icon size={14} strokeWidth={2} />
                   {tab.label}
                 </button>
               ))}
@@ -170,16 +196,30 @@ export default function App() {
           <Teams stats={stats} matches={matches} onOpenProfile={handleOpenProfile} initialTeamId={teamId} onBack={handleBackFromTeam} />
         )}
         {view === 'matches' && (
-          <Matches matches={matches} loading={loading} onEdit={handleEdit} onDelete={handleDelete} />
+          <Matches matches={matches} loading={loading} onEdit={handleEdit} onDelete={handleDelete} onOpenMatch={handleOpenMatch} />
+        )}
+        {view === 'match' && matchObj && (
+          <MatchPage
+            match={matchObj}
+            allMatches={matches}
+            onBack={handleBackFromMatch}
+            onEdit={() => handleEdit(matchObj)}
+            onDelete={() => handleDeleteFromMatchPage(matchObj.id)}
+            isAdmin={isAdmin}
+            onOpenProfile={handleOpenProfile}
+          />
         )}
         {view === 'add' && isAdmin && (
           <MatchForm editMatch={editMatch} onSubmit={handleSubmit} onCancel={handleCancel} loading={saving} />
         )}
+        {view === 'venues' && (
+          <Venues matches={matches} />
+        )}
         {view === 'players' && (
-          <Players onOpenProfile={handleOpenProfile} />
+          <Players onOpenProfile={handleOpenProfile} onOpenTeam={handleOpenTeam} />
         )}
         {view === 'profile' && profileId && (
-          <PlayerProfile playerId={profileId} onBack={handleBackFromProfile} />
+          <PlayerProfile playerId={profileId} onBack={handleBackFromProfile} onOpenTeam={handleOpenTeam} />
         )}
       </main>
     </div>

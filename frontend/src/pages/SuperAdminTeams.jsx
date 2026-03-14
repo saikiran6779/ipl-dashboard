@@ -44,7 +44,7 @@ export default function SuperAdminTeams() {
   return (
     <div>
       <div style={{ marginBottom: 24 }}>
-        <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 28, color: '#f97316', letterSpacing: 2, lineHeight: 1 }}>
+        <div style={{ fontFamily: 'var(--font-heading)', fontSize: 'var(--text-xl)', color: '#f97316', letterSpacing: 2, lineHeight: 1 }}>
           Team Logos
         </div>
         <div style={{ color: 'var(--text-secondary)', fontSize: 13, marginTop: 4 }}>
@@ -124,7 +124,7 @@ export default function SuperAdminTeams() {
                     background: isDirty(team.id) ? '#f97316' : 'var(--bg-subtle)',
                     color:      isDirty(team.id) ? '#fff'    : 'var(--text-secondary)',
                     fontWeight: 600, fontSize: 12, cursor: isDirty(team.id) ? 'pointer' : 'default',
-                    fontFamily: 'DM Sans, sans-serif', whiteSpace: 'nowrap',
+                    fontFamily: 'var(--font-body)', whiteSpace: 'nowrap',
                     transition: 'all 0.15s', opacity: busy === team.id ? 0.6 : 1,
                   }}
                 >

@@ -1,5 +1,23 @@
 /* ── Google Fonts ─────────────────────────────────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;500;600;700&family=Barlow:wght@400;500;600;700&display=swap');
+
+/* ── Type Scale ───────────────────────────────────────────────────────── */
+:root {
+  /* Sizes */
+  --text-xs:   12px;   /* tooltips, the very smallest metadata only */
+  --text-sm:   14px;   /* badges, chips, tags, table headers, buttons */
+  --text-base: 16px;   /* all body, table cells, form inputs, descriptions */
+  --text-md:   18px;   /* card titles, sub-headings, prominent labels */
+  --text-lg:   22px;   /* section headings, page sub-headings */
+  --text-xl:   28px;   /* stat values on cards, leaderboard numbers */
+  --text-2xl:  40px;   /* hero stats on summary cards */
+  --text-3xl:  56px;   /* the very largest display numbers only */
+
+  /* Families */
+  --font-display: 'Bebas Neue', sans-serif;  /* 3xl + 2xl hero numbers + logo only */
+  --font-heading: 'Oswald', sans-serif;      /* xl and below stat numbers, section headings */
+  --font-body:    'Barlow', sans-serif;      /* everything else */
+}
 
 /* ── Theme Variables ──────────────────────────────────────────────────── */
 :root {
@@ -65,9 +83,23 @@
 body {
   background: var(--bg-base);
   color: var(--text-primary);
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: var(--text-base);
+  line-height: 1.6;
   min-height: 100vh;
   transition: background 0.3s ease, color 0.3s ease;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+button, input, select, textarea {
+  font-family: var(--font-body);
+  font-weight: 500;
 }
 
 /* ── Scrollbar ────────────────────────────────────────────────────────── */
@@ -107,6 +139,23 @@ input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
 @keyframes theme-fade {
   from { opacity: 0.7; }
   to   { opacity: 1; }
+}
+@keyframes rowIn {
+  from { opacity: 0; transform: translateX(-8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes scoreFlash {
+  0%   { opacity: 0; transform: scale(0.7); }
+  60%  { transform: scale(1.08); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes skeletonPulse {
+  0%,100% { opacity: 0.45; }
+  50%     { opacity: 1; }
+}
+@keyframes fadeUp2 {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
 }
 
 .fade-up  { animation: fadeUp  0.4s cubic-bezier(0.16,1,0.3,1) both; }

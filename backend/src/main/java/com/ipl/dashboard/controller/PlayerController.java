@@ -77,6 +77,21 @@ public class PlayerController {
         return playerService.getScorecard(matchId);
     }
 
+    /** PUT /api/matches/{matchId}/scorecard  — replace scorecard (delete-all + insert) */
+    @PutMapping("/matches/{matchId}/scorecard")
+    public List<PlayerDTO.ScorecardEntry> replaceScorecard(
+            @PathVariable Long matchId,
+            @RequestBody List<PlayerDTO.@Valid StatEntry> entries) {
+        return playerService.replaceScorecard(matchId, entries);
+    }
+
+    /** DELETE /api/matches/{matchId}/scorecard  — wipe scorecard (match persists) */
+    @DeleteMapping("/matches/{matchId}/scorecard")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteScorecard(@PathVariable Long matchId) {
+        playerService.deleteScorecard(matchId);
+    }
+
     // ── Leaderboards ──────────────────────────────────────────────────────
 
     /** GET /api/leaderboard/batting  — top run-scorers (full stats) */

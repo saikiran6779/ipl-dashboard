@@ -43,6 +43,10 @@ public class PlayerService {
                 .teamId(req.getTeamId())
                 .role(req.getRole())
                 .profilePictureUrl(req.getProfilePictureUrl())
+                .dateOfBirth(req.getDateOfBirth())
+                .nationality(req.getNationality())
+                .battingStyle(req.getBattingStyle())
+                .bowlingStyle(req.getBowlingStyle())
                 .build());
         return toSummary(saved);
     }
@@ -54,6 +58,10 @@ public class PlayerService {
         p.setTeamId(req.getTeamId());
         p.setRole(req.getRole());
         p.setProfilePictureUrl(req.getProfilePictureUrl());
+        p.setDateOfBirth(req.getDateOfBirth());
+        p.setNationality(req.getNationality());
+        p.setBattingStyle(req.getBattingStyle());
+        p.setBowlingStyle(req.getBowlingStyle());
         return toSummary(playerRepo.save(p));
     }
 
@@ -78,6 +86,10 @@ public class PlayerService {
                     .id(p.getId()).name(p.getName())
                     .teamId(p.getTeamId()).role(p.getRole())
                     .profilePictureUrl(p.getProfilePictureUrl())
+                    .dateOfBirth(p.getDateOfBirth())
+                    .nationality(p.getNationality())
+                    .battingStyle(p.getBattingStyle())
+                    .bowlingStyle(p.getBowlingStyle())
                     .matches(0).matchLog(List.of())
                     .build();
         }
@@ -120,6 +132,10 @@ public class PlayerService {
         return PlayerDTO.Profile.builder()
                 .id(p.getId()).name(p.getName()).teamId(p.getTeamId()).role(p.getRole())
                 .profilePictureUrl(p.getProfilePictureUrl())
+                .dateOfBirth(p.getDateOfBirth())
+                .nationality(p.getNationality())
+                .battingStyle(p.getBattingStyle())
+                .bowlingStyle(p.getBowlingStyle())
                 .matches(matches)
                 .totalRuns(totalRuns).highScore(highScore)
                 .totalBalls(totalBalls).totalFours(totalFours).totalSixes(totalSixes)
@@ -135,6 +151,22 @@ public class PlayerService {
     // ── Scorecard ─────────────────────────────────────────────────────────
 
     @Transactional
+    public void deleteScorecard(Long matchId) {
+        if (!matchRepo.existsById(matchId))
+            throw new NoSuchElementException("Match not found: " + matchId);
+        statsRepo.deleteByMatchId(matchId);
+    }
+
+    @Transactional
+    public List<PlayerDTO.ScorecardEntry> replaceScorecard(Long matchId,
+                                                            List<PlayerDTO.StatEntry> entries) {
+        if (!matchRepo.existsById(matchId))
+            throw new NoSuchElementException("Match not found: " + matchId);
+        statsRepo.deleteByMatchId(matchId);
+        return saveScorecard(matchId, entries);
+    }
+
+    @Transactional
     public List<PlayerDTO.ScorecardEntry> saveScorecard(Long matchId,
                                                          List<PlayerDTO.StatEntry> entries) {
         Match match = matchRepo.findById(matchId)
@@ -146,6 +178,12 @@ public class PlayerService {
             Player player = playerRepo.findById(e.getPlayerId())
                     .orElseThrow(() -> new NoSuchElementException("Player not found: " + e.getPlayerId()));
 
+            // Resolve optional FK players
+            Player dismissedBy = e.getDismissedById() != null
+                    ? playerRepo.findById(e.getDismissedById()).orElse(null) : null;
+            Player caughtBy = e.getCaughtById() != null
+                    ? playerRepo.findById(e.getCaughtById()).orElse(null) : null;
+
             // Upsert: update existing row if present
             PlayerMatchStats stats = statsRepo
                     .findByPlayerIdAndMatchId(e.getPlayerId(), matchId)
@@ -154,14 +192,46 @@ public class PlayerService {
             stats.setPlayer(player);
             stats.setMatch(match);
             stats.setTeamId(player.getTeamId());
+
+            // Batting
+            stats.setBattingPosition(e.getBattingPosition());
             stats.setRuns(e.getRuns());
             stats.setBalls(e.getBalls());
             stats.setFours(e.getFours());
             stats.setSixes(e.getSixes());
             stats.setDismissal(e.getDismissal());
+            stats.setDismissedBy(dismissedBy);
+            stats.setCaughtBy(caughtBy);
+
+            // Batting phases
+            stats.setPpRuns(e.getPpRuns());
+            stats.setPpBalls(e.getPpBalls());
+            stats.setMidRuns(e.getMidRuns());
+            stats.setMidBalls(e.getMidBalls());
+            stats.setDeathRuns(e.getDeathRuns());
+            stats.setDeathBalls(e.getDeathBalls());
+
+            // Bowling
+            stats.setBowlingOrder(e.getBowlingOrder());
             stats.setOversBowled(e.getOversBowled());
             stats.setWickets(e.getWickets());
             stats.setRunsConceded(e.getRunsConceded());
+            stats.setWides(e.getWides());
+            stats.setNoBalls(e.getNoBalls());
+            stats.setByes(e.getByes());
+            stats.setLegByes(e.getLegByes());
+            stats.setMaidens(e.getMaidens());
+            stats.setDotBalls(e.getDotBalls());
+
+            // Bowling phases
+            stats.setPpRunsConceded(e.getPpRunsConceded());
+            stats.setPpBallsBowled(e.getPpBallsBowled());
+            stats.setMidRunsConceded(e.getMidRunsConceded());
+            stats.setMidBallsBowled(e.getMidBallsBowled());
+            stats.setDeathRunsConceded(e.getDeathRunsConceded());
+            stats.setDeathBallsBowled(e.getDeathBallsBowled());
+
+            // Fielding
             stats.setCatches(e.getCatches());
             stats.setRunOuts(e.getRunOuts());
 
@@ -215,6 +285,10 @@ public class PlayerService {
                 .id(p.getId()).name(p.getName())
                 .teamId(p.getTeamId()).role(p.getRole())
                 .profilePictureUrl(p.getProfilePictureUrl())
+                .dateOfBirth(p.getDateOfBirth())
+                .nationality(p.getNationality())
+                .battingStyle(p.getBattingStyle())
+                .bowlingStyle(p.getBowlingStyle())
                 .build();
     }
 
@@ -225,14 +299,34 @@ public class PlayerService {
                 .playerName(s.getPlayer().getName())
                 .teamId(s.getTeamId())
                 .role(s.getPlayer().getRole())
+                // Batting
+                .battingPosition(s.getBattingPosition())
                 .runs(s.getRuns()).balls(s.getBalls())
                 .fours(s.getFours()).sixes(s.getSixes())
                 .dismissal(s.getDismissal())
+                .dismissedById(s.getDismissedBy() != null ? s.getDismissedBy().getId() : null)
+                .dismissedByName(s.getDismissedBy() != null ? s.getDismissedBy().getName() : null)
+                .caughtById(s.getCaughtBy() != null ? s.getCaughtBy().getId() : null)
+                .caughtByName(s.getCaughtBy() != null ? s.getCaughtBy().getName() : null)
                 .strikeRate(s.getStrikeRate())
+                // Batting phases
+                .ppRuns(s.getPpRuns()).ppBalls(s.getPpBalls()).ppStrikeRate(s.getPpStrikeRate())
+                .midRuns(s.getMidRuns()).midBalls(s.getMidBalls()).midStrikeRate(s.getMidStrikeRate())
+                .deathRuns(s.getDeathRuns()).deathBalls(s.getDeathBalls()).deathStrikeRate(s.getDeathStrikeRate())
+                // Bowling
+                .bowlingOrder(s.getBowlingOrder())
                 .oversBowled(s.getOversBowled())
                 .wickets(s.getWickets())
                 .runsConceded(s.getRunsConceded())
+                .wides(s.getWides()).noBalls(s.getNoBalls())
+                .byes(s.getByes()).legByes(s.getLegByes())
+                .maidens(s.getMaidens()).dotBalls(s.getDotBalls())
                 .economy(s.getEconomy())
+                // Bowling phases
+                .ppRunsConceded(s.getPpRunsConceded()).ppBallsBowled(s.getPpBallsBowled()).ppEconomy(s.getPpEconomy())
+                .midRunsConceded(s.getMidRunsConceded()).midBallsBowled(s.getMidBallsBowled()).midEconomy(s.getMidEconomy())
+                .deathRunsConceded(s.getDeathRunsConceded()).deathBallsBowled(s.getDeathBallsBowled()).deathEconomy(s.getDeathEconomy())
+                // Fielding
                 .catches(s.getCatches()).runOuts(s.getRunOuts())
                 .build();
     }

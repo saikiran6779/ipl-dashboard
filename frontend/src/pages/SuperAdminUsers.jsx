@@ -86,7 +86,7 @@ export default function SuperAdminUsers() {
   return (
     <div>
       <div style={{ marginBottom: 24 }}>
-        <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 28, color: '#f97316', letterSpacing: 2, lineHeight: 1 }}>
+        <div style={{ fontFamily: 'var(--font-heading)', fontSize: 'var(--text-xl)', color: '#f97316', letterSpacing: 2, lineHeight: 1 }}>
           User Management
         </div>
         <div style={{ color: 'var(--text-secondary)', fontSize: 13, marginTop: 4 }}>

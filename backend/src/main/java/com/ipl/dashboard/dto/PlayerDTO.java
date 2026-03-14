@@ -5,6 +5,7 @@ import lombok.*;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import java.time.LocalDate;
 import java.util.List;
 
 public class PlayerDTO {
@@ -15,7 +16,11 @@ public class PlayerDTO {
         @NotBlank private String name;
         @NotBlank private String teamId;
         @NotNull  private Player.Role role;
-        private String profilePictureUrl;
+        private String    profilePictureUrl;
+        private LocalDate dateOfBirth;
+        private String    nationality;
+        private String    battingStyle;
+        private String    bowlingStyle;
     }
 
     // ── Player list item ───────────────────────────────────────────────────
@@ -26,6 +31,10 @@ public class PlayerDTO {
         private String      teamId;
         private Player.Role role;
         private String      profilePictureUrl;
+        private LocalDate   dateOfBirth;
+        private String      nationality;
+        private String      battingStyle;
+        private String      bowlingStyle;
     }
 
     // ── Full player profile (career stats + match history) ─────────────────
@@ -36,6 +45,10 @@ public class PlayerDTO {
         private String      teamId;
         private Player.Role role;
         private String      profilePictureUrl;
+        private LocalDate   dateOfBirth;
+        private String      nationality;
+        private String      battingStyle;
+        private String      bowlingStyle;
 
         // Career batting
         private int    matches;
@@ -44,15 +57,15 @@ public class PlayerDTO {
         private int    totalBalls;
         private int    totalFours;
         private int    totalSixes;
-        private Double battingAverage;   // runs / (innings - notOuts)
-        private Double strikeRate;       // runs / balls * 100
+        private Double battingAverage;
+        private Double strikeRate;
 
         // Career bowling
         private int    totalWickets;
         private int    totalRunsConceded;
         private Double totalOversBowled;
-        private Double bowlingAverage;   // runsConceded / wickets
-        private Double economy;          // runsConceded / overs
+        private Double bowlingAverage;
+        private Double economy;
 
         // Career fielding
         private int totalCatches;
@@ -94,17 +107,43 @@ public class PlayerDTO {
     public static class StatEntry {
         @NotNull private Long playerId;
 
-        // Batting (all optional — may not have batted)
+        // Batting
+        private Integer battingPosition;
         private Integer runs;
         private Integer balls;
         private Integer fours;
         private Integer sixes;
         private String  dismissal;
+        private Long    dismissedById;   // bowler FK
+        private Long    caughtById;      // fielder FK
 
-        // Bowling (all optional — may not have bowled)
+        // Batting phase splits
+        private Integer ppRuns;
+        private Integer ppBalls;
+        private Integer midRuns;
+        private Integer midBalls;
+        private Integer deathRuns;
+        private Integer deathBalls;
+
+        // Bowling
+        private Integer bowlingOrder;    // 1 = opened bowling; null if not from import
         private Double  oversBowled;
         private Integer wickets;
         private Integer runsConceded;
+        private Integer wides;
+        private Integer noBalls;
+        private Integer byes;
+        private Integer legByes;
+        private Integer maidens;
+        private Integer dotBalls;
+
+        // Bowling phase splits
+        private Integer ppRunsConceded;
+        private Integer ppBallsBowled;
+        private Integer midRunsConceded;
+        private Integer midBallsBowled;
+        private Integer deathRunsConceded;
+        private Integer deathBallsBowled;
 
         // Fielding
         private Integer catches;
@@ -121,18 +160,52 @@ public class PlayerDTO {
         private Player.Role role;
 
         // Batting
+        private Integer battingPosition;
         private Integer runs;
         private Integer balls;
         private Integer fours;
         private Integer sixes;
         private String  dismissal;
+        private Long    dismissedById;
+        private String  dismissedByName;
+        private Long    caughtById;
+        private String  caughtByName;
         private Double  strikeRate;
 
+        // Batting phase splits
+        private Integer ppRuns;
+        private Integer ppBalls;
+        private Double  ppStrikeRate;
+        private Integer midRuns;
+        private Integer midBalls;
+        private Double  midStrikeRate;
+        private Integer deathRuns;
+        private Integer deathBalls;
+        private Double  deathStrikeRate;
+
         // Bowling
+        private Integer bowlingOrder;    // 1 = opened bowling; null if not from import
         private Double  oversBowled;
         private Integer wickets;
         private Integer runsConceded;
+        private Integer wides;
+        private Integer noBalls;
+        private Integer byes;
+        private Integer legByes;
+        private Integer maidens;
+        private Integer dotBalls;
         private Double  economy;
+
+        // Bowling phase splits
+        private Integer ppRunsConceded;
+        private Integer ppBallsBowled;
+        private Double  ppEconomy;
+        private Integer midRunsConceded;
+        private Integer midBallsBowled;
+        private Double  midEconomy;
+        private Integer deathRunsConceded;
+        private Integer deathBallsBowled;
+        private Double  deathEconomy;
 
         // Fielding
         private Integer catches;

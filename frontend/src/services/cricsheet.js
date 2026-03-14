@@ -194,6 +194,271 @@ export function parseCricsheetData(data) {
   }
 }
 
+// ── Phase helpers ─────────────────────────────────────────────────────────────
+// over.over is 0-indexed: 0 = first over of innings.
+// Powerplay : index 0-5   (overs 1-6)
+// Middle    : index 6-14  (overs 7-15)
+// Death     : index 15-19 (overs 16-20)
+
+function getPhase(overIndex) {
+  if (overIndex <= 5)  return 'pp'
+  if (overIndex <= 14) return 'mid'
+  return 'death'
+}
+
+// Dismissal kinds that do NOT credit the bowler (Rule 5).
+// Separate from NON_BOWLER_KINDS to avoid touching the existing parseCricsheetData pipeline.
+const BOWLER_NO_CREDIT = new Set([
+  'run out', 'retired hurt', 'retired out', 'obstructing the field',
+])
+
+/**
+ * Parse a raw Cricsheet JSON into a structured scorecard (one entry per innings).
+ * Returns innings in match order; super-overs are skipped.
+ *
+ * Each innings: { team, teamId, battingRows, bowlingRows }
+ * Player names are raw Cricsheet strings — callers resolve them with resolvePlayerFromJson().
+ *
+ * @param {object} data  Raw Cricsheet JSON
+ * @returns {{ innings: Array }}
+ */
+export function parseScorecardFromJson(data) {
+  const innings = data.innings || []
+  const warnings = []
+  return {
+    innings: innings
+      .filter(i => !i.super_over)
+      .map(inn => ({
+        team:        inn.team || '',
+        teamId:      mapTeam(inn.team || '', warnings),  // e.g. 'GT', 'LSG'
+        battingRows: _parseBatting(inn),
+        bowlingRows: _parseBowling(inn),
+      }))
+  }
+}
+
+// ── Batting parser ────────────────────────────────────────────────────────────
+
+function _parseBatting(inn) {
+  const batters  = {}   // cricsheetName → accumulated stats
+  const position = {}   // cricsheetName → 1-based batting position
+  let   posCount = 0
+
+  const ensureBatter = (name) => {
+    if (!batters[name]) {
+      batters[name] = {
+        runs: 0, balls: 0, fours: 0, sixes: 0,
+        ppRuns: 0, ppBalls: 0, midRuns: 0, midBalls: 0, deathRuns: 0, deathBalls: 0,
+        dismissal: 'not out', dismissedBy: null, caughtBy: null,
+      }
+    }
+    return batters[name]
+  }
+
+  for (const over of (inn.overs || [])) {
+    const phase = getPhase(over.over)
+
+    for (const d of (over.deliveries || [])) {
+      const batter = d.batter
+
+      // Batting position: order of first appearance as striker (Rule 9)
+      if (!(batter in position)) { posCount++; position[batter] = posCount }
+
+      const b          = ensureBatter(batter)
+      const batterRuns = d.runs?.batter ?? 0
+      const isWide     = !!d.extras?.wides
+
+      b.runs += batterRuns
+
+      // Wides don't count as balls faced (Rule 1 / Rule 3)
+      if (!isWide) {
+        b.balls++
+        if (phase === 'pp')    b.ppBalls++
+        else if (phase === 'mid')   b.midBalls++
+        else                        b.deathBalls++
+      }
+
+      // Phase batting runs (wides always have batterRuns=0 so safe to add)
+      if (phase === 'pp')    b.ppRuns    += batterRuns
+      else if (phase === 'mid')   b.midRuns   += batterRuns
+      else                        b.deathRuns += batterRuns
+
+      // 4s and 6s count on legal deliveries only (wides have batterRuns=0 anyway)
+      if (!isWide && batterRuns === 4) b.fours++
+      if (!isWide && batterRuns === 6) b.sixes++
+
+      // ── Dismissals (Rule 5 / Rule 6) ─────────────────────────────────────
+      // w.player_out can be the striker OR the non-striker (run out).
+      // We update whichever player was dismissed, creating their entry if needed.
+      if (d.wickets) {
+        for (const w of d.wickets) {
+          const dismissed = w.player_out
+          if (!dismissed) continue
+
+          // Player might not have appeared as batter yet (non-striker run out)
+          if (!(dismissed in position)) { posCount++; position[dismissed] = posCount }
+          const bd = ensureBatter(dismissed)
+
+          bd.dismissal = w.kind || 'out'
+
+          // Bowler credit only for credited kinds
+          if (!BOWLER_NO_CREDIT.has(w.kind)) {
+            bd.dismissedBy = d.bowler || null
+          }
+
+          // First fielder gets caughtBy credit (catches, stumpings, run-outs)
+          const fielders = w.fielders || []
+          if (fielders.length > 0) {
+            bd.caughtBy = fielders[0].name || null
+          }
+        }
+      }
+    }
+  }
+
+  return Object.entries(batters).map(([name, s]) => ({
+    cricsheetName: name,
+    battingPosition: position[name] ?? null,
+    runs:   s.runs,
+    balls:  s.balls,
+    fours:  s.fours,
+    sixes:  s.sixes,
+    dismissalType:   s.dismissal,
+    dismissedByName: s.dismissedBy,
+    caughtByName:    s.caughtBy,
+    ppRuns:      s.ppRuns    || null,
+    ppBalls:     s.ppBalls   || null,
+    middleRuns:  s.midRuns   || null,
+    middleBalls: s.midBalls  || null,
+    deathRuns:   s.deathRuns  || null,
+    deathBalls:  s.deathBalls || null,
+  }))
+}
+
+// ── Bowling parser ────────────────────────────────────────────────────────────
+
+function _parseBowling(inn) {
+  const bowlers = {}  // cricsheetName → accumulated stats
+  let bowlingOrderCounter = 0
+
+  const ensureBowler = (name) => {
+    if (!bowlers[name]) {
+      bowlingOrderCounter++
+      bowlers[name] = {
+        bowlingOrder: bowlingOrderCounter,  // 1 = opened bowling
+        balls: 0, runs: 0, wickets: 0,
+        wides: 0, noBalls: 0, byes: 0, legByes: 0, maidens: 0, dotBalls: 0,
+        ppRuns: 0, ppBalls: 0,
+        midRuns: 0, midBalls: 0,
+        deathRuns: 0, deathBalls: 0,
+      }
+    }
+    return bowlers[name]
+  }
+
+  for (const over of (inn.overs || [])) {
+    const phase = getPhase(over.over)
+
+    // Group deliveries by their actual bowler to handle rare mid-over changes
+    const byBowler = {}
+    for (const d of (over.deliveries || [])) {
+      const b = d.bowler
+      if (!b) continue
+      if (!byBowler[b]) byBowler[b] = []
+      byBowler[b].push(d)
+    }
+
+    for (const [bowlerName, deliveries] of Object.entries(byBowler)) {
+      const bl = ensureBowler(bowlerName)
+      let overLegalBalls  = 0
+      let overBowlerRuns  = 0
+
+      for (const d of deliveries) {
+        const extras    = d.extras || {}
+        const isWide    = !!extras.wides
+        const isNoBall  = !!extras.noballs
+        // A valid delivery counts toward the over: NOT a wide AND NOT a no-ball.
+        // No-balls require an extra delivery to complete the over, same as wides.
+        const validBall = !isWide && !isNoBall
+
+        // ── Bowler runs formula (Rule 2) ─────────────────────────────────
+        // Leg-byes and byes are NOT charged to the bowler.
+        const bowlerRuns = (d.runs?.total ?? 0)
+                         - (extras.legbyes ?? 0)
+                         - (extras.byes    ?? 0)
+
+        bl.runs        += bowlerRuns
+        overBowlerRuns += bowlerRuns
+
+        if (extras.byes    > 0) bl.byes    += extras.byes
+        if (extras.legbyes > 0) bl.legByes += extras.legbyes
+
+        if (isWide) {
+          bl.wides++
+        } else if (isNoBall) {
+          bl.noBalls++
+          // no-ball does NOT advance the over ball count
+        } else {
+          bl.balls++
+          overLegalBalls++
+        }
+
+        // Dot ball: valid delivery where bowler concedes 0 runs (Rule 4)
+        // A leg-bye on a valid delivery IS a dot for the bowler.
+        if (validBall && bowlerRuns === 0) bl.dotBalls++
+
+        // Wickets — only bowler-credited kinds (Rule 5)
+        if (d.wickets) {
+          for (const w of d.wickets) {
+            if (!BOWLER_NO_CREDIT.has(w.kind)) bl.wickets++
+          }
+        }
+
+        // Phase splits: runs use bowlerRuns; balls are valid deliveries only (Rule 8)
+        if (phase === 'pp') {
+          bl.ppRuns += bowlerRuns
+          if (validBall) bl.ppBalls++
+        } else if (phase === 'mid') {
+          bl.midRuns += bowlerRuns
+          if (validBall) bl.midBalls++
+        } else {
+          bl.deathRuns += bowlerRuns
+          if (validBall) bl.deathBalls++
+        }
+      }
+
+      // Maiden: ≥6 legal balls in this over AND bowler conceded 0 runs (Rule 10)
+      if (overLegalBalls >= 6 && overBowlerRuns === 0) bl.maidens++
+    }
+  }
+
+  return Object.entries(bowlers)
+    .sort((a, b) => a[1].bowlingOrder - b[1].bowlingOrder)
+    .map(([name, s]) => {
+      const full  = Math.floor(s.balls / 6)
+      const rem   = s.balls % 6
+      const overs = rem === 0 ? full : parseFloat(`${full}.${rem}`)
+      return {
+        cricsheetName: name,
+        bowlingOrder:  s.bowlingOrder,
+        balls:         s.balls,
+        oversBowled:   overs,
+        wickets:       s.wickets,
+        runsConceded:  s.runs,
+        wides:         s.wides    || null,
+        noBalls:       s.noBalls  || null,
+        byes:          s.byes     || null,
+        legByes:       s.legByes  || null,
+        maidens:       s.maidens  || null,
+        dotBalls:      s.dotBalls || null,
+        ppRuns:        s.ppRuns   || null,
+        ppBalls:       s.ppBalls  || null,
+        deathRuns:     s.deathRuns  || null,
+        deathBalls:    s.deathBalls || null,
+      }
+    })
+}
+
 /**
  * Given Cricsheet city + venue name and the venues list from GET /api/venues,
  * return the matching venue object { id, name, city } or null.

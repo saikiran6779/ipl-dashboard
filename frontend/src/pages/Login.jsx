@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Swords, Lock } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useAuth } from '../context/AuthContext'
 import { Input } from '../components/UI'
@@ -28,11 +29,11 @@ export default function Login({ onNavigate }) {
           background: 'linear-gradient(135deg,#f97316,#dc2626)',
           borderRadius: 20, width: 68, height: 68,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 34, margin: '0 auto 16px',
+          margin: '0 auto 16px',
           boxShadow: '0 8px 32px rgba(249,115,22,0.4)',
-        }}>🏏</div>
+        }}><Swords size={34} strokeWidth={1.5} color="#fff" /></div>
         <div style={{
-          fontFamily: "'Bebas Neue', sans-serif", fontSize: 32, letterSpacing: 3,
+          fontFamily: 'var(--font-display)', fontSize: 'var(--text-xl)', letterSpacing: 3,
           background: 'linear-gradient(135deg, #f97316, #dc2626)',
           WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
         }}>IPL 2025</div>
@@ -75,7 +76,7 @@ export default function Login({ onNavigate }) {
             style={{
               background: 'none', border: 'none', color: '#f97316', fontSize: 12,
               cursor: 'pointer', textAlign: 'right', padding: 0,
-              fontFamily: 'DM Sans, sans-serif', fontWeight: 600,
+              fontFamily: 'var(--font-body)', fontWeight: 600,
               transition: 'color 0.2s',
             }}
             onMouseEnter={e => e.currentTarget.style.color = '#fb923c'}
@@ -92,12 +93,13 @@ export default function Login({ onNavigate }) {
               borderRadius: 10, border: 'none',
               background: loading ? '#374151' : 'linear-gradient(135deg, #f97316, #dc2626)',
               color: '#fff', cursor: loading ? 'not-allowed' : 'pointer',
-              fontWeight: 700, fontSize: 15, fontFamily: 'DM Sans, sans-serif',
+              fontWeight: 700, fontSize: 'var(--text-base)', fontFamily: 'var(--font-body)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
               boxShadow: loading ? 'none' : '0 4px 20px rgba(249,115,22,0.35)',
               transition: 'all 0.2s', opacity: loading ? 0.7 : 1,
             }}
           >
-            {loading ? 'Signing in…' : '🔐 Sign In'}
+            {loading ? 'Signing in…' : <><Lock size={16} strokeWidth={2} /> Sign In</>}
           </button>
         </form>
       </div>
@@ -108,7 +110,7 @@ export default function Login({ onNavigate }) {
           onClick={() => onNavigate('register')}
           style={{
             background: 'none', border: 'none', color: '#f97316', cursor: 'pointer',
-            fontFamily: 'DM Sans, sans-serif', fontSize: 13, fontWeight: 700,
+            fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 700,
           }}
         >
           Register now →
