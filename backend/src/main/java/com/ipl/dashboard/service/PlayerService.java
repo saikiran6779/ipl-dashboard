@@ -135,6 +135,22 @@ public class PlayerService {
     // ── Scorecard ─────────────────────────────────────────────────────────
 
     @Transactional
+    public void deleteScorecard(Long matchId) {
+        if (!matchRepo.existsById(matchId))
+            throw new NoSuchElementException("Match not found: " + matchId);
+        statsRepo.deleteByMatchId(matchId);
+    }
+
+    @Transactional
+    public List<PlayerDTO.ScorecardEntry> replaceScorecard(Long matchId,
+                                                            List<PlayerDTO.StatEntry> entries) {
+        if (!matchRepo.existsById(matchId))
+            throw new NoSuchElementException("Match not found: " + matchId);
+        statsRepo.deleteByMatchId(matchId);
+        return saveScorecard(matchId, entries);
+    }
+
+    @Transactional
     public List<PlayerDTO.ScorecardEntry> saveScorecard(Long matchId,
                                                          List<PlayerDTO.StatEntry> entries) {
         Match match = matchRepo.findById(matchId)

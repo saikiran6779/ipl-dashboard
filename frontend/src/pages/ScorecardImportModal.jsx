@@ -25,7 +25,7 @@ import { useState, useRef, useCallback, useEffect } from 'react'
 import toast from 'react-hot-toast'
 import { parseScorecardFromJson } from '../services/cricsheet'
 import { resolvePlayerFromJson } from '../services/constants'
-import { saveScorecard, getPlayers } from '../services/api'
+import { replaceScorecard, getPlayers } from '../services/api'
 import { Button, PlayerCombobox, Spinner } from '../components/UI'
 import { formatDate } from '../services/constants'
 
@@ -491,7 +491,7 @@ export default function ScorecardImportModal({
       })
 
       const payload = Object.values(playerMap)
-      await saveScorecard(matchId, payload)
+      await replaceScorecard(matchId, payload)
       setStep('done')
     } catch (err) {
       toast.error(err.response?.data?.error || 'Import failed')

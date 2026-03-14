@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import toast from 'react-hot-toast'
 import { Spinner, Button, Input, Select, TeamLogo } from '../components/UI'
-import { getSquad, getScorecard, saveScorecard, createPlayer } from '../services/api'
+import { getSquad, getScorecard, saveScorecard, deleteScorecard, createPlayer } from '../services/api'
 import { getTeam, formatDate } from '../services/constants'
 import ScorecardImportModal from './ScorecardImportModal'
 
@@ -608,6 +608,18 @@ export default function ScorecardModal({ match, onClose, isAdmin = false, openIm
         })
     }
 
+    const handleDeleteScorecard = async () => {
+        if (!window.confirm('Delete the entire scorecard for this match? The match itself will remain.')) return
+        try {
+            await deleteScorecard(match.id)
+            setEntries([])
+            setMode(isAdmin ? 'edit' : 'view')
+            toast.success('Scorecard deleted')
+        } catch {
+            toast.error('Failed to delete scorecard')
+        }
+    }
+
     // If import mode was opened directly (from Matches.jsx), show the import modal
     if (mode === 'import') {
         return (
@@ -653,6 +665,15 @@ export default function ScorecardModal({ match, onClose, isAdmin = false, openIm
                         {mode === 'view' && isAdmin && (
                             <Button variant="ghost" onClick={() => setMode('edit')} style={{ fontSize: 12, padding: '6px 14px' }}>
                                 ✏️ Edit
+                            </Button>
+                        )}
+                        {isAdmin && entries.length > 0 && (
+                            <Button
+                                variant="ghost"
+                                onClick={handleDeleteScorecard}
+                                style={{ fontSize: 12, padding: '6px 14px', color: '#ef4444', borderColor: '#ef444440' }}
+                            >
+                                🗑 Delete Scorecard
                             </Button>
                         )}
                         {mode === 'edit' && entries.length > 0 && (

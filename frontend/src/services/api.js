@@ -130,8 +130,10 @@ export const getProfile   = (id)       => api.get(`/players/${id}/profile`).then
 
 // ── Scorecards ────────────────────────────────────────────────────────────────
 
-export const getScorecard  = (matchId)       => api.get(`/matches/${matchId}/scorecard`).then(r => r.data)
-export const saveScorecard = (matchId, data) => api.post(`/matches/${matchId}/scorecard`, data).then(r => r.data)
+export const getScorecard     = (matchId)       => api.get(`/matches/${matchId}/scorecard`).then(r => r.data)
+export const saveScorecard    = (matchId, data) => api.post(`/matches/${matchId}/scorecard`, data).then(r => r.data)
+export const replaceScorecard = (matchId, data) => api.put(`/matches/${matchId}/scorecard`, data).then(r => r.data)
+export const deleteScorecard  = (matchId)       => api.delete(`/matches/${matchId}/scorecard`)
 
 // ── Leaderboards ──────────────────────────────────────────────────────────────
 
