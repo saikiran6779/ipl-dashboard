@@ -2,6 +2,7 @@ package com.ipl.dashboard.service;
 
 import com.ipl.dashboard.dto.ScrapedMatchDTO;
 import lombok.extern.slf4j.Slf4j;
+import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -35,18 +36,35 @@ public class CricinfoScraperService {
     private static final String USER_AGENT =
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
         "AppleWebKit/537.36 (KHTML, like Gecko) " +
-        "Chrome/120.0.0.0 Safari/537.36";
+        "Chrome/124.0.0.0 Safari/537.36";
 
     public ScrapedMatchDTO scrapeMatch(String url) {
         List<String> warnings = new ArrayList<>();
         ScrapedMatchDTO.ScrapedMatchDTOBuilder builder = ScrapedMatchDTO.builder().warnings(warnings);
 
         try {
+            // First request to espncricinfo.com root to obtain session cookies
+            Map<String, String> cookies = new HashMap<>();
+            try {
+                Connection.Response primeResponse = Jsoup.connect("https://www.espncricinfo.com/")
+                    .userAgent(USER_AGENT)
+                    .headers(browserHeaders("https://www.google.com/"))
+                    .timeout(15_000)
+                    .followRedirects(true)
+                    .ignoreHttpErrors(true)
+                    .execute();
+                cookies.putAll(primeResponse.cookies());
+            } catch (Exception e) {
+                log.debug("Cookie priming request failed (non-fatal): {}", e.getMessage());
+            }
+
             Document doc = Jsoup.connect(url)
                 .userAgent(USER_AGENT)
-                .header("Accept-Language", "en-US,en;q=0.9")
-                .header("Accept", "text/html,application/xhtml+xml,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
-                .timeout(15_000)
+                .headers(browserHeaders("https://www.espncricinfo.com/"))
+                .cookies(cookies)
+                .timeout(20_000)
+                .followRedirects(true)
+                .ignoreHttpErrors(false)
                 .get();
 
             parseTeams(doc, builder, warnings);
@@ -545,5 +563,25 @@ public class CricinfoScraperService {
             }
         }
         return null;
+    }
+
+    /** Full Chrome-like request headers to avoid 403 blocks. */
+    private Map<String, String> browserHeaders(String referer) {
+        Map<String, String> h = new LinkedHashMap<>();
+        h.put("Accept",                    "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7");
+        h.put("Accept-Language",           "en-US,en;q=0.9");
+        h.put("Accept-Encoding",           "gzip, deflate, br");
+        h.put("Cache-Control",             "max-age=0");
+        h.put("Referer",                   referer);
+        h.put("sec-ch-ua",                 "\"Chromium\";v=\"124\", \"Google Chrome\";v=\"124\", \"Not-A.Brand\";v=\"99\"");
+        h.put("sec-ch-ua-mobile",          "?0");
+        h.put("sec-ch-ua-platform",        "\"Windows\"");
+        h.put("sec-fetch-dest",            "document");
+        h.put("sec-fetch-mode",            "navigate");
+        h.put("sec-fetch-site",            "same-origin");
+        h.put("sec-fetch-user",            "?1");
+        h.put("Upgrade-Insecure-Requests", "1");
+        h.put("Connection",                "keep-alive");
+        return h;
     }
 }
