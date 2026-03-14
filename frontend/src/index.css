@@ -1,50 +1,90 @@
+/* ── Google Fonts ─────────────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800&display=swap');
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  background: #0d1117;
+  background: #080c12;
   color: #e6edf3;
   font-family: 'DM Sans', sans-serif;
   min-height: 100vh;
 }
 
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: #0d1117; }
-::-webkit-scrollbar-thumb { background: #30363d; border-radius: 3px; }
+/* ── Scrollbar ────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: #080c12; }
+::-webkit-scrollbar-thumb { background: #2d333b; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #444c56; }
 
 select option { background: #161b22; color: #e6edf3; }
-
 input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
 
+/* ── Animations ───────────────────────────────────────────────────────── */
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(16px); }
+  from { opacity: 0; transform: translateY(20px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 @keyframes slideIn {
   from { opacity: 0; transform: translateX(30px); }
   to   { opacity: 1; transform: translateX(0); }
 }
+@keyframes shimmer {
+  from { background-position: -400px 0; }
+  to   { background-position: 400px 0; }
+}
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(249,115,22,0.2); }
+  50%       { box-shadow: 0 0 20px rgba(249,115,22,0.5); }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes ticker {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
 
-.fade-up  { animation: fadeUp  0.4s ease both; }
+.fade-up  { animation: fadeUp  0.4s cubic-bezier(0.16,1,0.3,1) both; }
 .slide-in { animation: slideIn 0.3s ease both; }
 
-/* ── Responsive ────────────────────────────────────────────────────────── */
+/* ── Live ticker strip ────────────────────────────────────────────────── */
+.ticker-wrap {
+  overflow: hidden;
+  white-space: nowrap;
+}
+.ticker-content {
+  display: inline-block;
+  animation: ticker 30s linear infinite;
+}
 
-/* Desktop nav shown by default; hamburger hidden */
+/* ── Glassmorphism card ───────────────────────────────────────────────── */
+.glass-card {
+  background: rgba(22, 27, 34, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(48, 54, 61, 0.6);
+}
+
+/* ── Gradient text ────────────────────────────────────────────────────── */
+.gradient-text {
+  background: linear-gradient(135deg, #f97316, #dc2626);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────── */
 .nav-mobile-btn { display: none; }
 
-/* Tablet & below (≤768px): hide desktop nav, show hamburger */
 @media (max-width: 768px) {
   .nav-desktop    { display: none !important; }
   .nav-mobile-btn { display: flex !important; align-items: center; justify-content: center; }
 }
 
-/* Mobile (≤640px): layout adjustments */
 @media (max-width: 640px) {
-  /* Reduce page padding */
   .page-main { padding: 16px 12px !important; }
 
-  /* Dashboard tabs: full-width + horizontal scroll */
   .tabs-scroll {
     width: 100% !important;
     max-width: 100% !important;
@@ -52,13 +92,10 @@ input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
     -webkit-overflow-scrolling: touch;
   }
 
-  /* Form grids collapse to single column */
   .rg-2col  { grid-template-columns: 1fr !important; }
   .rg-1-1-2 { grid-template-columns: 1fr !important; }
-  /* 3-col (runs/wkts/overs) → 2-col on mobile */
   .rg-3col  { grid-template-columns: 1fr 1fr !important; }
 
-  /* Recent results: stack vertically */
   .result-row-stack {
     flex-direction: column !important;
     align-items: flex-start !important;
@@ -67,18 +104,15 @@ input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
   .result-meta-cell    { min-width: unset !important; text-align: left !important; }
   .result-outcome-cell { min-width: unset !important; text-align: left !important; }
 
-  /* Match card header: stack actions below meta */
   .match-header-row {
     flex-direction: column !important;
     align-items: flex-start !important;
     gap: 8px !important;
   }
 
-  /* Player profile hero: tighter padding */
   .profile-hero-inner { padding: 16px !important; gap: 14px !important; }
 }
 
-/* Small mobile (≤480px): summary cards in 2-column grid */
 @media (max-width: 480px) {
   .summary-cards-grid { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
 }

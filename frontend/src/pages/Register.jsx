@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import toast from 'react-hot-toast'
 import { useAuth } from '../context/AuthContext'
-import { Card, Input, Button } from '../components/UI'
+import { Input } from '../components/UI'
 
 export default function Register({ onNavigate }) {
   const { register, loading } = useAuth()
@@ -21,7 +21,7 @@ export default function Register({ onNavigate }) {
     }
     try {
       await register(form.name, form.email, form.password)
-      toast.success('Account created! Welcome.')
+      toast.success('Account created! Welcome to IPL 2025 🎉')
       onNavigate('dashboard')
     } catch (err) {
       toast.error(err.response?.data?.error || 'Registration failed')
@@ -29,21 +29,35 @@ export default function Register({ onNavigate }) {
   }
 
   return (
-    <div style={{ maxWidth: 420, margin: '60px auto', padding: '0 20px' }}>
+    <div style={{ maxWidth: 420, margin: '40px auto', padding: '0 20px' }} className="fade-up">
+      {/* Hero */}
       <div style={{ textAlign: 'center', marginBottom: 32 }}>
         <div style={{
-          background: 'linear-gradient(135deg,#f97316,#dc2626)', borderRadius: 14,
-          width: 56, height: 56, display: 'flex', alignItems: 'center',
-          justifyContent: 'center', fontSize: 28, margin: '0 auto 16px',
-        }}>🏏</div>
-        <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 28, color: '#f97316', letterSpacing: 2 }}>
-          IPL 2025
-        </div>
+          background: 'linear-gradient(135deg,#22c55e,#16a34a)',
+          borderRadius: 20, width: 68, height: 68,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 34, margin: '0 auto 16px',
+          boxShadow: '0 8px 32px rgba(34,197,94,0.4)',
+        }}>🎉</div>
+        <div style={{
+          fontFamily: "'Bebas Neue', sans-serif", fontSize: 32, letterSpacing: 3,
+          background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+          WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
+        }}>Join IPL 2025</div>
         <div style={{ color: '#8b949e', fontSize: 13, marginTop: 4 }}>Create your account</div>
       </div>
 
-      <Card>
-        <form onSubmit={handleSubmit} style={{ padding: 28, display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {/* Card */}
+      <div style={{
+        background: 'rgba(22,27,34,0.9)',
+        border: '1px solid rgba(48,54,61,0.7)',
+        borderRadius: 20, overflow: 'hidden',
+        backdropFilter: 'blur(12px)',
+        boxShadow: '0 20px 60px rgba(0,0,0,0.4)',
+      }}>
+        <div style={{ height: 3, background: 'linear-gradient(90deg, #22c55e, #16a34a)' }} />
+
+        <form onSubmit={handleSubmit} style={{ padding: '28px 28px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
           <Input
             label="Full Name"
             type="text"
@@ -78,19 +92,34 @@ export default function Register({ onNavigate }) {
             required
           />
 
-          <Button type="submit" variant="primary" disabled={loading} style={{ width: '100%', padding: '10px 18px', marginTop: 4 }}>
-            {loading ? 'Creating account…' : 'Create Account'}
-          </Button>
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              width: '100%', padding: '12px 18px', marginTop: 4,
+              borderRadius: 10, border: 'none',
+              background: loading ? '#374151' : 'linear-gradient(135deg, #22c55e, #16a34a)',
+              color: '#fff', cursor: loading ? 'not-allowed' : 'pointer',
+              fontWeight: 700, fontSize: 15, fontFamily: 'DM Sans, sans-serif',
+              boxShadow: loading ? 'none' : '0 4px 20px rgba(34,197,94,0.35)',
+              transition: 'all 0.2s', opacity: loading ? 0.7 : 1,
+            }}
+          >
+            {loading ? 'Creating account…' : '🚀 Create Account'}
+          </button>
         </form>
-      </Card>
+      </div>
 
       <p style={{ textAlign: 'center', color: '#8b949e', fontSize: 13, marginTop: 20 }}>
         Already have an account?{' '}
         <button
           onClick={() => onNavigate('login')}
-          style={{ background: 'none', border: 'none', color: '#f97316', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', fontSize: 13 }}
+          style={{
+            background: 'none', border: 'none', color: '#f97316', cursor: 'pointer',
+            fontFamily: 'DM Sans, sans-serif', fontSize: 13, fontWeight: 700,
+          }}
         >
-          Sign in
+          Sign in →
         </button>
       </p>
     </div>
