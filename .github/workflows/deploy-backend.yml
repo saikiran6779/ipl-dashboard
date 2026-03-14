@@ -85,13 +85,15 @@ jobs:
           EXPECTED=$(git rev-parse --short HEAD)
           echo "Expected commit: $EXPECTED"
 
-          # Fix 3: retry for up to 60s in case Spring Boot is still starting
-          for i in $(seq 1 6); do
-            RESPONSE=$(curl -s http://${{ secrets.EC2_HOST }}:8080/actuator/info)
+          # Retry for up to 90s; --max-time 5 ensures each attempt fails
+          # fast instead of hanging when the port is temporarily unreachable
+          for i in $(seq 1 9); do
+            RESPONSE=$(curl -s --max-time 5 --connect-timeout 5 \
+              http://${{ secrets.EC2_HOST }}:8080/actuator/info)
             if [ -n "$RESPONSE" ]; then
               break
             fi
-            echo "App not ready yet, retrying in 10s (attempt $i/6)..."
+            echo "App not ready yet, retrying in 10s (attempt $i/9)..."
             sleep 10
           done
 
