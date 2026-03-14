@@ -179,7 +179,7 @@ export default function App() {
           <MatchForm editMatch={editMatch} onSubmit={handleSubmit} onCancel={handleCancel} loading={saving} />
         )}
         {view === 'venues' && (
-          <Venues />
+          <Venues matches={matches} />
         )}
         {view === 'players' && (
           <Players onOpenProfile={handleOpenProfile} />
