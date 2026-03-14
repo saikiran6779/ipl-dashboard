@@ -180,6 +180,7 @@ public class PlayerService {
             stats.setDeathBalls(e.getDeathBalls());
 
             // Bowling
+            stats.setBowlingOrder(e.getBowlingOrder());
             stats.setOversBowled(e.getOversBowled());
             stats.setWickets(e.getWickets());
             stats.setRunsConceded(e.getRunsConceded());
@@ -275,6 +276,7 @@ public class PlayerService {
                 .midRuns(s.getMidRuns()).midBalls(s.getMidBalls()).midStrikeRate(s.getMidStrikeRate())
                 .deathRuns(s.getDeathRuns()).deathBalls(s.getDeathBalls()).deathStrikeRate(s.getDeathStrikeRate())
                 // Bowling
+                .bowlingOrder(s.getBowlingOrder())
                 .oversBowled(s.getOversBowled())
                 .wickets(s.getWickets())
                 .runsConceded(s.getRunsConceded())

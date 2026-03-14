@@ -219,7 +219,14 @@ function ScorecardView({ entries, teams }) {
     // If 11 batters already recorded, suppress "yet to bat" (impact player slot)
     const showYetToBat    = battedEntries.length < 11 && yetToBatEntries.length > 0
 
-    const bowlingEntries  = teamEntries.filter(e => e.oversBowled != null)
+    const bowlingEntries  = teamEntries
+        .filter(e => e.oversBowled != null)
+        .sort((a, b) => {
+            if (a.bowlingOrder != null && b.bowlingOrder != null) return a.bowlingOrder - b.bowlingOrder
+            if (a.bowlingOrder != null) return -1   // import entries first
+            if (b.bowlingOrder != null) return 1
+            return 0
+        })
     const fieldingEntries = teamEntries.filter(e => (e.catches ?? 0) > 0 || (e.runOuts ?? 0) > 0)
 
     const SECTION_TABS = [

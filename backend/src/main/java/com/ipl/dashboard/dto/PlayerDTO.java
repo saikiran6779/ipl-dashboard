@@ -113,6 +113,7 @@ public class PlayerDTO {
         private Integer deathBalls;
 
         // Bowling
+        private Integer bowlingOrder;    // 1 = opened bowling; null if not from import
         private Double  oversBowled;
         private Integer wickets;
         private Integer runsConceded;
@@ -168,6 +169,7 @@ public class PlayerDTO {
         private Double  deathStrikeRate;
 
         // Bowling
+        private Integer bowlingOrder;    // 1 = opened bowling; null if not from import
         private Double  oversBowled;
         private Integer wickets;
         private Integer runsConceded;

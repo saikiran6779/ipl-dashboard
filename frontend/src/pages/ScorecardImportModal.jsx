@@ -460,6 +460,7 @@ export default function ScorecardImportModal({
           if (!pid) continue
           const entry = getEntry(pid)
 
+          entry.bowlingOrder      = row.bowlingOrder ?? null
           entry.oversBowled       = row.oversBowled
           entry.wickets           = row.wickets
           entry.runsConceded      = row.runsConceded

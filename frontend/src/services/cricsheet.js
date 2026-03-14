@@ -339,10 +339,13 @@ function _parseBatting(inn) {
 
 function _parseBowling(inn) {
   const bowlers = {}  // cricsheetName → accumulated stats
+  let bowlingOrderCounter = 0
 
   const ensureBowler = (name) => {
     if (!bowlers[name]) {
+      bowlingOrderCounter++
       bowlers[name] = {
+        bowlingOrder: bowlingOrderCounter,  // 1 = opened bowling
         balls: 0, runs: 0, wickets: 0,
         wides: 0, noBalls: 0, maidens: 0, dotBalls: 0,
         ppRuns: 0, ppBalls: 0,
@@ -426,26 +429,29 @@ function _parseBowling(inn) {
     }
   }
 
-  return Object.entries(bowlers).map(([name, s]) => {
-    const full  = Math.floor(s.balls / 6)
-    const rem   = s.balls % 6
-    const overs = rem === 0 ? full : parseFloat(`${full}.${rem}`)
-    return {
-      cricsheetName:    name,
-      balls:            s.balls,
-      oversBowled:      overs,
-      wickets:          s.wickets,
-      runsConceded:     s.runs,
-      wides:            s.wides    || null,
-      noBalls:          s.noBalls  || null,
-      maidens:          s.maidens  || null,
-      dotBalls:         s.dotBalls || null,
-      ppRuns:           s.ppRuns   || null,
-      ppBalls:          s.ppBalls  || null,
-      deathRuns:        s.deathRuns  || null,
-      deathBalls:       s.deathBalls || null,
-    }
-  })
+  return Object.entries(bowlers)
+    .sort((a, b) => a[1].bowlingOrder - b[1].bowlingOrder)
+    .map(([name, s]) => {
+      const full  = Math.floor(s.balls / 6)
+      const rem   = s.balls % 6
+      const overs = rem === 0 ? full : parseFloat(`${full}.${rem}`)
+      return {
+        cricsheetName: name,
+        bowlingOrder:  s.bowlingOrder,
+        balls:         s.balls,
+        oversBowled:   overs,
+        wickets:       s.wickets,
+        runsConceded:  s.runs,
+        wides:         s.wides    || null,
+        noBalls:       s.noBalls  || null,
+        maidens:       s.maidens  || null,
+        dotBalls:      s.dotBalls || null,
+        ppRuns:        s.ppRuns   || null,
+        ppBalls:       s.ppBalls  || null,
+        deathRuns:     s.deathRuns  || null,
+        deathBalls:    s.deathBalls || null,
+      }
+    })
 }
 
 /**

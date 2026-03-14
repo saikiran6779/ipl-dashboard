@@ -54,6 +54,7 @@ public class PlayerMatchStats {
     private Integer deathBalls;
 
     // ── Bowling ────────────────────────────────────────────────────────────
+    private Integer bowlingOrder;     // 1 = opened bowling, 2 = second bowler, … (null if not bowled / manually entered)
     private Double  oversBowled;
     private Integer wickets;
     private Integer runsConceded;
