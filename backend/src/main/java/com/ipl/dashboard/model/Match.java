@@ -47,7 +47,7 @@ public class Match {
     private String tossDecision; // "bat" or "field"
 
     // Result
-    @NotBlank
+    private boolean noResult; // true when match was abandoned / no result
     private String winner;
     private String winMargin;
     private String winType; // "runs" or "wickets"

@@ -75,13 +75,17 @@ export default function Matches({ matches, loading, onEdit, onDelete }) {
 
                             {/* Scores */}
                             <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-                                <TeamChip teamId={m.team1} score={m.team1Score} wickets={m.team1Wickets} overs={m.team1Overs} won={m.winner === m.team1} size="lg" />
+                                <TeamChip teamId={m.team1} score={m.team1Score} wickets={m.team1Wickets} overs={m.team1Overs} won={!m.noResult && m.winner === m.team1} size="lg" />
                                 <span style={{ color: '#8b949e', fontWeight: 700, padding: '0 4px' }}>VS</span>
-                                <TeamChip teamId={m.team2} score={m.team2Score} wickets={m.team2Wickets} overs={m.team2Overs} won={m.winner === m.team2} size="lg" />
+                                <TeamChip teamId={m.team2} score={m.team2Score} wickets={m.team2Wickets} overs={m.team2Overs} won={!m.noResult && m.winner === m.team2} size="lg" />
 
                                 <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
-                                    <div style={{ fontWeight: 700, color: '#f97316', fontSize: 13 }}>{m.winner} won</div>
-                                    {m.winMargin && <div style={{ fontSize: 12, color: '#8b949e' }}>by {m.winMargin} {m.winType}</div>}
+                                    {m.noResult ? (
+                                        <div style={{ fontWeight: 700, color: '#8b949e', fontSize: 13, background: '#21262d', border: '1px solid #30363d', borderRadius: 6, padding: '2px 8px', display: 'inline-block' }}>No Result</div>
+                                    ) : (
+                                        <div style={{ fontWeight: 700, color: '#f97316', fontSize: 13 }}>{m.winner} won</div>
+                                    )}
+                                    {!m.noResult && m.winMargin && <div style={{ fontSize: 12, color: '#8b949e' }}>by {m.winMargin} {m.winType}</div>}
                                     {m.playerOfMatch && <div style={{ fontSize: 11, color: '#8b949e', marginTop: 4 }}>⭐ {m.playerOfMatch}</div>}
                                 </div>
                             </div>

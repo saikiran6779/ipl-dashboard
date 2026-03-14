@@ -8,6 +8,7 @@ const EMPTY = {
   team1Score: '', team1Wickets: '', team1Overs: '',
   team2Score: '', team2Wickets: '', team2Overs: '',
   tossWinner: '', tossDecision: '',
+  noResult: false,
   winner: '', winMargin: '', winType: 'runs',
   playerOfMatch: '',
   topScorer: '', topScorerRuns: '',
@@ -39,6 +40,7 @@ export default function MatchForm({ editMatch, onSubmit, onCancel, loading }) {
 
   const set = (name, value) => setForm(prev => ({ ...prev, [name]: value }))
   const handle = e => set(e.target.name, e.target.value)
+  const handleCheckbox = e => set(e.target.name, e.target.checked)
 
   const handleSubmit = e => {
     e.preventDefault()
@@ -54,6 +56,11 @@ export default function MatchForm({ editMatch, onSubmit, onCancel, loading }) {
       team2Overs:           form.team2Overs    ? parseFloat(form.team2Overs)           : null,
       topScorerRuns:        form.topScorerRuns ? parseInt(form.topScorerRuns)          : null,
       topWicketTakerWickets:form.topWicketTakerWickets ? parseInt(form.topWicketTakerWickets) : null,
+    }
+    if (payload.noResult) {
+      payload.winner = null
+      payload.winMargin = null
+      payload.winType = null
     }
     onSubmit(payload)
   }
@@ -104,16 +111,30 @@ export default function MatchForm({ editMatch, onSubmit, onCancel, loading }) {
 
         {/* Result */}
         <SectionLabel>Result</SectionLabel>
+        <div style={{ marginBottom: 14 }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13, color: '#c9d1d9' }}>
+            <input
+              type="checkbox"
+              name="noResult"
+              checked={form.noResult}
+              onChange={handleCheckbox}
+              style={{ width: 15, height: 15, accentColor: '#8b949e', cursor: 'pointer' }}
+            />
+            No Result / Abandoned
+          </label>
+        </div>
         <div className="rg-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 24 }}>
-          <Select label="Winner *" name="winner" value={form.winner} onChange={handle} required>
-            <option value="">Select winner</option>
-            {teamOptions.map(t => <option key={t} value={t}>{t}</option>)}
-          </Select>
-          <Input label="Win Margin" name="winMargin" value={form.winMargin} onChange={handle} placeholder="e.g. 24" />
-          <Select label="Win Type" name="winType" value={form.winType} onChange={handle}>
-            <option value="runs">runs</option>
-            <option value="wickets">wickets</option>
-          </Select>
+          {!form.noResult && <>
+            <Select label="Winner *" name="winner" value={form.winner} onChange={handle} required>
+              <option value="">Select winner</option>
+              {teamOptions.map(t => <option key={t} value={t}>{t}</option>)}
+            </Select>
+            <Input label="Win Margin" name="winMargin" value={form.winMargin} onChange={handle} placeholder="e.g. 24" />
+            <Select label="Win Type" name="winType" value={form.winType} onChange={handle}>
+              <option value="runs">runs</option>
+              <option value="wickets">wickets</option>
+            </Select>
+          </>}
           <Select label="Toss Winner" name="tossWinner" value={form.tossWinner} onChange={handle}>
             <option value="">Select</option>
             {teamOptions.map(t => <option key={t} value={t}>{t}</option>)}
