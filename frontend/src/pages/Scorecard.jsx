@@ -472,7 +472,7 @@ function ScorecardEntry({ matchId, teams, onSaved }) {
 }
 
 // ── Main Scorecard Modal ──────────────────────────────────────────────────
-export default function ScorecardModal({ match, onClose }) {
+export default function ScorecardModal({ match, onClose, isAdmin = false }) {
     const [mode,        setMode]        = useState('loading')  // loading | view | edit
     const [entries,     setEntries]     = useState([])
 
@@ -482,9 +482,9 @@ export default function ScorecardModal({ match, onClose }) {
         getScorecard(match.id)
             .then(data => {
                 setEntries(data)
-                setMode(data.length > 0 ? 'view' : 'edit')
+                setMode(data.length > 0 ? 'view' : isAdmin ? 'edit' : 'view')
             })
-            .catch(() => setMode('edit'))
+            .catch(() => setMode(isAdmin ? 'edit' : 'view'))
     }, [match.id])
 
     const handleSaved = () => {
@@ -522,7 +522,7 @@ export default function ScorecardModal({ match, onClose }) {
                         </div>
                     </div>
                     <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                        {mode === 'view' && (
+                        {mode === 'view' && isAdmin && (
                             <Button variant="ghost" onClick={() => setMode('edit')} style={{ fontSize: 12, padding: '6px 14px' }}>
                                 ✏️ Edit
                             </Button>

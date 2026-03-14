@@ -16,6 +16,7 @@ export default function Matches({ matches, loading, onEdit, onDelete }) {
                 <ScorecardModal
                     match={scorecardMatch}
                     onClose={() => setScorecardMatch(null)}
+                    isAdmin={isAdmin}
                 />
             )}
 
