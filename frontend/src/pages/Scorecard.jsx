@@ -555,16 +555,17 @@ const tdStyle = (color = 'var(--text-primary)', bold = false) => ({
 })
 
 // ── Entry form (edit mode) ────────────────────────────────────────────────
-function ScorecardEntry({ matchId, teams, onSaved }) {
-    const [squadA,     setSquadA]     = useState([])   // team1 squad
-    const [squadB,     setSquadB]     = useState([])   // team2 squad
-    const [entries,    setEntries]    = useState({})   // { playerId: entryObj }
-    const [selected,   setSelected]  = useState({})    // { playerId: bool } — which players are in scorecard
-    const [teamTab,    setTeamTab]    = useState(teams[0])
-    const [sectionTab, setSectionTab] = useState('batting')
+export function ScorecardEntry({ matchId, teams, onSaved }) {
+    const [squadA,       setSquadA]       = useState([])
+    const [squadB,       setSquadB]       = useState([])
+    const [entries,      setEntries]      = useState({})
+    const [selected,     setSelected]     = useState({})
+    const [teamTab,      setTeamTab]      = useState(teams[0])
+    const [sectionTab,   setSectionTab]   = useState('batting')
     const [loadingSquad, setLoadingSquad] = useState(true)
-    const [saving,     setSaving]     = useState(false)
-    const [showImport, setShowImport] = useState(false)
+    const [saving,       setSaving]       = useState(false)
+    const [showImport,   setShowImport]   = useState(false)
+    const [confirmSave,  setConfirmSave]  = useState(false)
 
     const currentSquad = teamTab === teams[0] ? squadA : squadB
 
@@ -762,10 +763,37 @@ function ScorecardEntry({ matchId, teams, onSaved }) {
                     <FileJson size={16} strokeWidth={2} /> Import from JSON
                 </button>
 
-                <Button variant="primary" onClick={handleSave} disabled={saving} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Button variant="primary" onClick={() => setConfirmSave(true)} disabled={saving} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <Save size={16} strokeWidth={2} />{saving ? 'Saving…' : 'Save Scorecard'}
                 </Button>
             </div>
+
+            {/* Inline save confirmation banner */}
+            {confirmSave && (
+                <div style={{
+                    marginTop: 12, padding: '14px 18px', borderRadius: 10,
+                    background: 'rgba(249,115,22,0.08)', border: '1px solid rgba(249,115,22,0.35)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap',
+                }}>
+                    <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-primary)', fontFamily: 'var(--font-body)' }}>
+                        <span style={{ fontWeight: 700, color: '#f97316' }}>Confirm save?</span>
+                        {' '}This will overwrite any existing scorecard stats for this match.
+                    </div>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                        <button onClick={() => setConfirmSave(false)} style={{
+                            padding: '6px 16px', borderRadius: 8, border: '1px solid var(--border-input)',
+                            background: 'transparent', color: 'var(--text-secondary)', cursor: 'pointer',
+                            fontSize: 'var(--text-sm)', fontWeight: 600, fontFamily: 'var(--font-body)',
+                        }}>Cancel</button>
+                        <button onClick={() => { setConfirmSave(false); handleSave() }} style={{
+                            padding: '6px 16px', borderRadius: 8, border: 'none',
+                            background: 'linear-gradient(135deg,#f97316,#dc2626)', color: '#fff', cursor: 'pointer',
+                            fontSize: 'var(--text-sm)', fontWeight: 700, fontFamily: 'var(--font-body)',
+                            display: 'flex', alignItems: 'center', gap: 6,
+                        }}><Save size={14} strokeWidth={2} /> Confirm Save</button>
+                    </div>
+                </div>
+            )}
 
             {/* Scorecard Import Modal */}
             {showImport && (
