@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Activity, Zap, ShieldCheck, Pencil, Trash2, Eye, X, FileJson, Save } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { Spinner, Button, Input, Select, TeamLogo } from '../components/UI'
 import { getSquad, getScorecard, saveScorecard, deleteScorecard, createPlayer } from '../services/api'
@@ -60,19 +61,19 @@ function TeamTabs({ teams, active, onChange, summaries = {} }) {
                     onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}
                     >
                         <TeamLogo teamId={tid} size={22} />
-                        <span style={{ fontFamily: 'Rajdhani,sans-serif', fontWeight: 700, fontSize: 17, letterSpacing: 0.5 }}>
+                        <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: 'var(--text-md)', letterSpacing: 0.5 }}>
                             {tid}
                         </span>
                         {s && (
                             <div style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
                                 <span style={{
-                                    fontFamily: "'Bebas Neue',sans-serif",
-                                    fontSize: isActive ? 20 : 16, letterSpacing: 1,
+                                    fontFamily: 'var(--font-heading)',
+                                    fontSize: isActive ? 'var(--text-md)' : 'var(--text-base)', letterSpacing: 1,
                                     color: isActive ? team.color : 'var(--text-muted)',
                                 }}>
                                     {s.score}/{s.wickets}
                                 </span>
-                                <span style={{ fontSize: 11, fontFamily: 'Rajdhani,sans-serif', fontWeight: 600, color: 'var(--text-muted)' }}>
+                                <span style={{ fontSize: 'var(--text-xs)', fontFamily: 'var(--font-body)', fontWeight: 600, color: 'var(--text-muted)' }}>
                                     ({s.overs})
                                 </span>
                             </div>
@@ -182,7 +183,7 @@ function AddPlayerInline({ teamId, onAdded }) {
                 onMouseEnter={e => { e.currentTarget.style.borderColor = '#f97316'; e.currentTarget.style.color = '#f97316' }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-input)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
         >
-            ＋ Add player to {teamId}
+            + Add player to {teamId}
         </button>
     )
 
@@ -204,7 +205,9 @@ function AddPlayerInline({ teamId, onAdded }) {
             <Button variant="primary" onClick={handleAdd} disabled={saving} style={{ padding: '6px 14px', fontSize: 12 }}>
                 {saving ? '…' : 'Add'}
             </Button>
-            <Button variant="ghost" onClick={() => setOpen(false)} style={{ padding: '6px 10px', fontSize: 12 }}>✕</Button>
+            <Button variant="ghost" onClick={() => setOpen(false)} style={{ padding: '6px 10px', fontSize: 'var(--text-sm)', display: 'flex', alignItems: 'center' }}>
+                <X size={14} strokeWidth={2} />
+            </Button>
         </div>
     )
 }
@@ -307,9 +310,9 @@ export function ScorecardView({ entries, teams }) {
     const showInningsSummary = battedEntries.length > 0
 
     const SECTION_TABS = [
-        { id: 'batting',  label: '🏏 Batting' },
-        { id: 'bowling',  label: '⚡ Bowling' },
-        { id: 'fielding', label: '🧤 Fielding' },
+        { id: 'batting',  label: 'Batting',  Icon: Activity },
+        { id: 'bowling',  label: 'Bowling',  Icon: Zap },
+        { id: 'fielding', label: 'Fielding', Icon: ShieldCheck },
     ]
 
     const activeRows = sectionTab === 'batting'  ? battedEntries
@@ -334,15 +337,19 @@ export function ScorecardView({ entries, teams }) {
                     <button key={s.id} onClick={() => setSectionTab(s.id)} style={{
                         padding: '7px 20px', borderRadius: 20,
                         border: sectionTab === s.id ? 'none' : '1px solid var(--border-subtle)',
-                        cursor: 'pointer', fontSize: 13,
-                        fontWeight: 700, fontFamily: 'Rajdhani, sans-serif', letterSpacing: 0.5,
+                        cursor: 'pointer', fontSize: 'var(--text-sm)',
+                        fontWeight: 700, fontFamily: 'var(--font-body)', letterSpacing: 0.5,
                         background: sectionTab === s.id
                             ? 'linear-gradient(135deg,#f97316,#dc2626)'
                             : 'var(--bg-subtle)',
                         color: sectionTab === s.id ? '#fff' : 'var(--text-secondary)',
                         transition: 'all 0.2s',
                         boxShadow: sectionTab === s.id ? '0 3px 14px rgba(249,115,22,0.38)' : 'none',
-                    }}>{s.label}</button>
+                        display: 'flex', alignItems: 'center', gap: 6,
+                    }}>
+                        <s.Icon size={14} strokeWidth={2} />
+                        {s.label}
+                    </button>
                 ))}
             </div>
 
@@ -357,7 +364,7 @@ export function ScorecardView({ entries, teams }) {
                 }}>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
                         <span style={{
-                            fontFamily: "'Bebas Neue',sans-serif", fontSize: 34,
+                            fontFamily: 'var(--font-heading)', fontSize: 'var(--text-xl)',
                             letterSpacing: 1, color: 'var(--text-primary)',
                             animation: 'scoreFlash 0.35s ease both',
                         }}>
@@ -447,7 +454,7 @@ export function ScorecardView({ entries, teams }) {
                                         {/* Runs with milestone badge */}
                                         <td style={{ padding: '10px 12px', textAlign: 'center' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
-                                                <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 21, color: runsColor }}>
+                                                <span style={{ fontFamily: 'var(--font-heading)', fontSize: 'var(--text-md)', color: runsColor }}>
                                                     {e.runs ?? '—'}
                                                 </span>
                                                 {e.runs >= 100 && (
@@ -480,7 +487,7 @@ export function ScorecardView({ entries, teams }) {
                                     <td style={{ padding: '10px 12px', textAlign: 'center' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
                                             <span style={{
-                                                fontFamily: "'Bebas Neue',sans-serif", fontSize: 21,
+                                                fontFamily: 'var(--font-heading)', fontSize: 'var(--text-md)',
                                                 color: e.wickets >= 5 ? '#fbbf24' : e.wickets >= 3 ? '#8b5cf6' : 'var(--text-primary)',
                                             }}>
                                                 {e.wickets ?? '—'}
@@ -536,15 +543,15 @@ export function ScorecardView({ entries, teams }) {
 
 const thStyle = (align = 'center') => ({
     padding: '10px 12px', textAlign: align,
-    color: 'var(--text-muted)', fontSize: 10,
+    color: 'var(--text-muted)', fontSize: 'var(--text-xs)',
     fontWeight: 700, textTransform: 'uppercase',
     letterSpacing: 1.8, whiteSpace: 'nowrap',
-    fontFamily: 'Rajdhani, sans-serif',
+    fontFamily: 'var(--font-body)',
 })
 const tdStyle = (color = 'var(--text-primary)', bold = false) => ({
     padding: '10px 12px', textAlign: 'center', color,
-    fontFamily: bold ? "'Bebas Neue',sans-serif" : 'inherit',
-    fontSize: bold ? 19 : 13, fontWeight: bold ? 400 : 600,
+    fontFamily: bold ? 'var(--font-heading)' : 'inherit',
+    fontSize: bold ? 'var(--text-md)' : 'var(--text-base)', fontWeight: bold ? 400 : 600,
 })
 
 // ── Entry form (edit mode) ────────────────────────────────────────────────
@@ -648,9 +655,9 @@ function ScorecardEntry({ matchId, teams, onSaved }) {
     )
 
     const SECTION_TABS = [
-        { id: 'batting',  label: '🏏 Batting' },
-        { id: 'bowling',  label: '⚡ Bowling' },
-        { id: 'fielding', label: '🧤 Fielding' },
+        { id: 'batting',  label: 'Batting',  Icon: Activity },
+        { id: 'bowling',  label: 'Bowling',  Icon: Zap },
+        { id: 'fielding', label: 'Fielding', Icon: ShieldCheck },
     ]
 
     const selectedPlayers = currentSquad.filter(p => selected[p.id])
@@ -692,11 +699,15 @@ function ScorecardEntry({ matchId, teams, onSaved }) {
                 <div style={{ display: 'flex', gap: 4, marginBottom: 12, borderTop: '1px solid var(--border-subtle)', paddingTop: 14 }}>
                     {SECTION_TABS.map(s => (
                         <button key={s.id} onClick={() => setSectionTab(s.id)} style={{
-                            padding: '5px 12px', borderRadius: 6, border: 'none', cursor: 'pointer', fontSize: 12,
-                            fontWeight: 600, fontFamily: 'Rajdhani,sans-serif',
+                            padding: '5px 12px', borderRadius: 6, border: 'none', cursor: 'pointer', fontSize: 'var(--text-sm)',
+                            fontWeight: 600, fontFamily: 'var(--font-body)',
                             background: sectionTab === s.id ? 'linear-gradient(135deg,#f97316,#dc2626)' : 'var(--border-subtle)',
                             color: sectionTab === s.id ? '#fff' : 'var(--text-secondary)', transition: 'all 0.2s',
-                        }}>{s.label}</button>
+                            display: 'flex', alignItems: 'center', gap: 5,
+                        }}>
+                            <s.Icon size={13} strokeWidth={2} />
+                            {s.label}
+                        </button>
                     ))}
                 </div>
             )}
@@ -742,17 +753,17 @@ function ScorecardEntry({ matchId, teams, onSaved }) {
                 <button onClick={() => setShowImport(true)} style={{
                     padding: '8px 18px', borderRadius: 8, border: `1px solid ${TEAL}`,
                     background: `${TEAL}15`, color: TEAL, cursor: 'pointer',
-                    fontWeight: 600, fontSize: 13, fontFamily: 'Rajdhani,sans-serif',
-                    transition: 'all 0.2s',
+                    fontWeight: 600, fontSize: 'var(--text-sm)', fontFamily: 'var(--font-body)',
+                    transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: 6,
                 }}
                 onMouseEnter={e => { e.currentTarget.style.background = `${TEAL}30` }}
                 onMouseLeave={e => { e.currentTarget.style.background = `${TEAL}15` }}
                 >
-                    📂 Import from JSON
+                    <FileJson size={16} strokeWidth={2} /> Import from JSON
                 </button>
 
-                <Button variant="primary" onClick={handleSave} disabled={saving}>
-                    {saving ? 'Saving…' : '💾 Save Scorecard'}
+                <Button variant="primary" onClick={handleSave} disabled={saving} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <Save size={16} strokeWidth={2} />{saving ? 'Saving…' : 'Save Scorecard'}
                 </Button>
             </div>
 
@@ -845,7 +856,7 @@ export default function ScorecardModal({ match, onClose, isAdmin = false, openIm
                 <div style={{ padding: '18px 22px', borderBottom: '1px solid var(--border-subtle)',
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
                     <div>
-                        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, letterSpacing: 1.5, color: '#f97316' }}>
+                        <div style={{ fontFamily: 'var(--font-heading)', fontSize: 'var(--text-md)', letterSpacing: 1.5, color: '#f97316' }}>
                             Scorecard
                         </div>
                         <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2 }}>
@@ -856,29 +867,31 @@ export default function ScorecardModal({ match, onClose, isAdmin = false, openIm
                     </div>
                     <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                         {mode === 'view' && isAdmin && (
-                            <Button variant="ghost" onClick={() => setMode('edit')} style={{ fontSize: 12, padding: '6px 14px' }}>
-                                ✏️ Edit
+                            <Button variant="ghost" onClick={() => setMode('edit')} style={{ fontSize: 'var(--text-sm)', padding: '6px 14px', display: 'flex', alignItems: 'center', gap: 5 }}>
+                                <Pencil size={14} strokeWidth={2} /> Edit
                             </Button>
                         )}
                         {isAdmin && entries.length > 0 && (
                             <Button
                                 variant="ghost"
                                 onClick={handleDeleteScorecard}
-                                style={{ fontSize: 12, padding: '6px 14px', color: '#ef4444', borderColor: '#ef444440' }}
+                                style={{ fontSize: 'var(--text-sm)', padding: '6px 14px', color: '#ef4444', borderColor: '#ef444440', display: 'flex', alignItems: 'center', gap: 5 }}
                             >
-                                🗑 Delete Scorecard
+                                <Trash2 size={14} strokeWidth={2} /> Delete Scorecard
                             </Button>
                         )}
                         {mode === 'edit' && entries.length > 0 && (
-                            <Button variant="ghost" onClick={() => setMode('view')} style={{ fontSize: 12, padding: '6px 14px' }}>
-                                👁 View
+                            <Button variant="ghost" onClick={() => setMode('view')} style={{ fontSize: 'var(--text-sm)', padding: '6px 14px', display: 'flex', alignItems: 'center', gap: 5 }}>
+                                <Eye size={14} strokeWidth={2} /> View
                             </Button>
                         )}
                         <button onClick={onClose} style={{
                             background: 'var(--border-subtle)', border: '1px solid var(--border-input)', borderRadius: 8,
-                            color: 'var(--text-secondary)', fontSize: 18, cursor: 'pointer', width: 34, height: 34,
+                            color: 'var(--text-secondary)', cursor: 'pointer', width: 34, height: 34,
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        }}>✕</button>
+                        }}>
+                            <X size={18} strokeWidth={2} />
+                        </button>
                     </div>
                 </div>
 

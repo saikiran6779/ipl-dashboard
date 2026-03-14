@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { MapPin, Pencil, Trash2, X, Plus, Star, Building2, Image } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { getVenues, createVenue, updateVenue, deleteVenue } from '../services/api'
 import { useAuth } from '../context/AuthContext'
@@ -32,7 +33,7 @@ function Carousel({ images, height = 360 }) {
           style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'opacity 0.25s' }} />
       ) : (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-          <span style={{ fontSize: 64, opacity: 0.2 }}>🏟️</span>
+          <Building2 size={64} strokeWidth={1} style={{ opacity: 0.2 }} />
         </div>
       )}
       {valid[idx] && <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom,rgba(0,0,0,0.02),rgba(0,0,0,0.35))' }} />}
@@ -75,21 +76,23 @@ function VenueDetailModal({ venue, matches, isAdmin, onEdit, onClose }) {
         {/* Header */}
         <div style={{ padding: '18px 22px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexShrink: 0 }}>
           <div>
-            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 26, letterSpacing: 2, color: '#f97316', lineHeight: 1 }}>
+            <div style={{ fontFamily: 'var(--font-heading)', fontSize: 'var(--text-lg)', letterSpacing: 2, color: '#f97316', lineHeight: 1 }}>
               {venue.name}
             </div>
-            <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 3 }}>
-              📍 {venue.city}
+            <div style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', marginTop: 3, display: 'flex', alignItems: 'center', gap: 4 }}>
+              <MapPin size={12} strokeWidth={2} />{venue.city}
             </div>
           </div>
           <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
             {isAdmin && (
               <button onClick={() => { onClose(); onEdit(venue) }}
-                style={{ padding: '6px 14px', borderRadius: 8, border: '1px solid rgba(249,115,22,0.4)', background: 'rgba(249,115,22,0.08)', color: '#f97316', cursor: 'pointer', fontWeight: 600, fontSize: 12, fontFamily: 'Rajdhani,sans-serif' }}>
-                ✏️ Edit
+                style={{ padding: '6px 14px', borderRadius: 8, border: '1px solid rgba(249,115,22,0.4)', background: 'rgba(249,115,22,0.08)', color: '#f97316', cursor: 'pointer', fontWeight: 600, fontSize: 'var(--text-sm)', fontFamily: 'var(--font-body)', display: 'flex', alignItems: 'center', gap: 5 }}>
+                <Pencil size={14} strokeWidth={2} /> Edit
               </button>
             )}
-            <button onClick={onClose} style={{ background: 'var(--border-subtle)', border: '1px solid var(--border-input)', borderRadius: 8, color: 'var(--text-secondary)', fontSize: 18, cursor: 'pointer', width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
+            <button onClick={onClose} style={{ background: 'var(--border-subtle)', border: '1px solid var(--border-input)', borderRadius: 8, color: 'var(--text-secondary)', cursor: 'pointer', width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <X size={18} strokeWidth={2} />
+            </button>
           </div>
         </div>
 
@@ -111,7 +114,7 @@ function VenueDetailModal({ venue, matches, isAdmin, onEdit, onClose }) {
             </div>
           ) : (
             <div style={{ height: 200, borderRadius: 12, background: gradientFor(venue.id), display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
-              <span style={{ fontSize: 64, opacity: 0.25 }}>🏟️</span>
+              <Building2 size={64} strokeWidth={1} style={{ opacity: 0.25 }} />
             </div>
           )}
 
@@ -122,8 +125,8 @@ function VenueDetailModal({ venue, matches, isAdmin, onEdit, onClose }) {
               { label: 'Photos',         value: (venue.imageUrls ?? []).length },
             ].map(s => (
               <div key={s.label} style={{ flex: '1 1 100px', background: 'var(--bg-subtle)', border: '1px solid var(--border-subtle)', borderRadius: 10, padding: '12px 16px', textAlign: 'center' }}>
-                <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: '#f97316', lineHeight: 1 }}>{s.value}</div>
-                <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 3, textTransform: 'uppercase', letterSpacing: 0.8 }}>{s.label}</div>
+                <div style={{ fontFamily: 'var(--font-heading)', fontSize: 'var(--text-xl)', color: '#f97316', lineHeight: 1 }}>{s.value}</div>
+                <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', marginTop: 3, textTransform: 'uppercase', letterSpacing: 0.8 }}>{s.label}</div>
               </div>
             ))}
           </div>
@@ -139,9 +142,9 @@ function VenueDetailModal({ venue, matches, isAdmin, onEdit, onClose }) {
                   <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', background: 'var(--bg-subtle)', borderRadius: 10, border: '1px solid var(--border-subtle)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1, minWidth: 0 }}>
                       <TeamLogo teamId={m.team1} size={22} />
-                      <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, letterSpacing: 1 }}>{m.team1}</span>
-                      <span style={{ fontSize: 11, color: 'var(--text-muted)', margin: '0 4px' }}>vs</span>
-                      <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, letterSpacing: 1 }}>{m.team2}</span>
+                      <span style={{ fontFamily: 'var(--font-heading)', fontSize: 'var(--text-base)', letterSpacing: 1 }}>{m.team1}</span>
+                      <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', margin: '0 4px' }}>vs</span>
+                      <span style={{ fontFamily: 'var(--font-heading)', fontSize: 'var(--text-base)', letterSpacing: 1 }}>{m.team2}</span>
                       <TeamLogo teamId={m.team2} size={22} />
                     </div>
                     <div style={{ fontSize: 11, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
@@ -177,7 +180,7 @@ function ImageUrlEditor({ urls, onChange }) {
   // Move image i to index 0 (makes it primary)
   const setPrimary = (i)     => onChange([urls[i], ...urls.filter((_, j) => j !== i)])
 
-  const inputStyle = { flex: 1, padding: '7px 10px', borderRadius: 7, fontSize: 12, border: '1px solid var(--border-input)', background: 'var(--bg-subtle)', color: 'var(--text-primary)', outline: 'none', fontFamily: 'Rajdhani,sans-serif', minWidth: 0 }
+  const inputStyle = { flex: 1, padding: '7px 10px', borderRadius: 7, fontSize: 'var(--text-sm)', border: '1px solid var(--border-input)', background: 'var(--bg-subtle)', color: 'var(--text-primary)', outline: 'none', fontFamily: 'var(--font-body)', minWidth: 0 }
 
   return (
     <div>
@@ -196,7 +199,7 @@ function ImageUrlEditor({ urls, onChange }) {
             <div style={{ width: 40, height: 34, borderRadius: 6, overflow: 'hidden', flexShrink: 0, background: 'var(--bg-elevated)', border: `1px solid ${i === 0 ? '#f97316' : 'var(--border-subtle)'}`, position: 'relative' }}>
               {url
                 ? <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => (e.target.style.display = 'none')} />
-                : <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', fontSize: 14 }}>🖼️</div>
+                : <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}><Image size={14} strokeWidth={1.5} /></div>
               }
               {i === 0 && <div style={{ position: 'absolute', top: 1, right: 2, fontSize: 8, color: '#f97316' }}>★</div>}
             </div>
@@ -204,19 +207,23 @@ function ImageUrlEditor({ urls, onChange }) {
               onFocus={e => (e.target.style.borderColor = '#f97316')} onBlur={e => (e.target.style.borderColor = 'var(--border-input)')} />
             {/* Star button — only shown for non-primary images */}
             {i > 0 && (
-              <button onClick={() => setPrimary(i)} title="Set as primary" style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 15, padding: '4px', flexShrink: 0 }}
-                onMouseEnter={e => (e.currentTarget.style.color = '#f97316')} onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}>☆</button>
+              <button onClick={() => setPrimary(i)} title="Set as primary" style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '4px', flexShrink: 0, display: 'flex', alignItems: 'center' }}
+                onMouseEnter={e => (e.currentTarget.style.color = '#f97316')} onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}>
+                <Star size={14} strokeWidth={1.8} />
+              </button>
             )}
             {i === 0 && <div style={{ width: 23, flexShrink: 0 }} />}
-            <button onClick={() => remove(i)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: 15, padding: '4px', flexShrink: 0 }}>✕</button>
+            <button onClick={() => remove(i)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '4px', flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+              <X size={14} strokeWidth={2} />
+            </button>
           </div>
         ))}
       </div>
       <button onClick={add}
-        style={{ marginTop: 8, background: 'none', border: '1px dashed var(--border-input)', borderRadius: 7, color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 12, padding: '6px 14px', width: '100%', fontFamily: 'Rajdhani,sans-serif', fontWeight: 600, transition: 'all 0.15s' }}
+        style={{ marginTop: 8, background: 'none', border: '1px dashed var(--border-input)', borderRadius: 7, color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 'var(--text-sm)', padding: '6px 14px', width: '100%', fontFamily: 'var(--font-body)', fontWeight: 600, transition: 'all 0.15s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}
         onMouseEnter={e => { e.currentTarget.style.borderColor = '#f97316'; e.currentTarget.style.color = '#f97316' }}
         onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-input)'; e.currentTarget.style.color = 'var(--text-secondary)' }}>
-        ＋ Add image URL
+        <Plus size={14} strokeWidth={2} /> Add image URL
       </button>
     </div>
   )
@@ -242,15 +249,17 @@ function VenueModal({ venue, onSave, onClose }) {
     }
   }
 
-  const inputStyle = { width: '100%', boxSizing: 'border-box', background: 'var(--bg-subtle)', border: '1px solid var(--border-input)', borderRadius: 8, padding: '9px 12px', color: 'var(--text-primary)', fontSize: 13, outline: 'none', fontFamily: 'Rajdhani, sans-serif' }
-  const labelStyle = { fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: 1, display: 'block', marginBottom: 5 }
+  const inputStyle = { width: '100%', boxSizing: 'border-box', background: 'var(--bg-subtle)', border: '1px solid var(--border-input)', borderRadius: 8, padding: '9px 12px', color: 'var(--text-primary)', fontSize: 'var(--text-base)', outline: 'none', fontFamily: 'var(--font-body)' }
+  const labelStyle = { fontSize: 'var(--text-xs)', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: 1, display: 'block', marginBottom: 5 }
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)', zIndex: 400, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }} onClick={onClose}>
       <div style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-input)', borderRadius: 16, width: '100%', maxWidth: 520, maxHeight: '90vh', display: 'flex', flexDirection: 'column', animation: 'fadeUp 0.2s ease' }} onClick={e => e.stopPropagation()}>
         <div style={{ padding: '18px 22px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
-          <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, letterSpacing: 1.5, color: '#f97316' }}>{venue?.id ? 'Edit Venue' : 'Add Venue'}</div>
-          <button onClick={onClose} style={{ background: 'var(--border-subtle)', border: '1px solid var(--border-input)', borderRadius: 8, color: 'var(--text-secondary)', fontSize: 18, cursor: 'pointer', width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
+          <div style={{ fontFamily: 'var(--font-heading)', fontSize: 'var(--text-md)', letterSpacing: 1.5, color: '#f97316' }}>{venue?.id ? 'Edit Venue' : 'Add Venue'}</div>
+          <button onClick={onClose} style={{ background: 'var(--border-subtle)', border: '1px solid var(--border-input)', borderRadius: 8, color: 'var(--text-secondary)', cursor: 'pointer', width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <X size={18} strokeWidth={2} />
+          </button>
         </div>
         <div style={{ padding: '20px 22px', display: 'flex', flexDirection: 'column', gap: 14, overflowY: 'auto' }}>
           {/* Primary image preview */}
@@ -272,8 +281,8 @@ function VenueModal({ venue, onSave, onClose }) {
           <ImageUrlEditor urls={imageUrls} onChange={setImageUrls} />
         </div>
         <div style={{ padding: '14px 22px', borderTop: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'flex-end', gap: 8, flexShrink: 0 }}>
-          <button onClick={onClose} style={{ padding: '8px 18px', borderRadius: 8, border: '1px solid var(--border-input)', background: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontWeight: 600, fontSize: 13, fontFamily: 'Rajdhani,sans-serif' }}>Cancel</button>
-          <button onClick={handleSave} disabled={saving} style={{ padding: '8px 20px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#f97316,#dc2626)', color: '#fff', cursor: saving ? 'default' : 'pointer', fontWeight: 700, fontSize: 13, fontFamily: 'Rajdhani,sans-serif', opacity: saving ? 0.7 : 1 }}>
+          <button onClick={onClose} style={{ padding: '8px 18px', borderRadius: 8, border: '1px solid var(--border-input)', background: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontWeight: 600, fontSize: 'var(--text-sm)', fontFamily: 'var(--font-body)' }}>Cancel</button>
+          <button onClick={handleSave} disabled={saving} style={{ padding: '8px 20px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#f97316,#dc2626)', color: '#fff', cursor: saving ? 'default' : 'pointer', fontWeight: 700, fontSize: 'var(--text-sm)', fontFamily: 'var(--font-body)', opacity: saving ? 0.7 : 1 }}>
             {saving ? 'Saving…' : venue?.id ? 'Update' : 'Add Venue'}
           </button>
         </div>
@@ -303,15 +312,15 @@ function VenueTile({ venue, isAdmin, onClick, onEdit, onDelete }) {
         )}
         {!hasImage && (
           <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <span style={{ fontSize: 52, opacity: 0.2 }}>🏟️</span>
+            <Building2 size={52} strokeWidth={1} style={{ opacity: 0.2 }} />
           </div>
         )}
         {hasImage && <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom,rgba(0,0,0,0) 40%,rgba(0,0,0,0.5) 100%)' }} />}
 
         {/* Photo count badge */}
         {(venue.imageUrls ?? []).length > 1 && (
-          <div style={{ position: 'absolute', bottom: 10, left: 12, background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(6px)', borderRadius: 20, padding: '3px 9px', fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.9)' }}>
-            🖼 {venue.imageUrls.length}
+          <div style={{ position: 'absolute', bottom: 10, left: 12, background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(6px)', borderRadius: 20, padding: '3px 9px', fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.9)', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <Image size={10} strokeWidth={2} /> {venue.imageUrls.length}
           </div>
         )}
 
@@ -321,19 +330,25 @@ function VenueTile({ venue, isAdmin, onClick, onEdit, onDelete }) {
             <button onClick={e => { e.stopPropagation(); onEdit(venue) }} title="Edit"
               style={adminBtn()}
               onMouseEnter={e => (e.currentTarget.style.background = 'rgba(249,115,22,0.85)')}
-              onMouseLeave={e => (e.currentTarget.style.background = 'rgba(0,0,0,0.55)')}>✏️</button>
+              onMouseLeave={e => (e.currentTarget.style.background = 'rgba(0,0,0,0.55)')}>
+              <Pencil size={12} strokeWidth={2} />
+            </button>
             <button onClick={e => { e.stopPropagation(); onDelete(venue) }} title="Delete"
               style={adminBtn()}
               onMouseEnter={e => (e.currentTarget.style.background = 'rgba(239,68,68,0.85)')}
-              onMouseLeave={e => (e.currentTarget.style.background = 'rgba(0,0,0,0.55)')}>🗑</button>
+              onMouseLeave={e => (e.currentTarget.style.background = 'rgba(0,0,0,0.55)')}>
+              <Trash2 size={12} strokeWidth={2} />
+            </button>
           </div>
         )}
       </div>
 
       {/* Footer */}
       <div style={{ padding: '12px 14px' }}>
-        <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 17, letterSpacing: 1.1, color: 'var(--text-primary)', lineHeight: 1.1 }}>{venue.name}</div>
-        <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 3 }}>📍 {venue.city}</div>
+        <div style={{ fontFamily: 'var(--font-heading)', fontSize: 'var(--text-base)', letterSpacing: 1.1, color: 'var(--text-primary)', lineHeight: 1.1 }}>{venue.name}</div>
+        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginTop: 3, display: 'flex', alignItems: 'center', gap: 4 }}>
+          <MapPin size={10} strokeWidth={2} />{venue.city}
+        </div>
       </div>
     </div>
   )
@@ -387,18 +402,18 @@ export default function Venues({ matches = [] }) {
       {/* Page header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <h1 style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 32, letterSpacing: 2, color: '#f97316', margin: 0, lineHeight: 1 }}>Venues</h1>
+          <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 'var(--text-xl)', letterSpacing: 2, color: '#f97316', margin: 0, lineHeight: 1 }}>Venues</h1>
           <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4 }}>
             {venues.length} stadium{venues.length !== 1 ? 's' : ''}
           </div>
         </div>
         <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
           <input placeholder="Search venues…" value={search} onChange={e => setSearch(e.target.value)}
-            style={{ padding: '8px 14px', borderRadius: 8, fontSize: 13, border: '1px solid var(--border-input)', background: 'var(--bg-subtle)', color: 'var(--text-primary)', outline: 'none', width: 200, fontFamily: 'Rajdhani,sans-serif' }}
+            style={{ padding: '8px 14px', borderRadius: 8, fontSize: 'var(--text-base)', border: '1px solid var(--border-input)', background: 'var(--bg-subtle)', color: 'var(--text-primary)', outline: 'none', width: 200, fontFamily: 'var(--font-body)' }}
             onFocus={e => (e.target.style.borderColor = '#f97316')} onBlur={e => (e.target.style.borderColor = 'var(--border-input)')} />
           {isAdmin && (
-            <button onClick={() => setEditModal({})} style={{ padding: '8px 18px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#f97316,#dc2626)', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 13, fontFamily: 'Rajdhani,sans-serif', boxShadow: '0 2px 12px rgba(249,115,22,0.3)', whiteSpace: 'nowrap' }}>
-              ＋ Add Venue
+            <button onClick={() => setEditModal({})} style={{ padding: '8px 18px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#f97316,#dc2626)', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 'var(--text-sm)', fontFamily: 'var(--font-body)', boxShadow: '0 2px 12px rgba(249,115,22,0.3)', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 5 }}>
+              <Plus size={14} strokeWidth={2} /> Add Venue
             </button>
           )}
         </div>
@@ -409,8 +424,8 @@ export default function Venues({ matches = [] }) {
         <div style={{ display: 'flex', justifyContent: 'center', padding: 60 }}><Spinner /></div>
       ) : filtered.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-          <div style={{ fontSize: 48, marginBottom: 12 }}>🏟️</div>
-          <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 6 }}>{search ? 'No venues found' : 'No venues yet'}</div>
+          <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'center', color: 'var(--text-muted)' }}><Building2 size={48} strokeWidth={1.2} /></div>
+          <div style={{ fontSize: 'var(--text-md)', fontWeight: 700, color: 'var(--text-primary)', marginBottom: 6 }}>{search ? 'No venues found' : 'No venues yet'}</div>
           <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{search ? 'Try a different search term' : isAdmin ? 'Add your first venue above' : 'No venues added yet'}</div>
         </div>
       ) : (

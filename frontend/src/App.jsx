@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { Users, Shield } from 'lucide-react'
 import toast from 'react-hot-toast'
 import Header from './components/Header'
 import Dashboard from './pages/Dashboard'
@@ -161,21 +162,23 @@ export default function App() {
             {/* Tab bar */}
             <div style={{ display: 'flex', gap: 4, marginBottom: 28, borderBottom: '1px solid var(--border-subtle)', paddingBottom: 0 }}>
               {[
-                { key: 'users', label: '👥 Users' },
-                { key: 'teams', label: '🏏 Team Logos' },
+                { key: 'users', label: 'Users', Icon: Users },
+                { key: 'teams', label: 'Team Logos', Icon: Shield },
               ].map(tab => (
                 <button
                   key={tab.key}
                   onClick={() => setSuperAdminTab(tab.key)}
                   style={{
                     padding: '8px 18px', border: 'none', cursor: 'pointer',
-                    background: 'transparent', fontFamily: 'Rajdhani, sans-serif',
-                    fontWeight: 600, fontSize: 13,
+                    background: 'transparent', fontFamily: 'var(--font-body)',
+                    fontWeight: 600, fontSize: 'var(--text-sm)',
                     color: superAdminTab === tab.key ? '#f97316' : 'var(--text-secondary)',
                     borderBottom: superAdminTab === tab.key ? '2px solid #f97316' : '2px solid transparent',
                     marginBottom: -1, transition: 'color 0.15s',
+                    display: 'flex', alignItems: 'center', gap: 6,
                   }}
                 >
+                  <tab.Icon size={14} strokeWidth={2} />
                   {tab.label}
                 </button>
               ))}

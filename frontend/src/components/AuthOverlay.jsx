@@ -1,22 +1,23 @@
+import { Swords, Sparkles, LogOut } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 
 const CONFIG = {
   login: {
-    icon: '🏏',
+    Icon: Swords,
     title: 'Signing In',
     subtitle: 'Welcome back to IPL 2025',
     color: '#f97316',
     gradient: 'linear-gradient(135deg, #f97316, #dc2626)',
   },
   register: {
-    icon: '🎉',
+    Icon: Sparkles,
     title: 'Creating Account',
     subtitle: 'Joining IPL 2025 Season',
     color: '#22c55e',
     gradient: 'linear-gradient(135deg, #22c55e, #16a34a)',
   },
   logout: {
-    icon: '👋',
+    Icon: LogOut,
     title: 'Signing Out',
     subtitle: 'See you next match!',
     color: '#8b5cf6',
@@ -92,25 +93,24 @@ export default function AuthOverlay() {
             background: `linear-gradient(135deg, ${cfg.color}22, transparent)`,
             border: `1px solid ${cfg.color}33`,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 32,
             animation: 'authPulse 1.5s ease-in-out infinite',
           }}>
-            {cfg.icon}
+            <cfg.Icon size={32} strokeWidth={1.5} color={cfg.color} />
           </div>
         </div>
 
         {/* Text */}
         <div style={{ textAlign: 'center' }}>
           <div style={{
-            fontFamily: "'Bebas Neue', sans-serif",
-            fontSize: 28, letterSpacing: 3,
+            fontFamily: 'var(--font-display)',
+            fontSize: 'var(--text-xl)', letterSpacing: 3,
             background: cfg.gradient,
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',
             lineHeight: 1,
           }}>{cfg.title}</div>
-          <div style={{ fontSize: 13, color: '#8b949e', marginTop: 6 }}>{cfg.subtitle}</div>
+          <div style={{ fontSize: 'var(--text-sm)', color: '#8b949e', marginTop: 6 }}>{cfg.subtitle}</div>
         </div>
 
         {/* Bouncing dots */}
