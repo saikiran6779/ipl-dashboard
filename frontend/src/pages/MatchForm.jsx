@@ -389,48 +389,52 @@ export default function MatchForm({ editMatch, onSubmit, onCancel, loading }) {
             Select teams above to enable player search
           </div>
         )}
-        <div className="rg-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 28 }}>
-          <div>
+        {(jsonHints.playerOfMatchName || jsonHints.topScorerName || jsonHints.topWicketTakerName) && (
+          <div style={{
+            background: 'rgba(20,184,166,0.06)', border: '1px solid rgba(20,184,166,0.25)',
+            borderRadius: 8, padding: '10px 14px', marginBottom: 16,
+          }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: '#14b8a6', marginBottom: 6 }}>
+              📂 JSON suggestions — search and select below:
+            </div>
             {jsonHints.playerOfMatchName && (
-              <div style={{ fontSize: 11, color: '#14b8a6', background: 'rgba(20,184,166,0.12)', border: '1px solid rgba(20,184,166,0.3)', borderRadius: 6, padding: '3px 8px', marginBottom: 4, display: 'inline-block' }}>
-                📂 JSON: {jsonHints.playerOfMatchName}
+              <div style={{ fontSize: 11, color: '#5eead4', marginTop: 3 }}>
+                • Player of Match: <span style={{ color: '#ccfbf1', fontWeight: 600 }}>{jsonHints.playerOfMatchName}</span>
               </div>
             )}
-            <PlayerCombobox
-              label="Player of the Match"
-              players={players}
-              value={form.playerOfMatchId}
-              onChange={id => set('playerOfMatchId', id)}
-            />
-          </div>
-          <div /> {/* spacer */}
-          <div>
             {jsonHints.topScorerName && (
-              <div style={{ fontSize: 11, color: '#14b8a6', background: 'rgba(20,184,166,0.12)', border: '1px solid rgba(20,184,166,0.3)', borderRadius: 6, padding: '3px 8px', marginBottom: 4, display: 'inline-block' }}>
-                📂 JSON: {jsonHints.topScorerName}
+              <div style={{ fontSize: 11, color: '#5eead4', marginTop: 3 }}>
+                • Top Scorer: <span style={{ color: '#ccfbf1', fontWeight: 600 }}>{jsonHints.topScorerName}</span>
               </div>
             )}
-            <PlayerCombobox
-              label="Top Scorer"
-              players={players}
-              value={form.topScorerId}
-              onChange={id => set('topScorerId', id)}
-            />
-          </div>
-          <Input label="Runs Scored" name="topScorerRuns" type="number" value={form.topScorerRuns} onChange={handle} placeholder="e.g. 82" />
-          <div>
             {jsonHints.topWicketTakerName && (
-              <div style={{ fontSize: 11, color: '#14b8a6', background: 'rgba(20,184,166,0.12)', border: '1px solid rgba(20,184,166,0.3)', borderRadius: 6, padding: '3px 8px', marginBottom: 4, display: 'inline-block' }}>
-                📂 JSON: {jsonHints.topWicketTakerName}
+              <div style={{ fontSize: 11, color: '#5eead4', marginTop: 3 }}>
+                • Top Wicket Taker: <span style={{ color: '#ccfbf1', fontWeight: 600 }}>{jsonHints.topWicketTakerName}</span>
               </div>
             )}
-            <PlayerCombobox
-              label="Top Wicket Taker"
-              players={players}
-              value={form.topWicketTakerId}
-              onChange={id => set('topWicketTakerId', id)}
-            />
           </div>
+        )}
+        <div className="rg-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 28 }}>
+          <PlayerCombobox
+            label="Player of the Match"
+            players={players}
+            value={form.playerOfMatchId}
+            onChange={id => set('playerOfMatchId', id)}
+          />
+          <div /> {/* spacer */}
+          <PlayerCombobox
+            label="Top Scorer"
+            players={players}
+            value={form.topScorerId}
+            onChange={id => set('topScorerId', id)}
+          />
+          <Input label="Runs Scored" name="topScorerRuns" type="number" value={form.topScorerRuns} onChange={handle} placeholder="e.g. 82" />
+          <PlayerCombobox
+            label="Top Wicket Taker"
+            players={players}
+            value={form.topWicketTakerId}
+            onChange={id => set('topWicketTakerId', id)}
+          />
           <Input label="Wickets Taken" name="topWicketTakerWickets" type="number" value={form.topWicketTakerWickets} onChange={handle} placeholder="e.g. 3" />
         </div>
 
