@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import toast from 'react-hot-toast'
 import { Spinner, Button, Input, Select, TeamLogo } from '../components/UI'
-import { getSquad, getScorecard, saveScorecard, createPlayer, getPlayers } from '../services/api'
+import { getSquad, getScorecard, saveScorecard, createPlayer } from '../services/api'
 import { getTeam, formatDate } from '../services/constants'
 import ScorecardImportModal from './ScorecardImportModal'
 
@@ -280,7 +280,7 @@ const tdStyle = (color = 'var(--text-primary)', bold = false) => ({
 })
 
 // ── Entry form (edit mode) ────────────────────────────────────────────────
-function ScorecardEntry({ matchId, teams, onSaved, match, allPlayers }) {
+function ScorecardEntry({ matchId, teams, onSaved }) {
     const [squadA,     setSquadA]     = useState([])   // team1 squad
     const [squadB,     setSquadB]     = useState([])   // team2 squad
     const [entries,    setEntries]    = useState({})   // { playerId: entryObj }
@@ -489,10 +489,11 @@ function ScorecardEntry({ matchId, teams, onSaved, match, allPlayers }) {
             </div>
 
             {/* Scorecard Import Modal */}
-            {showImport && match && (
+            {showImport && (
                 <ScorecardImportModal
-                    match={match}
-                    allPlayers={allPlayers || []}
+                    matchId={matchId}
+                    team1={teams[0]}
+                    team2={teams[1]}
                     onImported={() => { setShowImport(false); onSaved() }}
                     onClose={() => setShowImport(false)}
                 />
@@ -503,16 +504,12 @@ function ScorecardEntry({ matchId, teams, onSaved, match, allPlayers }) {
 
 // ── Main Scorecard Modal ──────────────────────────────────────────────────
 export default function ScorecardModal({ match, onClose, isAdmin = false, openImportDirectly = false }) {
-    const [mode,        setMode]        = useState('loading')  // loading | view | edit | import
-    const [entries,     setEntries]     = useState([])
-    const [allPlayers,  setAllPlayers]  = useState([])
+    const [mode,    setMode]    = useState('loading')  // loading | view | edit | import
+    const [entries, setEntries] = useState([])
 
     const teams = [match.team1, match.team2]
 
     useEffect(() => {
-        // Load all players for import resolution
-        getPlayers().then(setAllPlayers).catch(() => {})
-
         getScorecard(match.id)
             .then(data => {
                 setEntries(data)
@@ -540,9 +537,12 @@ export default function ScorecardModal({ match, onClose, isAdmin = false, openIm
     if (mode === 'import') {
         return (
             <ScorecardImportModal
-                match={match}
-                allPlayers={allPlayers}
-                onImported={() => { handleSaved() }}
+                matchId={match.id}
+                team1={match.team1}
+                team2={match.team2}
+                matchNo={match.matchNo}
+                date={match.date}
+                onImported={handleSaved}
                 onClose={onClose}
             />
         )
@@ -602,7 +602,7 @@ export default function ScorecardModal({ match, onClose, isAdmin = false, openIm
                         <ScorecardView entries={entries} teams={teams} />
                     )}
                     {mode === 'edit' && (
-                        <ScorecardEntry matchId={match.id} teams={teams} onSaved={handleSaved} match={match} allPlayers={allPlayers} />
+                        <ScorecardEntry matchId={match.id} teams={teams} onSaved={handleSaved} />
                     )}
                 </div>
             </div>

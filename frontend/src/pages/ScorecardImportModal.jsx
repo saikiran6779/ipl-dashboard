@@ -1,32 +1,37 @@
 /**
- * ScorecardImportModal — 3-step Cricsheet JSON import for a single match.
+ * ScorecardImportModal — 4-step Cricsheet JSON import for a single match.
  *
  * Step 1 (upload):  Drop / select a Cricsheet JSON file.
  *                   On load, all player names are auto-resolved via resolvePlayerFromJson.
  * Step 2 (preview): Full batting + bowling tables per innings.
+ *                   Combobox filtered to the innings team's players.
  *                   Green chip   = auto-matched (click to override)
  *                   Red combobox = unresolved (admin picks)
- *                   Gray text    = non-striker only (never batted/bowled) — skipped
  *                   Import button disabled until every non-skipped row is resolved.
- * Step 3 (done):    Success confirmation.
+ * Step 3 (saving):  API call in progress.
+ * Step 4 (done):    Success confirmation.
  *
  * Props:
- *   match        – match object { id, team1, team2, matchNo, date }
- *   allPlayers   – full player list from GET /api/players (for combobox)
+ *   matchId      – match DB id
+ *   team1        – team ID e.g. 'GT'
+ *   team2        – team ID e.g. 'LSG'
+ *   matchNo      – optional match number for header display
+ *   date         – optional match date for header display
  *   onImported() – called after successful save
  *   onClose()    – called to close the modal
  */
 
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import toast from 'react-hot-toast'
 import { parseScorecardFromJson } from '../services/cricsheet'
 import { resolvePlayerFromJson } from '../services/constants'
-import { saveScorecard } from '../services/api'
-import { Button, PlayerCombobox } from '../components/UI'
+import { saveScorecard, getPlayers } from '../services/api'
+import { Button, PlayerCombobox, Spinner } from '../components/UI'
 import { formatDate } from '../services/constants'
 
 // ── Teal colour (import actions) ──────────────────────────────────────────
 const TEAL = '#0d9488'
+const STEPS = ['upload', 'preview', 'saving', 'done']
 
 // ── Helper: overs float → display string ─────────────────────────────────
 function fmtOvers(v) {
@@ -35,7 +40,7 @@ function fmtOvers(v) {
 }
 
 // ── Inline player resolution chip / combobox ──────────────────────────────
-function PlayerResolver({ cricsheetName, resolvedId, allPlayers, onChange, skipped, onSkip }) {
+function PlayerResolver({ cricsheetName, resolvedId, teamPlayers, onChange, skipped, onSkip }) {
   const [overriding, setOverriding] = useState(false)
 
   if (skipped) {
@@ -48,7 +53,7 @@ function PlayerResolver({ cricsheetName, resolvedId, allPlayers, onChange, skipp
 
   // Green chip: auto-matched or manually chosen
   if (resolvedId && !overriding) {
-    const p = allPlayers.find(x => x.id === resolvedId)
+    const p = teamPlayers.find(x => x.id === resolvedId)
     return (
       <span
         title="Click to change"
@@ -72,7 +77,7 @@ function PlayerResolver({ cricsheetName, resolvedId, allPlayers, onChange, skipp
     <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 180 }}>
       <div style={{ flex: 1 }}>
         <PlayerCombobox
-          players={allPlayers}
+          players={teamPlayers}
           value={resolvedId}
           onChange={id => { onChange(id); setOverriding(false) }}
         />
@@ -92,9 +97,18 @@ function PlayerResolver({ cricsheetName, resolvedId, allPlayers, onChange, skipp
 }
 
 // ── Batting preview table for one innings ─────────────────────────────────
-function BattingTable({ rows, resolutions, allPlayers, onResolve, onSkip }) {
-  const thS = { padding: '7px 10px', fontSize: 10, fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: 1.2, whiteSpace: 'nowrap', textAlign: 'center' }
-  const tdS = (bold) => ({ padding: '8px 10px', textAlign: 'center', fontSize: bold ? 15 : 12, fontFamily: bold ? "'Bebas Neue',sans-serif" : 'inherit', color: 'var(--text-primary)' })
+function BattingTable({ rows, resolutions, teamPlayers, onResolve, onSkip }) {
+  const thS = {
+    padding: '7px 10px', fontSize: 10, fontWeight: 600,
+    color: 'var(--text-secondary)', textTransform: 'uppercase',
+    letterSpacing: 1.2, whiteSpace: 'nowrap', textAlign: 'center',
+  }
+  const tdS = (bold) => ({
+    padding: '8px 10px', textAlign: 'center',
+    fontSize: bold ? 15 : 12,
+    fontFamily: bold ? "'Bebas Neue',sans-serif" : 'inherit',
+    color: 'var(--text-primary)',
+  })
 
   return (
     <div style={{ overflowX: 'auto', marginBottom: 8 }}>
@@ -116,12 +130,19 @@ function BattingTable({ rows, resolutions, allPlayers, onResolve, onSkip }) {
             const res = resolutions[row.cricsheetName] || {}
             const isSkipped = res.skipped
             return (
-              <tr key={row.cricsheetName}
-                style={{ borderTop: '1px solid var(--border-subtle)', opacity: isSkipped ? 0.45 : 1, transition: 'background 0.15s' }}
+              <tr
+                key={row.cricsheetName}
+                style={{
+                  borderTop: '1px solid var(--border-subtle)',
+                  opacity: isSkipped ? 0.45 : 1,
+                  transition: 'background 0.15s',
+                }}
                 onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
                 onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
               >
-                <td style={{ ...tdS(false), color: 'var(--text-muted)' }}>{row.position ?? '—'}</td>
+                <td style={{ ...tdS(false), color: 'var(--text-muted)' }}>
+                  {row.battingPosition ?? '—'}
+                </td>
                 <td style={{ padding: '8px 10px', fontSize: 12, color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
                   {row.cricsheetName}
                 </td>
@@ -129,7 +150,7 @@ function BattingTable({ rows, resolutions, allPlayers, onResolve, onSkip }) {
                   <PlayerResolver
                     cricsheetName={row.cricsheetName}
                     resolvedId={res.playerId ?? null}
-                    allPlayers={allPlayers}
+                    teamPlayers={teamPlayers}
                     onChange={id => onResolve(row.cricsheetName, id)}
                     skipped={isSkipped}
                     onSkip={() => onSkip(row.cricsheetName)}
@@ -139,10 +160,18 @@ function BattingTable({ rows, resolutions, allPlayers, onResolve, onSkip }) {
                 <td style={tdS(false)}>{row.balls}</td>
                 <td style={{ ...tdS(false), color: '#22c55e' }}>{row.fours}</td>
                 <td style={{ ...tdS(false), color: '#f97316' }}>{row.sixes}</td>
-                <td style={{ padding: '8px 10px', fontSize: 11, color: row.dismissal === 'not out' ? '#22c55e' : 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
-                  {row.dismissal}
-                  {row.dismissedBy && <span style={{ color: 'var(--text-muted)' }}> b. {row.dismissedBy}</span>}
-                  {row.caughtBy    && <span style={{ color: 'var(--text-muted)' }}> c. {row.caughtBy}</span>}
+                <td style={{
+                  padding: '8px 10px', fontSize: 11,
+                  color: row.dismissalType === 'not out' ? '#22c55e' : 'var(--text-secondary)',
+                  whiteSpace: 'nowrap',
+                }}>
+                  {row.dismissalType}
+                  {row.dismissedByName && (
+                    <span style={{ color: 'var(--text-muted)' }}> b. {row.dismissedByName}</span>
+                  )}
+                  {row.caughtByName && (
+                    <span style={{ color: 'var(--text-muted)' }}> c. {row.caughtByName}</span>
+                  )}
                 </td>
               </tr>
             )
@@ -154,9 +183,18 @@ function BattingTable({ rows, resolutions, allPlayers, onResolve, onSkip }) {
 }
 
 // ── Bowling preview table for one innings ─────────────────────────────────
-function BowlingTable({ rows, resolutions, allPlayers, onResolve, onSkip }) {
-  const thS = { padding: '7px 10px', fontSize: 10, fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: 1.2, whiteSpace: 'nowrap', textAlign: 'center' }
-  const tdS = (bold) => ({ padding: '8px 10px', textAlign: 'center', fontSize: bold ? 15 : 12, fontFamily: bold ? "'Bebas Neue',sans-serif" : 'inherit', color: 'var(--text-primary)' })
+function BowlingTable({ rows, resolutions, teamPlayers, onResolve, onSkip }) {
+  const thS = {
+    padding: '7px 10px', fontSize: 10, fontWeight: 600,
+    color: 'var(--text-secondary)', textTransform: 'uppercase',
+    letterSpacing: 1.2, whiteSpace: 'nowrap', textAlign: 'center',
+  }
+  const tdS = (bold) => ({
+    padding: '8px 10px', textAlign: 'center',
+    fontSize: bold ? 15 : 12,
+    fontFamily: bold ? "'Bebas Neue',sans-serif" : 'inherit',
+    color: 'var(--text-primary)',
+  })
 
   return (
     <div style={{ overflowX: 'auto' }}>
@@ -181,8 +219,13 @@ function BowlingTable({ rows, resolutions, allPlayers, onResolve, onSkip }) {
             const econ = row.oversBowled > 0
               ? (row.runsConceded / row.oversBowled).toFixed(2) : '—'
             return (
-              <tr key={row.cricsheetName}
-                style={{ borderTop: '1px solid var(--border-subtle)', opacity: isSkipped ? 0.45 : 1, transition: 'background 0.15s' }}
+              <tr
+                key={row.cricsheetName}
+                style={{
+                  borderTop: '1px solid var(--border-subtle)',
+                  opacity: isSkipped ? 0.45 : 1,
+                  transition: 'background 0.15s',
+                }}
                 onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
                 onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
               >
@@ -193,7 +236,7 @@ function BowlingTable({ rows, resolutions, allPlayers, onResolve, onSkip }) {
                   <PlayerResolver
                     cricsheetName={row.cricsheetName}
                     resolvedId={res.playerId ?? null}
-                    allPlayers={allPlayers}
+                    teamPlayers={teamPlayers}
                     onChange={id => onResolve(row.cricsheetName, id)}
                     skipped={isSkipped}
                     onSkip={() => onSkip(row.cricsheetName)}
@@ -201,11 +244,18 @@ function BowlingTable({ rows, resolutions, allPlayers, onResolve, onSkip }) {
                 </td>
                 <td style={tdS(false)}>{fmtOvers(row.oversBowled)}</td>
                 <td style={tdS(true)}>{row.runsConceded}</td>
-                <td style={{ ...tdS(true), color: row.wickets >= 3 ? '#8b5cf6' : 'var(--text-primary)' }}>{row.wickets}</td>
+                <td style={{ ...tdS(true), color: row.wickets >= 3 ? '#8b5cf6' : 'var(--text-primary)' }}>
+                  {row.wickets}
+                </td>
                 <td style={tdS(false)}>{row.wides ?? 0}</td>
                 <td style={tdS(false)}>{row.noBalls ?? 0}</td>
                 <td style={tdS(false)}>{row.dotBalls ?? 0}</td>
-                <td style={{ ...tdS(false), color: parseFloat(econ) < 7 ? '#22c55e' : parseFloat(econ) < 9 ? 'var(--text-primary)' : '#ef4444' }}>{econ}</td>
+                <td style={{
+                  ...tdS(false),
+                  color: parseFloat(econ) < 7 ? '#22c55e'
+                       : parseFloat(econ) < 9 ? 'var(--text-primary)'
+                       : '#ef4444',
+                }}>{econ}</td>
               </tr>
             )
           })}
@@ -216,13 +266,33 @@ function BowlingTable({ rows, resolutions, allPlayers, onResolve, onSkip }) {
 }
 
 // ── Main modal ────────────────────────────────────────────────────────────
-export default function ScorecardImportModal({ match, allPlayers, onImported, onClose }) {
-  const [step,        setStep]        = useState('upload')  // upload | preview | done
-  const [parsedData,  setParsedData]  = useState(null)      // { innings: [...] }
-  const [resolutions, setResolutions] = useState({})        // { cricsheetName: { playerId, skipped } }
+export default function ScorecardImportModal({
+  matchId, team1, team2, matchNo, date,
+  onImported, onClose,
+}) {
+  const [step,        setStep]        = useState('upload')   // upload | preview | saving | done
+  const [parsedData,  setParsedData]  = useState(null)       // { innings: [...] }
+  const [resolutions, setResolutions] = useState({})         // { cricsheetName: { playerId, skipped } }
   const [dragging,    setDragging]    = useState(false)
-  const [importing,   setImporting]   = useState(false)
+  const [allPlayers,  setAllPlayers]  = useState([])
   const fileRef = useRef(null)
+
+  // Fetch all players on mount for auto-resolution and comboboxes
+  useEffect(() => {
+    getPlayers()
+      .then(setAllPlayers)
+      .catch(() => toast.error('Failed to load players'))
+  }, [])
+
+  // ── Team-filtered player lists ────────────────────────────────────────────
+  const getBattingPlayers = (innTeamId) =>
+    innTeamId ? allPlayers.filter(p => p.teamId === innTeamId) : allPlayers
+
+  const getBowlingPlayers = (innTeamId) => {
+    if (!innTeamId) return allPlayers
+    const bowlingTeam = innTeamId === team1 ? team2 : team1
+    return allPlayers.filter(p => p.teamId === bowlingTeam)
+  }
 
   // ── Parse JSON and auto-resolve players ──────────────────────────────────
   const processFile = useCallback((file) => {
@@ -274,10 +344,9 @@ export default function ScorecardImportModal({ match, allPlayers, onImported, on
     setResolutions(r => ({ ...r, [cricsheetName]: { ...r[cricsheetName], skipped: true } }))
   }
 
-  // ── Validation: all non-skipped rows must be resolved ────────────────────
+  // ── Validation ────────────────────────────────────────────────────────────
   const canImport = parsedData && Object.values(resolutions).every(r => r.skipped || r.playerId)
 
-  // Count auto-matched vs manual
   const { autoCount, unresolvedCount } = Object.values(resolutions).reduce(
     (acc, r) => {
       if (r.skipped) return acc
@@ -291,149 +360,161 @@ export default function ScorecardImportModal({ match, allPlayers, onImported, on
   // ── Import: merge batting + bowling per player, then call API ─────────────
   const handleImport = async () => {
     if (!canImport) return
-    setImporting(true)
+    setStep('saving')
 
     try {
-      // Build a map of playerId → merged stat entry
-      const playerMap = {}   // playerId → entry
+      const playerMap = {}
 
-      // Helper to get or create entry
       const getEntry = (playerId) => {
-        if (!playerMap[playerId]) {
-          playerMap[playerId] = { playerId }
-        }
+        if (!playerMap[playerId]) playerMap[playerId] = { playerId }
         return playerMap[playerId]
       }
 
-      // Build reverse map: cricsheetName → playerId (skipped names excluded)
+      // Reverse map: cricsheetName → playerId (skipped names excluded)
       const idByName = {}
       for (const [name, r] of Object.entries(resolutions)) {
         if (!r.skipped && r.playerId) idByName[name] = r.playerId
       }
 
       for (const inn of parsedData.innings) {
-        // Batting rows
+        // ── Batting rows ───────────────────────────────────────────────────
         for (const row of inn.battingRows) {
           const pid = idByName[row.cricsheetName]
           if (!pid) continue
           const entry = getEntry(pid)
 
-          entry.battingPosition = row.position ?? null
+          entry.battingPosition = row.battingPosition ?? null
           entry.runs            = row.runs
           entry.balls           = row.balls
           entry.fours           = row.fours
           entry.sixes           = row.sixes
-          entry.dismissal       = row.dismissal
+          entry.dismissal       = row.dismissalType        // cricsheet field → backend field
           entry.ppRuns          = row.ppRuns
           entry.ppBalls         = row.ppBalls
-          entry.midRuns         = row.midRuns
-          entry.midBalls        = row.midBalls
+          entry.midRuns         = row.middleRuns           // middleRuns → midRuns
+          entry.midBalls        = row.middleBalls          // middleBalls → midBalls
           entry.deathRuns       = row.deathRuns
           entry.deathBalls      = row.deathBalls
 
-          // Dismissal FKs — resolve from parsed names
-          if (row.dismissedBy) {
-            entry.dismissedById = idByName[row.dismissedBy] ?? null
+          // Dismissal FK resolution
+          if (row.dismissedByName) {
+            entry.dismissedById = idByName[row.dismissedByName] ?? null
           }
-          if (row.caughtBy) {
-            entry.caughtById = idByName[row.caughtBy] ?? null
+          if (row.caughtByName) {
+            entry.caughtById = idByName[row.caughtByName] ?? null
           }
         }
 
-        // Bowling rows
+        // ── Bowling rows ───────────────────────────────────────────────────
         for (const row of inn.bowlingRows) {
           const pid = idByName[row.cricsheetName]
           if (!pid) continue
           const entry = getEntry(pid)
 
-          entry.oversBowled        = row.oversBowled
-          entry.wickets            = row.wickets
-          entry.runsConceded       = row.runsConceded
-          entry.wides              = row.wides
-          entry.noBalls            = row.noBalls
-          entry.maidens            = row.maidens
-          entry.dotBalls           = row.dotBalls
-          entry.ppRunsConceded     = row.ppRunsConceded
-          entry.ppBallsBowled      = row.ppBallsBowled
-          entry.midRunsConceded    = row.midRunsConceded
-          entry.midBallsBowled     = row.midBallsBowled
-          entry.deathRunsConceded  = row.deathRunsConceded
-          entry.deathBallsBowled   = row.deathBallsBowled
+          entry.oversBowled       = row.oversBowled
+          entry.wickets           = row.wickets
+          entry.runsConceded      = row.runsConceded
+          entry.wides             = row.wides
+          entry.noBalls           = row.noBalls
+          entry.maidens           = row.maidens
+          entry.dotBalls          = row.dotBalls
+          entry.ppRunsConceded    = row.ppRuns             // bowling ppRuns → ppRunsConceded
+          entry.ppBallsBowled     = row.ppBalls            // bowling ppBalls → ppBallsBowled
+          entry.deathRunsConceded = row.deathRuns          // bowling deathRuns → deathRunsConceded
+          entry.deathBallsBowled  = row.deathBalls         // bowling deathBalls → deathBallsBowled
         }
 
-        // Attribute catches / run-outs from dismissal fielding data
+        // ── Fielding from dismissal data ───────────────────────────────────
         for (const row of inn.battingRows) {
-          if (!row.caughtBy) continue
-          const fielderId = idByName[row.caughtBy]
+          if (!row.caughtByName) continue
+          const fielderId = idByName[row.caughtByName]
           if (!fielderId) continue
           const fielderEntry = getEntry(fielderId)
 
-          if (row.dismissal === 'caught') {
+          const kind = row.dismissalType
+          if (kind === 'caught' || kind === 'caught and bowled' || kind === 'stumped') {
             fielderEntry.catches = (fielderEntry.catches ?? 0) + 1
-          } else if (row.dismissal === 'run out') {
+          } else if (kind === 'run out') {
             fielderEntry.runOuts = (fielderEntry.runOuts ?? 0) + 1
           }
         }
       }
 
       const payload = Object.values(playerMap)
-      await saveScorecard(match.id, payload)
+      await saveScorecard(matchId, payload)
       setStep('done')
     } catch (err) {
       toast.error(err.response?.data?.error || 'Import failed')
-    } finally {
-      setImporting(false)
+      setStep('preview')   // return to preview on error so user can retry
     }
   }
 
   // ── Render ────────────────────────────────────────────────────────────────
+  const stepIndex = STEPS.indexOf(step)
+
   return (
-    <div style={{
-      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)',
-      backdropFilter: 'blur(4px)', zIndex: 300,
-      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
-    }} onClick={onClose}>
-      <div style={{
-        background: 'var(--bg-elevated)', border: `1px solid ${TEAL}44`,
-        borderRadius: 16, width: '100%', maxWidth: 860, maxHeight: '92vh',
-        display: 'flex', flexDirection: 'column', overflow: 'hidden',
-        animation: 'fadeUp 0.2s ease',
-      }} onClick={e => e.stopPropagation()}>
+    <div
+      style={{
+        position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)',
+        backdropFilter: 'blur(4px)', zIndex: 300,
+        display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
+      }}
+      onClick={step === 'saving' ? undefined : onClose}
+    >
+      <div
+        style={{
+          background: 'var(--bg-elevated)', border: `1px solid ${TEAL}44`,
+          borderRadius: 16, width: '100%', maxWidth: 860, maxHeight: '92vh',
+          display: 'flex', flexDirection: 'column', overflow: 'hidden',
+          animation: 'fadeUp 0.2s ease',
+        }}
+        onClick={e => e.stopPropagation()}
+      >
 
         {/* ── Header ── */}
-        <div style={{ padding: '16px 22px', borderBottom: '1px solid var(--border-subtle)', flexShrink: 0,
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{
+          padding: '16px 22px', borderBottom: '1px solid var(--border-subtle)', flexShrink: 0,
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        }}>
           <div>
             <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, letterSpacing: 1.5, color: TEAL }}>
               Import Scorecard from JSON
             </div>
             <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2 }}>
-              {match.team1} vs {match.team2}
-              {match.matchNo ? ` · Match ${match.matchNo}` : ''}
-              {match.date ? ` · ${formatDate(match.date)}` : ''}
+              {team1} vs {team2}
+              {matchNo ? ` · Match ${matchNo}` : ''}
+              {date ? ` · ${formatDate(date)}` : ''}
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             {/* Step indicator */}
             <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-              {['upload', 'preview', 'done'].map((s, i) => (
+              {STEPS.map((s, i) => (
                 <div key={s} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <div style={{
-                    width: 22, height: 22, borderRadius: '50%', display: 'flex', alignItems: 'center',
-                    justifyContent: 'center', fontSize: 10, fontWeight: 700,
-                    background: step === s ? TEAL : (i < ['upload','preview','done'].indexOf(step) ? `${TEAL}55` : 'var(--bg-subtle)'),
-                    color: step === s ? '#fff' : 'var(--text-muted)',
-                    border: `1px solid ${step === s ? TEAL : 'var(--border-subtle)'}`,
+                    width: 22, height: 22, borderRadius: '50%',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 10, fontWeight: 700,
+                    background: step === s ? TEAL : (i < stepIndex ? `${TEAL}55` : 'var(--bg-subtle)'),
+                    color: step === s ? '#fff' : (i < stepIndex ? TEAL : 'var(--text-muted)'),
+                    border: `1px solid ${step === s || i < stepIndex ? TEAL : 'var(--border-subtle)'}`,
                   }}>{i + 1}</div>
-                  {i < 2 && <div style={{ width: 16, height: 1, background: 'var(--border-subtle)' }} />}
+                  {i < STEPS.length - 1 && (
+                    <div style={{ width: 16, height: 1, background: 'var(--border-subtle)' }} />
+                  )}
                 </div>
               ))}
             </div>
-            <button onClick={onClose} style={{
-              background: 'var(--border-subtle)', border: '1px solid var(--border-input)',
-              borderRadius: 8, color: 'var(--text-secondary)', fontSize: 18, cursor: 'pointer',
-              width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>✕</button>
+            <button
+              onClick={step === 'saving' ? undefined : onClose}
+              disabled={step === 'saving'}
+              style={{
+                background: 'var(--border-subtle)', border: '1px solid var(--border-input)',
+                borderRadius: 8, color: 'var(--text-secondary)', fontSize: 18, cursor: step === 'saving' ? 'default' : 'pointer',
+                width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                opacity: step === 'saving' ? 0.4 : 1,
+              }}
+            >✕</button>
           </div>
         </div>
 
@@ -482,11 +563,19 @@ export default function ScorecardImportModal({ match, allPlayers, onImported, on
               {/* Resolution summary */}
               <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
                 <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Player resolution:</span>
-                <span style={{ fontSize: 11, fontWeight: 600, color: TEAL, background: `${TEAL}15`, border: `1px solid ${TEAL}44`, borderRadius: 4, padding: '2px 8px' }}>
+                <span style={{
+                  fontSize: 11, fontWeight: 600, color: TEAL,
+                  background: `${TEAL}15`, border: `1px solid ${TEAL}44`,
+                  borderRadius: 4, padding: '2px 8px',
+                }}>
                   ✓ {autoCount} auto-matched
                 </span>
                 {unresolvedCount > 0 && (
-                  <span style={{ fontSize: 11, fontWeight: 600, color: '#ef4444', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 4, padding: '2px 8px' }}>
+                  <span style={{
+                    fontSize: 11, fontWeight: 600, color: '#ef4444',
+                    background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)',
+                    borderRadius: 4, padding: '2px 8px',
+                  }}>
                     ⚠ {unresolvedCount} need manual selection
                   </span>
                 )}
@@ -505,19 +594,27 @@ export default function ScorecardImportModal({ match, allPlayers, onImported, on
                   }}>
                     <div style={{ height: 1, width: 20, background: TEAL, opacity: 0.5 }} />
                     Innings {idx + 1} — {inn.team}
+                    {inn.teamId && (
+                      <span style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>
+                        ({inn.teamId})
+                      </span>
+                    )}
                     <div style={{ height: 1, flex: 1, background: 'var(--border-subtle)' }} />
                   </div>
 
                   {/* Batting */}
                   {inn.battingRows.length > 0 && (
                     <>
-                      <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 6 }}>
+                      <div style={{
+                        fontSize: 10, fontWeight: 700, color: 'var(--text-secondary)',
+                        textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 6,
+                      }}>
                         🏏 Batting
                       </div>
                       <BattingTable
                         rows={inn.battingRows}
                         resolutions={resolutions}
-                        allPlayers={allPlayers}
+                        teamPlayers={getBattingPlayers(inn.teamId)}
                         onResolve={resolvePlayer}
                         onSkip={skipPlayer}
                       />
@@ -527,13 +624,16 @@ export default function ScorecardImportModal({ match, allPlayers, onImported, on
                   {/* Bowling */}
                   {inn.bowlingRows.length > 0 && (
                     <>
-                      <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: 1.2, marginTop: 14, marginBottom: 6 }}>
+                      <div style={{
+                        fontSize: 10, fontWeight: 700, color: 'var(--text-secondary)',
+                        textTransform: 'uppercase', letterSpacing: 1.2, marginTop: 14, marginBottom: 6,
+                      }}>
                         ⚡ Bowling
                       </div>
                       <BowlingTable
                         rows={inn.bowlingRows}
                         resolutions={resolutions}
-                        allPlayers={allPlayers}
+                        teamPlayers={getBowlingPlayers(inn.teamId)}
                         onResolve={resolvePlayer}
                         onSkip={skipPlayer}
                       />
@@ -544,7 +644,17 @@ export default function ScorecardImportModal({ match, allPlayers, onImported, on
             </div>
           )}
 
-          {/* ── Step 3: Done ── */}
+          {/* ── Step 3: Saving ── */}
+          {step === 'saving' && (
+            <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+              <Spinner />
+              <div style={{ marginTop: 16, fontSize: 14, fontWeight: 600, color: 'var(--text-secondary)' }}>
+                Saving to database…
+              </div>
+            </div>
+          )}
+
+          {/* ── Step 4: Done ── */}
           {step === 'done' && (
             <div style={{ textAlign: 'center', padding: '40px 20px' }}>
               <div style={{ fontSize: 48, marginBottom: 12 }}>✅</div>
@@ -564,23 +674,28 @@ export default function ScorecardImportModal({ match, allPlayers, onImported, on
           )}
         </div>
 
-        {/* ── Footer (preview step) ── */}
+        {/* ── Footer (preview step only) ── */}
         {step === 'preview' && (
-          <div style={{ padding: '14px 22px', borderTop: '1px solid var(--border-subtle)', flexShrink: 0,
-            display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <button onClick={() => setStep('upload')} style={{
-              background: 'none', border: '1px solid var(--border-input)', borderRadius: 8,
-              color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 12, fontWeight: 600,
-              padding: '7px 16px', fontFamily: 'DM Sans,sans-serif',
-            }}>
+          <div style={{
+            padding: '14px 22px', borderTop: '1px solid var(--border-subtle)', flexShrink: 0,
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          }}>
+            <button
+              onClick={() => setStep('upload')}
+              style={{
+                background: 'none', border: '1px solid var(--border-input)', borderRadius: 8,
+                color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 12, fontWeight: 600,
+                padding: '7px 16px', fontFamily: 'DM Sans,sans-serif',
+              }}
+            >
               ← Back
             </button>
             <Button
-              disabled={!canImport || importing}
+              disabled={!canImport}
               onClick={handleImport}
-              style={{ background: canImport && !importing ? TEAL : undefined, border: 'none', color: '#fff' }}
+              style={{ background: canImport ? TEAL : undefined, border: 'none', color: '#fff' }}
             >
-              {importing ? '⏳ Importing…' : `⬆ Import ${Object.values(resolutions).filter(r => !r.skipped && r.playerId).length} players`}
+              {`⬆ Import ${Object.values(resolutions).filter(r => !r.skipped && r.playerId).length} players`}
             </Button>
           </div>
         )}
