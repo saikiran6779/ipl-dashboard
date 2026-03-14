@@ -6,6 +6,7 @@ import { getTeam, formatDate } from '../services/constants'
 
 const ROLE_LABELS = { BAT: 'Batter', BOWL: 'Bowler', ALL: 'All-rounder', WK: 'Wicket-keeper' }
 const ROLE_COLORS = { BAT: '#f97316', BOWL: '#8b5cf6', ALL: '#22c55e', WK: '#3b82f6' }
+const ROLE_ICONS  = { BAT: '🏏', BOWL: '🎯', ALL: '⚡', WK: '🧤' }
 
 // ── Stat Pill ─────────────────────────────────────────────────────────────
 function StatPill({ label, value, color = 'var(--text-primary)', sub }) {
@@ -369,9 +370,10 @@ export default function PlayerProfile({ playerId, onBack, onOpenTeam }) {
               >
                 {profile.teamId}
               </span>
-                            <span style={{ fontSize: 11, fontWeight: 700,
+                            <span style={{ fontSize: 11, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 5,
                                 color: ROLE_COLORS[profile.role],
                                 background: ROLE_COLORS[profile.role] + '22', borderRadius: 6, padding: '3px 10px' }}>
+                <span style={{ fontSize: 14 }}>{ROLE_ICONS[profile.role]}</span>
                 {ROLE_LABELS[profile.role]}
               </span>
                             <span style={{ fontSize: 11, color: 'var(--text-secondary)',

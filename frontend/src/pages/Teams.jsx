@@ -160,11 +160,10 @@ function TeamCard({ team, standing, rank, onClick }) {
 // ── Player Row ─────────────────────────────────────────────────────────────
 function PlayerRow({ player, index, onOpenProfile }) {
   const [hovered, setHovered] = useState(false)
-  const roleColors = {
-    BATSMAN: '#f97316', BOWLER: '#8b5cf6', 'ALL-ROUNDER': '#22c55e',
-    'WICKET-KEEPER': '#3b82f6', WK: '#3b82f6',
-  }
-  const color = roleColors[player.role?.toUpperCase()] || 'var(--text-secondary)'
+  const roleColors = { BAT: '#f97316', BOWL: '#8b5cf6', ALL: '#22c55e', WK: '#3b82f6' }
+  const roleIcons  = { BAT: '🏏', BOWL: '🎯', ALL: '⚡', WK: '🧤' }
+  const roleLabels = { BAT: 'Batter', BOWL: 'Bowler', ALL: 'All-rounder', WK: 'Wicket-keeper' }
+  const color = roleColors[player.role] || 'var(--text-secondary)'
 
   return (
     <div
@@ -188,7 +187,7 @@ function PlayerRow({ player, index, onOpenProfile }) {
       }}>{index + 1}</div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--text-primary)' }}>{player.name}</div>
-        <div style={{ fontSize: 10, color, textTransform: 'uppercase', letterSpacing: 1 }}>{player.role}</div>
+        <div title={roleLabels[player.role]} style={{ fontSize: 14, color, lineHeight: 1 }}>{roleIcons[player.role] ?? player.role}</div>
       </div>
     </div>
   )

@@ -8,6 +8,7 @@ import { useAuth } from '../context/AuthContext'
 const ROLES = ['BAT', 'BOWL', 'ALL', 'WK']
 const ROLE_LABELS = { BAT: 'Batter', BOWL: 'Bowler', ALL: 'All-rounder', WK: 'Wicket-keeper' }
 const ROLE_COLORS = { BAT: '#f97316', BOWL: '#8b5cf6', ALL: '#22c55e', WK: '#3b82f6' }
+const ROLE_ICONS  = { BAT: '🏏', BOWL: '🎯', ALL: '⚡', WK: '🧤' }
 
 // ── Add Player Modal ──────────────────────────────────────────────────────
 function AddPlayerModal({ onClose, onSaved }) {
@@ -149,10 +150,11 @@ function PlayerCard({ player, onOpenProfile, onOpenTeam, onDelete, canDelete }) 
                         >
                             {player.teamId}
                         </div>
-                        <div style={{ fontSize: 10, fontWeight: 600,
-                            color: ROLE_COLORS[player.role],
-                            background: ROLE_COLORS[player.role] + '22', borderRadius: 4, padding: '2px 6px' }}>
-                            {ROLE_LABELS[player.role]}
+                        <div title={ROLE_LABELS[player.role]}
+                            style={{ fontSize: 13, lineHeight: 1.6,
+                                color: ROLE_COLORS[player.role],
+                                background: ROLE_COLORS[player.role] + '22', borderRadius: 4, padding: '1px 5px' }}>
+                            {ROLE_ICONS[player.role]}
                         </div>
                     </div>
                 </div>
