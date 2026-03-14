@@ -157,22 +157,6 @@ export default function MatchForm({ editMatch, onSubmit, onCancel, loading }) {
 
   const teamOptions = [form.team1, form.team2].filter(Boolean)
 
-  // ── Hint tag (inline, above each player combobox) ─────────────────────────
-  const HintTag = ({ hint, matched }) => {
-    if (!hint) return null
-    return (
-      <div style={{
-        fontSize: 11,
-        color:      matched ? '#22c55e' : '#14b8a6',
-        background: matched ? 'rgba(34,197,94,0.1)' : 'rgba(20,184,166,0.12)',
-        border:     `1px solid ${matched ? 'rgba(34,197,94,0.3)' : 'rgba(20,184,166,0.3)'}`,
-        borderRadius: 6, padding: '3px 8px', marginBottom: 4, display: 'inline-block',
-      }}>
-        {matched ? '✅' : '📂'} {hint}{matched ? ' — auto-matched' : ' — select manually'}
-      </div>
-    )
-  }
-
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div style={{ maxWidth: 700, margin: '0 auto' }}>
@@ -213,13 +197,14 @@ export default function MatchForm({ editMatch, onSubmit, onCancel, loading }) {
         <div className="rg-1-1-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 2fr', gap: 12, marginBottom: 24 }}>
           <Input label="Match No." name="matchNo" type="number" value={form.matchNo} onChange={handle} placeholder="e.g. 1" />
           <Input label="Date *"    name="date"    type="date"   value={form.date}    onChange={handle} required />
-          <div>
-            <HintTag hint={jsonHints.venueName ? `${jsonHints.venueName}${jsonHints.venueCity ? ` (${jsonHints.venueCity})` : ''}` : null} matched={!!form.venueId} />
-            <Select label="Venue" name="venueId" value={form.venueId ?? ''} onChange={e => set('venueId', e.target.value ? Number(e.target.value) : null)}>
-              <option value="">Select venue</option>
-              {venues.map(v => <option key={v.id} value={v.id}>{v.name} — {v.city}</option>)}
-            </Select>
-          </div>
+          <Select
+            label="Venue" name="venueId" value={form.venueId ?? ''}
+            onChange={e => set('venueId', e.target.value ? Number(e.target.value) : null)}
+            hint={jsonHints.venueName ? { text: `${jsonHints.venueName}${jsonHints.venueCity ? ` · ${jsonHints.venueCity}` : ''}`, matched: !!form.venueId } : null}
+          >
+            <option value="">Select venue</option>
+            {venues.map(v => <option key={v.id} value={v.id}>{v.name} — {v.city}</option>)}
+          </Select>
         </div>
 
         {/* ── Teams & Scores ── */}
@@ -284,25 +269,19 @@ export default function MatchForm({ editMatch, onSubmit, onCancel, loading }) {
         )}
         <div className="rg-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 28 }}>
 
-          <div>
-            <HintTag hint={jsonHints.playerOfMatchName} matched={!!form.playerOfMatchId} />
-            <PlayerCombobox label="Player of the Match" players={players}
-              value={form.playerOfMatchId} onChange={id => set('playerOfMatchId', id)} />
-          </div>
+          <PlayerCombobox label="Player of the Match" players={players}
+            value={form.playerOfMatchId} onChange={id => set('playerOfMatchId', id)}
+            hint={jsonHints.playerOfMatchName ? { text: jsonHints.playerOfMatchName, matched: !!form.playerOfMatchId } : null} />
           <div /> {/* spacer */}
 
-          <div>
-            <HintTag hint={jsonHints.topScorerName} matched={!!form.topScorerId} />
-            <PlayerCombobox label="Top Scorer" players={players}
-              value={form.topScorerId} onChange={id => set('topScorerId', id)} />
-          </div>
+          <PlayerCombobox label="Top Scorer" players={players}
+            value={form.topScorerId} onChange={id => set('topScorerId', id)}
+            hint={jsonHints.topScorerName ? { text: jsonHints.topScorerName, matched: !!form.topScorerId } : null} />
           <Input label="Runs Scored" name="topScorerRuns" type="number" value={form.topScorerRuns} onChange={handle} placeholder="e.g. 82" />
 
-          <div>
-            <HintTag hint={jsonHints.topWicketTakerName} matched={!!form.topWicketTakerId} />
-            <PlayerCombobox label="Top Wicket Taker" players={players}
-              value={form.topWicketTakerId} onChange={id => set('topWicketTakerId', id)} />
-          </div>
+          <PlayerCombobox label="Top Wicket Taker" players={players}
+            value={form.topWicketTakerId} onChange={id => set('topWicketTakerId', id)}
+            hint={jsonHints.topWicketTakerName ? { text: jsonHints.topWicketTakerName, matched: !!form.topWicketTakerId } : null} />
           <Input label="Wickets Taken" name="topWicketTakerWickets" type="number" value={form.topWicketTakerWickets} onChange={handle} placeholder="e.g. 3" />
 
         </div>

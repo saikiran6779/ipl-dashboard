@@ -71,10 +71,10 @@ export function Input({ label, ...props }) {
   )
 }
 
-export function Select({ label, children, ...props }) {
+export function Select({ label, hint = null, children, ...props }) {
   return (
     <div>
-      {label && <Label>{label}</Label>}
+      {label && <LabelRow label={label} hint={hint} />}
       <select
         style={{ ...baseInput, cursor: 'pointer' }}
         onFocus={e => (e.target.style.borderColor = '#f97316')}
@@ -92,6 +92,35 @@ export function Label({ children }) {
     <label style={{ display: 'block', fontSize: 10, fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>
       {children}
     </label>
+  )
+}
+
+// ── Internal: label + optional inline hint badge ─────────────────────────────
+
+function HintBadge({ matched, text }) {
+  return (
+    <span style={{
+      fontSize: 10, fontWeight: 600,
+      color:      matched ? '#22c55e' : '#14b8a6',
+      background: matched ? 'rgba(34,197,94,0.1)' : 'rgba(20,184,166,0.1)',
+      border:     `1px solid ${matched ? 'rgba(34,197,94,0.3)' : 'rgba(20,184,166,0.3)'}`,
+      borderRadius: 4, padding: '1px 6px',
+      maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+      display: 'inline-block', verticalAlign: 'middle',
+    }} title={text}>
+      {matched ? '✓ auto' : `📂 ${text}`}
+    </span>
+  )
+}
+
+function LabelRow({ label, hint }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginBottom: 4 }}>
+      <label style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+        {label}
+      </label>
+      {hint && <HintBadge matched={hint.matched} text={hint.text} />}
+    </div>
   )
 }
 
@@ -124,7 +153,7 @@ export function Button({ children, variant = 'primary', onClick, type = 'button'
 
 // ── Player Combobox ──────────────────────────────────────────────────────────
 
-export function PlayerCombobox({ label, players = [], value, onChange }) {
+export function PlayerCombobox({ label, players = [], value, onChange, hint = null }) {
   const [query,  setQuery]  = useState('')
   const [open,   setOpen]   = useState(false)
 
@@ -148,7 +177,7 @@ export function PlayerCombobox({ label, players = [], value, onChange }) {
 
   return (
     <div style={{ position: 'relative' }}>
-      {label && <Label>{label}</Label>}
+      {label && <LabelRow label={label} hint={hint} />}
       <div style={{ position: 'relative' }}>
         <input
           value={open ? query : selectedName}
