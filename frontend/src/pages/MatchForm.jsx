@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
 import { Input, Select, SectionLabel, Button, PlayerCombobox } from '../components/UI'
-import { TEAMS, VENUES, resolvePlayerFromJson } from '../services/constants'
-import { parseCricsheetData } from '../services/cricsheet'
-import { getSquad, getPlayers } from '../services/api'
+import { TEAMS, resolvePlayerFromJson } from '../services/constants'
+import { parseCricsheetData, resolveVenueFromJson } from '../services/cricsheet'
+import { getSquad, getPlayers, getVenues } from '../services/api'
 
 const EMPTY = {
-  matchNo: '', date: '', venue: '',
+  matchNo: '', date: '', venueId: null,
   team1: '', team2: '',
   team1Score: '', team1Wickets: '', team1Overs: '',
   team2Score: '', team2Wickets: '', team2Overs: '',
@@ -21,13 +21,15 @@ export default function MatchForm({ editMatch, onSubmit, onCancel, loading }) {
   const [form,       setForm]       = useState(EMPTY)
   const [players,    setPlayers]    = useState([])   // squad for selected teams (combobox options)
   const [allPlayers, setAllPlayers] = useState([])   // all players (for JSON auto-resolution)
+  const [venues,     setVenues]     = useState([])   // all venues from API
   const [jsonHints,     setJsonHints]     = useState({})
   const [jsonWarnings,  setJsonWarnings]  = useState([])
   const fileInputRef = useRef(null)
 
-  // Fetch all players once on mount for JSON auto-resolution
+  // Fetch all players + venues once on mount for JSON auto-resolution
   useEffect(() => {
     getPlayers().then(setAllPlayers).catch(() => {})
+    getVenues().then(setVenues).catch(() => {})
   }, [])
 
   // Populate form when editing
@@ -36,6 +38,7 @@ export default function MatchForm({ editMatch, onSubmit, onCancel, loading }) {
       setForm({
         ...EMPTY, ...editMatch,
         matchNo:               editMatch.matchNo               ?? '',
+        venueId:               editMatch.venueId               ?? null,
         team1Score:            editMatch.team1Score            ?? '',
         team1Wickets:          editMatch.team1Wickets          ?? '',
         team1Overs:            editMatch.team1Overs            ?? '',
@@ -77,11 +80,14 @@ export default function MatchForm({ editMatch, onSubmit, onCancel, loading }) {
       try {
         const { fields, hints, warnings } = parseCricsheetData(JSON.parse(ev.target.result))
 
-        // Auto-resolve player IDs from the full player list
+        // Auto-resolve venue + player IDs
+        const resolvedVenue  = resolveVenueFromJson(hints.venueCity, hints.venueName, venues)
         const resolvedMOM    = resolvePlayerFromJson(hints.playerOfMatchName,  allPlayers)
         const resolvedScorer = resolvePlayerFromJson(hints.topScorerName,      allPlayers)
         const resolvedWkt    = resolvePlayerFromJson(hints.topWicketTakerName, allPlayers)
 
+        if (hints.venueName      && !resolvedVenue)
+          warnings.push(`Could not auto-match venue: "${hints.venueName}" — select manually`)
         if (hints.playerOfMatchName  && !resolvedMOM)
           warnings.push(`Could not auto-match player: "${hints.playerOfMatchName}" — select manually`)
         if (hints.topScorerName      && !resolvedScorer)
@@ -93,7 +99,7 @@ export default function MatchForm({ editMatch, onSubmit, onCancel, loading }) {
           ...prev,
           date:                  fields.date        || prev.date,
           matchNo:               fields.matchNo     !== '' ? fields.matchNo    : prev.matchNo,
-          venue:                 fields.venue       || prev.venue,
+          venueId:               resolvedVenue ? resolvedVenue.id : prev.venueId,
           team1:                 fields.team1       || prev.team1,
           team2:                 fields.team2       || prev.team2,
           team1Score:            fields.team1Score   ?? prev.team1Score,
@@ -205,12 +211,15 @@ export default function MatchForm({ editMatch, onSubmit, onCancel, loading }) {
           </div>
         )}
         <div className="rg-1-1-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 2fr', gap: 12, marginBottom: 24 }}>
-          <Input label="Match No." name="matchNo" type="number" value={form.matchNo}  onChange={handle} placeholder="e.g. 1" />
-          <Input label="Date *"    name="date"    type="date"   value={form.date}     onChange={handle} required />
-          <Select label="Venue"    name="venue"                 value={form.venue}    onChange={handle}>
-            <option value="">Select venue</option>
-            {VENUES.map(v => <option key={v} value={v}>{v}</option>)}
-          </Select>
+          <Input label="Match No." name="matchNo" type="number" value={form.matchNo} onChange={handle} placeholder="e.g. 1" />
+          <Input label="Date *"    name="date"    type="date"   value={form.date}    onChange={handle} required />
+          <div>
+            <HintTag hint={jsonHints.venueName ? `${jsonHints.venueName}${jsonHints.venueCity ? ` (${jsonHints.venueCity})` : ''}` : null} matched={!!form.venueId} />
+            <Select label="Venue" name="venueId" value={form.venueId ?? ''} onChange={e => set('venueId', e.target.value ? Number(e.target.value) : null)}>
+              <option value="">Select venue</option>
+              {venues.map(v => <option key={v.id} value={v.id}>{v.name} — {v.city}</option>)}
+            </Select>
+          </div>
         </div>
 
         {/* ── Teams & Scores ── */}

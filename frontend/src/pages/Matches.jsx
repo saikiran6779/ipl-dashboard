@@ -48,7 +48,7 @@ export default function Matches({ matches, loading, onEdit, onDelete }) {
               <div className="match-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
                 <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
                   {m.matchNo ? <span style={{ color: '#f97316', fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, marginRight: 6 }}>M{m.matchNo}</span> : null}
-                  {formatDate(m.date)}{m.venue ? ` · ${m.venue}` : ''}
+                  {formatDate(m.date)}{m.venueName ? ` · ${m.venueName}` : ''}
                 </div>
                 <div style={{ display: 'flex', gap: 6 }}>
                   <button

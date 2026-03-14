@@ -1,7 +1,12 @@
 /**
  * Cricsheet JSON parsing utilities for IPL match data.
- * Handles team/venue name normalisation, innings computation,
- * top-scorer and top-wicket-taker extraction.
+ *
+ * parseCricsheetData() — pure parser, no DB knowledge needed.
+ *   Returns raw city/venue strings in `hints` so the caller can
+ *   resolve against the fetched venues list.
+ *
+ * resolveVenueFromJson() — matches Cricsheet city/venue against
+ *   the venues array returned by GET /api/venues.
  */
 
 // ── Team name → IPL team ID ───────────────────────────────────────────────────
@@ -30,40 +35,29 @@ function mapTeam(name, warnings) {
   return ''
 }
 
-// ── Venue name normalisation (Cricsheet → DB VENUES list) ────────────────────
+// ── Cricsheet venue name → normalised DB venue name ───────────────────────────
+// Used only as a fallback when city matching fails.
 
-const VENUE_MAP = {
-  'wankhede stadium':                                              'Wankhede Stadium, Mumbai',
-  'ma chidambaram stadium':                                        'M. A. Chidambaram Stadium, Chennai',
-  'm.a. chidambaram stadium':                                      'M. A. Chidambaram Stadium, Chennai',
-  'chepauk':                                                       'M. A. Chidambaram Stadium, Chennai',
-  'm.chinnaswamy stadium':                                         'M. Chinnaswamy Stadium, Bengaluru',
-  'm chinnaswamy stadium':                                         'M. Chinnaswamy Stadium, Bengaluru',
-  'chinnaswamy stadium':                                           'M. Chinnaswamy Stadium, Bengaluru',
-  'eden gardens':                                                  'Eden Gardens, Kolkata',
-  'arun jaitley stadium':                                          'Arun Jaitley Stadium, Delhi',
-  'feroz shah kotla':                                              'Arun Jaitley Stadium, Delhi',
-  'hpca stadium':                                                  'HPCA Stadium, Dharamsala',
-  'sawai mansingh stadium':                                        'Sawai Mansingh Stadium, Jaipur',
-  'rajiv gandhi international cricket stadium':                    'Rajiv Gandhi Intl Stadium, Hyderabad',
-  'rajiv gandhi intl stadium':                                     'Rajiv Gandhi Intl Stadium, Hyderabad',
-  'narendra modi stadium':                                         'Narendra Modi Stadium, Ahmedabad',
-  'bharat ratna shri atal bihari vajpayee ekana cricket stadium':  'BRSABV Ekana Stadium, Lucknow',
-  'brsabv ekana stadium':                                          'BRSABV Ekana Stadium, Lucknow',
-  'ekana cricket stadium':                                         'BRSABV Ekana Stadium, Lucknow',
-  'ekana stadium':                                                 'BRSABV Ekana Stadium, Lucknow',
-}
-
-function mapVenue(raw) {
-  if (!raw) return ''
-  const lower = raw.toLowerCase().trim()
-  if (VENUE_MAP[lower]) return VENUE_MAP[lower]
-  // Partial: raw venue starts with a known key prefix  (handles "Eden Gardens, Kolkata")
-  for (const [k, v] of Object.entries(VENUE_MAP)) {
-    const base = k.split(',')[0]
-    if (lower.startsWith(base) || base.startsWith(lower.split(',')[0].trim())) return v
-  }
-  return raw  // fall back to raw — user can adjust via dropdown
+const VENUE_NAME_MAP = {
+  'wankhede stadium':                                             'Wankhede Stadium',
+  'ma chidambaram stadium':                                       'M. A. Chidambaram Stadium',
+  'm.a. chidambaram stadium':                                     'M. A. Chidambaram Stadium',
+  'chepauk':                                                      'M. A. Chidambaram Stadium',
+  'm.chinnaswamy stadium':                                        'M. Chinnaswamy Stadium',
+  'm chinnaswamy stadium':                                        'M. Chinnaswamy Stadium',
+  'chinnaswamy stadium':                                          'M. Chinnaswamy Stadium',
+  'eden gardens':                                                 'Eden Gardens',
+  'arun jaitley stadium':                                         'Arun Jaitley Stadium',
+  'feroz shah kotla':                                             'Arun Jaitley Stadium',
+  'hpca stadium':                                                 'HPCA Stadium',
+  'sawai mansingh stadium':                                       'Sawai Mansingh Stadium',
+  'rajiv gandhi international cricket stadium':                   'Rajiv Gandhi Intl Stadium',
+  'rajiv gandhi intl stadium':                                    'Rajiv Gandhi Intl Stadium',
+  'narendra modi stadium':                                        'Narendra Modi Stadium',
+  'bharat ratna shri atal bihari vajpayee ekana cricket stadium': 'BRSABV Ekana Stadium',
+  'brsabv ekana stadium':                                         'BRSABV Ekana Stadium',
+  'ekana cricket stadium':                                        'BRSABV Ekana Stadium',
+  'ekana stadium':                                                'BRSABV Ekana Stadium',
 }
 
 // ── Innings computations ──────────────────────────────────────────────────────
@@ -122,6 +116,9 @@ function computeTopWicketTaker(inn) {
 
 /**
  * Parse a raw Cricsheet JSON object.
+ * Venue is returned as raw city + name strings — call resolveVenueFromJson
+ * with the fetched venues list to get the venue ID.
+ *
  * @returns {{ fields: object, hints: object, warnings: string[] }}
  */
 export function parseCricsheetData(data) {
@@ -138,7 +135,6 @@ export function parseCricsheetData(data) {
 
   const tossWinner  = mapTeam(info.toss?.winner || '', warnings)
   const tossDecision = info.toss?.decision === 'bat' ? 'bat' : 'field'
-  const venue       = mapVenue(info.venue || '')
 
   let winner = '', winMargin = '', winType = '', noResult = false
   const outcome = info.outcome || {}
@@ -146,15 +142,14 @@ export function parseCricsheetData(data) {
     noResult = true
   } else if (outcome.winner) {
     winner = mapTeam(outcome.winner, warnings)
-    if      (outcome.by?.wickets)         { winMargin = String(outcome.by.wickets); winType = 'wickets' }
-    else if (outcome.by?.runs)            { winMargin = String(outcome.by.runs);    winType = 'runs'    }
-    else if (outcome.by?.['super over'])  { winMargin = '1'; winType = 'runs' }
+    if      (outcome.by?.wickets)        { winMargin = String(outcome.by.wickets); winType = 'wickets' }
+    else if (outcome.by?.runs)           { winMargin = String(outcome.by.runs);    winType = 'runs'    }
+    else if (outcome.by?.['super over']) { winMargin = '1'; winType = 'runs' }
   }
 
   const playerOfMatchName = info.player_of_match?.[0] || ''
   if (!playerOfMatchName) warnings.push('Player of the match not available')
 
-  // Match innings to team names (first occurrence = regular inning for that team)
   const inn1   = regular.find(i => i.team === team1Name) || regular[0]
   const inn2   = regular.find(i => i.team === team2Name) || regular[1]
   const score1 = inn1 ? computeInnings(inn1) : { runs: null, wickets: null, overs: null }
@@ -175,7 +170,7 @@ export function parseCricsheetData(data) {
     fields: {
       date:                  info.dates?.[0] || '',
       matchNo:               info.event?.match_number ?? '',
-      venue, team1, team2,
+      team1, team2,
       team1Score:            score1.runs,
       team1Wickets:          score1.wickets,
       team1Overs:            score1.overs,
@@ -188,10 +183,50 @@ export function parseCricsheetData(data) {
       topWicketTakerWickets: topWicketTaker.wickets,
     },
     hints: {
+      // Raw Cricsheet values — used by resolveVenueFromJson
+      venueCity:          info.city  || '',
+      venueName:          info.venue || '',
       playerOfMatchName,
       topScorerName:      topScorer.name,
       topWicketTakerName: topWicketTaker.name,
     },
     warnings,
   }
+}
+
+/**
+ * Given Cricsheet city + venue name and the venues list from GET /api/venues,
+ * return the matching venue object { id, name, city } or null.
+ *
+ * Resolution order:
+ *   1. Exact city match (most reliable — Cricsheet city is consistent)
+ *   2. Normalised venue name lookup via VENUE_NAME_MAP
+ *   3. Partial venue name containment (unique match only)
+ */
+export function resolveVenueFromJson(city, venueName, venues) {
+  if (!venues?.length) return null
+
+  // 1. City match (fast, reliable)
+  if (city) {
+    const byCity = venues.filter(v => v.city.toLowerCase() === city.toLowerCase())
+    if (byCity.length === 1) return byCity[0]
+  }
+
+  // 2. Normalised name lookup
+  if (venueName) {
+    const lower      = venueName.toLowerCase().trim()
+    const normalised = VENUE_NAME_MAP[lower]
+    if (normalised) {
+      const byNorm = venues.find(v => v.name.toLowerCase() === normalised.toLowerCase())
+      if (byNorm) return byNorm
+    }
+
+    // 3. Partial containment (unique match only)
+    const partial = venues.filter(v =>
+      v.name.toLowerCase().includes(lower) || lower.includes(v.name.toLowerCase())
+    )
+    if (partial.length === 1) return partial[0]
+  }
+
+  return null
 }

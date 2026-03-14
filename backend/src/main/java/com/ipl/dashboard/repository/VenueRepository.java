@@ -1,0 +1,12 @@
+package com.ipl.dashboard.repository;
+
+import com.ipl.dashboard.model.Venue;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
+
+@Repository
+public interface VenueRepository extends JpaRepository<Venue, Long> {
+    Optional<Venue> findByCityIgnoreCase(String city);
+}

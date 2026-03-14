@@ -95,6 +95,17 @@ export const getAllUsers   = ()        => api.get('/super-admin/users').then(r =
 export const promoteUser  = (userId)  => api.put(`/super-admin/users/${userId}/promote`).then(r => r.data)
 export const demoteUser   = (userId)  => api.put(`/super-admin/users/${userId}/demote`).then(r => r.data)
 
+// ── Venues ────────────────────────────────────────────────────────────────────
+
+export const getVenues      = ()             => api.get('/venues').then(r => r.data)
+export const createVenue    = (data)         => api.post('/venues', data).then(r => r.data)
+export const updateVenue    = (id, data)     => api.put(`/venues/${id}`, data).then(r => r.data)
+export const deleteVenue    = (id)           => api.delete(`/venues/${id}`)
+
+// ── Teams ─────────────────────────────────────────────────────────────────────
+
+export const getTeams       = ()             => api.get('/teams').then(r => r.data)
+
 // ── Matches ───────────────────────────────────────────────────────────────────
 
 export const getMatches  = ()           => api.get('/matches').then(r => r.data)

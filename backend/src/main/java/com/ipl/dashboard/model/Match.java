@@ -24,7 +24,10 @@ public class Match {
     @NotNull
     private LocalDate date;
 
-    private String venue;
+    /** Normalised venue — FK to venues table. Column: venue_id */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "venue_id")
+    private Venue venue;
 
     @NotBlank
     private String team1;

@@ -11,18 +11,7 @@ export const TEAMS = [
   { id: 'LSG',  name: 'Lucknow Super Giants',        color: '#A72B6D', accent: '#00AEEF' },
 ]
 
-export const VENUES = [
-  'Wankhede Stadium, Mumbai',
-  'M. A. Chidambaram Stadium, Chennai',
-  'M. Chinnaswamy Stadium, Bengaluru',
-  'Eden Gardens, Kolkata',
-  'Arun Jaitley Stadium, Delhi',
-  'HPCA Stadium, Dharamsala',
-  'Sawai Mansingh Stadium, Jaipur',
-  'Rajiv Gandhi Intl Stadium, Hyderabad',
-  'Narendra Modi Stadium, Ahmedabad',
-  'BRSABV Ekana Stadium, Lucknow',
-]
+// VENUES list removed — venues are now a DB entity served by GET /api/venues
 
 export const getTeam = (id) => TEAMS.find(t => t.id === id) || { id, name: id, color: '#444', accent: '#fff' }
 
