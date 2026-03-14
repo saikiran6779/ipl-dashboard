@@ -40,7 +40,10 @@ public class CricApiService {
      */
     public List<Map<String, Object>> searchMatches(String query) {
         try {
-            String url = "https://api.cricapi.com/v1/matches?apikey=" + apiKey + "&offset=0";
+            String url = "https://api.cricapi.com/v1/matches?apikey=" + apiKey + "&offset=0"
+                + (query != null && !query.isBlank()
+                    ? "&search=" + java.net.URLEncoder.encode(query, java.nio.charset.StandardCharsets.UTF_8)
+                    : "");
             String response = restTemplate.getForObject(url, String.class);
             JsonNode root = mapper.readTree(response);
             JsonNode data = root.get("data");
@@ -51,22 +54,13 @@ public class CricApiService {
                     String id     = match.path("id").asText("");
                     String date   = match.path("date").asText("");
                     String status = match.path("status").asText("");
-                    // Filter to IPL matches only
-                    if (name.toLowerCase().contains("ipl") ||
-                        name.contains("Indians") || name.contains("Kings") ||
-                        name.contains("Royals") || name.contains("Titans") ||
-                        name.contains("Giants") || name.contains("Capitals") ||
-                        name.contains("Challengers") || name.contains("Knight Riders") ||
-                        name.contains("Hyderabad") || name.contains("Chennai")) {
-
-                        if (!id.isBlank()) {
-                            Map<String, Object> m = new LinkedHashMap<>();
-                            m.put("id", id);
-                            m.put("name", name);
-                            m.put("date", date);
-                            m.put("status", status);
-                            results.add(m);
-                        }
+                    if (!id.isBlank()) {
+                        Map<String, Object> m = new LinkedHashMap<>();
+                        m.put("id", id);
+                        m.put("name", name);
+                        m.put("date", date);
+                        m.put("status", status);
+                        results.add(m);
                     }
                 }
             }
