@@ -489,9 +489,10 @@ export default function PlayerProfile({ playerId, onBack, onOpenTeam }) {
   const { isAdmin } = useAuth()
   const [profile,    setProfile]    = useState(null)
   const [loading,    setLoading]    = useState(true)
-  const [editingUrl, setEditingUrl] = useState(false)
-  const [urlInput,   setUrlInput]   = useState('')
-  const [saving,     setSaving]     = useState(false)
+  const [editingUrl,   setEditingUrl]   = useState(false)
+  const [urlInput,     setUrlInput]     = useState('')
+  const [saving,       setSaving]       = useState(false)
+  const [viewingPhoto, setViewingPhoto] = useState(false)
 
   useEffect(() => {
     setLoading(true)
@@ -577,13 +578,20 @@ export default function PlayerProfile({ playerId, onBack, onOpenTeam }) {
         <div className="profile-hero-inner" style={{ display: 'flex', alignItems: 'flex-end', gap: 24, flexWrap: 'wrap' }}>
           {/* avatar */}
           <div style={{ flexShrink: 0, position: 'relative' }}>
-            <div style={{
-              width: 110, height: 110, borderRadius: '50%',
-              border: `3px solid ${team.color}`,
-              boxShadow: `0 0 0 5px ${team.color}1a, 0 8px 32px ${team.color}55`,
-              overflow: 'hidden', background: `${team.color}11`,
-              animation: 'scoreFlash 0.5s cubic-bezier(0.16,1,0.3,1) both',
-            }}>
+            <div
+              onClick={() => setViewingPhoto(true)}
+              title="View photo"
+              style={{
+                width: 110, height: 110, borderRadius: '50%',
+                border: `3px solid ${team.color}`,
+                boxShadow: `0 0 0 5px ${team.color}1a, 0 8px 32px ${team.color}55`,
+                overflow: 'hidden', background: `${team.color}11`,
+                animation: 'scoreFlash 0.5s cubic-bezier(0.16,1,0.3,1) both',
+                cursor: 'pointer', transition: 'transform 0.18s, box-shadow 0.18s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = `0 0 0 6px ${team.color}33, 0 12px 40px ${team.color}77` }}
+              onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)';    e.currentTarget.style.boxShadow = `0 0 0 5px ${team.color}1a, 0 8px 32px ${team.color}55` }}
+            >
               <img
                 src={profile.profilePictureUrl || IPL_PLACEHOLDER}
                 alt={profile.name}
@@ -732,6 +740,78 @@ export default function PlayerProfile({ playerId, onBack, onOpenTeam }) {
 
       {/* Content */}
       <div style={{ marginTop: 28 }}>
+
+        {/* Photo lightbox */}
+        {viewingPhoto && (
+          <div
+            onClick={() => setViewingPhoto(false)}
+            style={{
+              position: 'fixed', inset: 0, zIndex: 300,
+              background: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(8px)',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+              padding: 24, animation: 'fadeIn 0.2s ease',
+            }}
+          >
+            {/* close */}
+            <button
+              onClick={() => setViewingPhoto(false)}
+              style={{
+                position: 'absolute', top: 18, right: 18,
+                width: 36, height: 36, borderRadius: '50%',
+                background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.18)',
+                color: '#fff', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}
+            ><X size={18} strokeWidth={2} /></button>
+
+            {/* photo */}
+            <div
+              onClick={e => e.stopPropagation()}
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 18 }}
+            >
+              <div style={{
+                width: 260, height: 260, borderRadius: '50%',
+                border: `4px solid ${team.color}`,
+                boxShadow: `0 0 0 8px ${team.color}22, 0 24px 80px ${team.color}66`,
+                overflow: 'hidden', background: team.color + '11',
+                animation: 'scoreFlash 0.35s cubic-bezier(0.16,1,0.3,1) both',
+              }}>
+                <img
+                  src={profile.profilePictureUrl || IPL_PLACEHOLDER}
+                  alt={profile.name}
+                  onError={e => { e.target.src = IPL_PLACEHOLDER }}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{
+                  fontFamily: 'var(--font-heading)', fontSize: 'var(--text-xl)',
+                  letterSpacing: 2, color: '#fff', marginBottom: 4,
+                }}>{profile.name}</div>
+                <div style={{
+                  fontFamily: 'var(--font-body)', fontSize: 'var(--text-sm)',
+                  color: team.color, fontWeight: 700, letterSpacing: 1,
+                }}>{profile.teamId}</div>
+              </div>
+              {isAdmin && (
+                <button
+                  onClick={() => { setViewingPhoto(false); setUrlInput(profile.profilePictureUrl || ''); setEditingUrl(true) }}
+                  style={{
+                    padding: '8px 20px', borderRadius: 20,
+                    background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.22)',
+                    color: '#fff', cursor: 'pointer',
+                    fontFamily: 'var(--font-body)', fontSize: 'var(--text-sm)', fontWeight: 600,
+                    display: 'flex', alignItems: 'center', gap: 6, transition: 'background 0.15s',
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.2)' }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)' }}
+                >
+                  <Camera size={14} strokeWidth={2} /> Change Photo
+                </button>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Photo URL editor modal */}
         {editingUrl && (

@@ -144,6 +144,10 @@ input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
   from { opacity: 0; transform: translateX(-8px); }
   to   { opacity: 1; transform: translateX(0); }
 }
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
 @keyframes scoreFlash {
   0%   { opacity: 0; transform: scale(0.7); }
   60%  { transform: scale(1.08); }
