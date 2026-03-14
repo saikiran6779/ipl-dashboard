@@ -24,7 +24,7 @@ Thumbs.db
 
 # Environment / secrets — NEVER commit these
 backend/src/main/resources/application-local.properties
-backend/src/main/resources/application-prod.properties
+# application-prod.properties is committed (uses ${ENV_VAR} placeholders, no secrets)
 
 *.env
 
