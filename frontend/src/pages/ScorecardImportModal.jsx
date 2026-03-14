@@ -97,7 +97,7 @@ function PlayerResolver({ cricsheetName, resolvedId, teamPlayers, onChange, skip
 }
 
 // ── Batting preview table for one innings ─────────────────────────────────
-function BattingTable({ rows, resolutions, teamPlayers, onResolve, onSkip }) {
+function BattingTable({ rows, resolutions, teamPlayers, onResolve, onSkip, onMoveUp, onMoveDown }) {
   const thS = {
     padding: '7px 10px', fontSize: 10, fontWeight: 600,
     color: 'var(--text-secondary)', textTransform: 'uppercase',
@@ -109,12 +109,25 @@ function BattingTable({ rows, resolutions, teamPlayers, onResolve, onSkip }) {
     fontFamily: bold ? "'Bebas Neue',sans-serif" : 'inherit',
     color: 'var(--text-primary)',
   })
+  const moveBtn = (label, onClick, disabled) => (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        display: 'block', background: 'none', border: 'none',
+        color: disabled ? 'var(--border-subtle)' : 'var(--text-muted)',
+        cursor: disabled ? 'default' : 'pointer',
+        fontSize: 9, padding: '1px 3px', lineHeight: 1,
+      }}
+    >{label}</button>
+  )
 
   return (
     <div style={{ overflowX: 'auto', marginBottom: 8 }}>
       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
         <thead>
           <tr style={{ background: 'var(--bg-subtle)' }}>
+            <th style={{ ...thS, width: 32 }}></th>
             <th style={{ ...thS, textAlign: 'left' }}>#</th>
             <th style={{ ...thS, textAlign: 'left' }}>Batter (Cricsheet)</th>
             <th style={{ ...thS, textAlign: 'left' }}>DB Player</th>
@@ -126,7 +139,7 @@ function BattingTable({ rows, resolutions, teamPlayers, onResolve, onSkip }) {
           </tr>
         </thead>
         <tbody>
-          {rows.map(row => {
+          {rows.map((row, i) => {
             const res = resolutions[row.cricsheetName] || {}
             const isSkipped = res.skipped
             return (
@@ -140,6 +153,11 @@ function BattingTable({ rows, resolutions, teamPlayers, onResolve, onSkip }) {
                 onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
                 onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
               >
+                {/* ↑↓ move buttons */}
+                <td style={{ padding: '4px 4px', textAlign: 'center', verticalAlign: 'middle' }}>
+                  {moveBtn('▲', () => onMoveUp(i), i === 0)}
+                  {moveBtn('▼', () => onMoveDown(i), i === rows.length - 1)}
+                </td>
                 <td style={{ ...tdS(false), color: 'var(--text-muted)' }}>
                   {row.battingPosition ?? '—'}
                 </td>
@@ -270,11 +288,12 @@ export default function ScorecardImportModal({
   matchId, team1, team2, matchNo, date,
   onImported, onClose,
 }) {
-  const [step,        setStep]        = useState('upload')   // upload | preview | saving | done
-  const [parsedData,  setParsedData]  = useState(null)       // { innings: [...] }
-  const [resolutions, setResolutions] = useState({})         // { cricsheetName: { playerId, skipped } }
-  const [dragging,    setDragging]    = useState(false)
-  const [allPlayers,  setAllPlayers]  = useState([])
+  const [step,          setStep]          = useState('upload')   // upload | preview | saving | done
+  const [parsedData,    setParsedData]    = useState(null)       // { innings: [...] }
+  const [resolutions,   setResolutions]   = useState({})         // { cricsheetName: { playerId, skipped } }
+  const [battingOrders, setBattingOrders] = useState({})         // { innIdx: [cricsheetName, ...] }
+  const [dragging,      setDragging]      = useState(false)
+  const [allPlayers,    setAllPlayers]    = useState([])
   const fileRef = useRef(null)
 
   // Fetch all players on mount for auto-resolution and comboboxes
@@ -303,10 +322,15 @@ export default function ScorecardImportModal({
         const json = JSON.parse(e.target.result)
         const parsed = parseScorecardFromJson(json)
 
-        // Collect every unique cricsheet name across all innings
+        // Collect every unique cricsheet name across all innings,
+        // including dismissedByName / caughtByName for FK resolution.
         const allNames = new Set()
         for (const inn of parsed.innings) {
-          inn.battingRows.forEach(r => allNames.add(r.cricsheetName))
+          inn.battingRows.forEach(r => {
+            allNames.add(r.cricsheetName)
+            if (r.dismissedByName) allNames.add(r.dismissedByName)
+            if (r.caughtByName)    allNames.add(r.caughtByName)
+          })
           inn.bowlingRows.forEach(r => allNames.add(r.cricsheetName))
         }
 
@@ -317,8 +341,15 @@ export default function ScorecardImportModal({
           res[name] = { playerId: player?.id ?? null, skipped: false }
         }
 
+        // Initial batting order = parse order (position 1 at index 0)
+        const orders = {}
+        parsed.innings.forEach((inn, idx) => {
+          orders[idx] = inn.battingRows.map(r => r.cricsheetName)
+        })
+
         setParsedData(parsed)
         setResolutions(res)
+        setBattingOrders(orders)
         setStep('preview')
       } catch {
         toast.error('Invalid JSON file — could not parse')
@@ -342,6 +373,16 @@ export default function ScorecardImportModal({
 
   const skipPlayer = (cricsheetName) => {
     setResolutions(r => ({ ...r, [cricsheetName]: { ...r[cricsheetName], skipped: true } }))
+  }
+
+  // ── Batting order: swap two adjacent rows for one innings ─────────────────
+  const moveBatter = (innIdx, fromIdx, toIdx) => {
+    setBattingOrders(prev => {
+      const order = [...prev[innIdx]]
+      const [removed] = order.splice(fromIdx, 1)
+      order.splice(toIdx, 0, removed)
+      return { ...prev, [innIdx]: order }
+    })
   }
 
   // ── Validation ────────────────────────────────────────────────────────────
@@ -376,14 +417,22 @@ export default function ScorecardImportModal({
         if (!r.skipped && r.playerId) idByName[name] = r.playerId
       }
 
-      for (const inn of parsedData.innings) {
+      // Build a lookup: innIdx → { cricsheetName → 1-based position }
+      const positionsByInn = {}
+      parsedData.innings.forEach((inn, innIdx) => {
+        const order = battingOrders[innIdx] || inn.battingRows.map(r => r.cricsheetName)
+        positionsByInn[innIdx] = {}
+        order.forEach((name, i) => { positionsByInn[innIdx][name] = i + 1 })
+      })
+
+      parsedData.innings.forEach((inn, innIdx) => {
         // ── Batting rows ───────────────────────────────────────────────────
         for (const row of inn.battingRows) {
           const pid = idByName[row.cricsheetName]
           if (!pid) continue
           const entry = getEntry(pid)
 
-          entry.battingPosition = row.battingPosition ?? null
+          entry.battingPosition = positionsByInn[innIdx][row.cricsheetName] ?? null
           entry.runs            = row.runs
           entry.balls           = row.balls
           entry.fours           = row.fours
@@ -438,7 +487,7 @@ export default function ScorecardImportModal({
             fielderEntry.runOuts = (fielderEntry.runOuts ?? 0) + 1
           }
         }
-      }
+      })
 
       const payload = Object.values(playerMap)
       await saveScorecard(matchId, payload)
@@ -603,7 +652,12 @@ export default function ScorecardImportModal({
                   </div>
 
                   {/* Batting */}
-                  {inn.battingRows.length > 0 && (
+                  {inn.battingRows.length > 0 && (() => {
+                    // Build ordered rows from battingOrders state, re-number position
+                    const order = battingOrders[idx] || inn.battingRows.map(r => r.cricsheetName)
+                    const rowByName = Object.fromEntries(inn.battingRows.map(r => [r.cricsheetName, r]))
+                    const orderedRows = order.map((name, i) => ({ ...rowByName[name], battingPosition: i + 1 }))
+                    return (
                     <>
                       <div style={{
                         fontSize: 10, fontWeight: 700, color: 'var(--text-secondary)',
@@ -612,14 +666,17 @@ export default function ScorecardImportModal({
                         🏏 Batting
                       </div>
                       <BattingTable
-                        rows={inn.battingRows}
+                        rows={orderedRows}
                         resolutions={resolutions}
                         teamPlayers={getBattingPlayers(inn.teamId)}
                         onResolve={resolvePlayer}
                         onSkip={skipPlayer}
+                        onMoveUp={i => i > 0 && moveBatter(idx, i, i - 1)}
+                        onMoveDown={i => i < orderedRows.length - 1 && moveBatter(idx, i, i + 1)}
                       />
                     </>
-                  )}
+                    )
+                  })()}
 
                   {/* Bowling */}
                   {inn.bowlingRows.length > 0 && (
