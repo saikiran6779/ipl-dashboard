@@ -95,6 +95,9 @@ export const getAllUsers   = ()        => api.get('/super-admin/users').then(r =
 export const promoteUser  = (userId)  => api.put(`/super-admin/users/${userId}/promote`).then(r => r.data)
 export const demoteUser   = (userId)  => api.put(`/super-admin/users/${userId}/demote`).then(r => r.data)
 
+export const cricApiSearch  = (q)        => api.get(`/super-admin/cricapi/search?q=${encodeURIComponent(q)}`).then(r => r.data)
+export const cricApiFetch   = (matchId)  => api.get(`/super-admin/cricapi/match/${matchId}`).then(r => r.data)
+
 // ── Matches ───────────────────────────────────────────────────────────────────
 
 export const getMatches  = ()           => api.get('/matches').then(r => r.data)

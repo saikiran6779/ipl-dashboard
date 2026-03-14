@@ -45,11 +45,12 @@ jobs:
           JWT_SECRET:    ${{ secrets.JWT_SECRET }}
           MAIL_USERNAME: ${{ secrets.MAIL_USERNAME }}
           MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
+          CRICAPI_KEY:   ${{ secrets.CRICAPI_KEY }}
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          envs: DB_URL,DB_USERNAME,DB_PASSWORD,JWT_SECRET,MAIL_USERNAME,MAIL_PASSWORD
+          envs: DB_URL,DB_USERNAME,DB_PASSWORD,JWT_SECRET,MAIL_USERNAME,MAIL_PASSWORD,CRICAPI_KEY
           script: |
             cat > /home/ec2-user/ipl.env <<EOF
             DB_URL=$DB_URL
@@ -58,6 +59,7 @@ jobs:
             JWT_SECRET=$JWT_SECRET
             MAIL_USERNAME=$MAIL_USERNAME
             MAIL_PASSWORD=$MAIL_PASSWORD
+            CRICAPI_KEY=$CRICAPI_KEY
             EOF
             chmod 600 /home/ec2-user/ipl.env
 

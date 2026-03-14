@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { Input, Select, SectionLabel, Button, PlayerCombobox } from '../components/UI'
 import { TEAMS, VENUES } from '../services/constants'
 import { getSquad } from '../services/api'
+import { cricApiSearch, cricApiFetch } from '../services/api'
+import { useAuth } from '../context/AuthContext'
 
 const EMPTY = {
   matchNo: '', date: '', venue: '',
@@ -21,6 +23,15 @@ const EMPTY = {
 export default function MatchForm({ editMatch, onSubmit, onCancel, loading }) {
   const [form,    setForm]    = useState(EMPTY)
   const [players, setPlayers] = useState([])
+
+  const { isSuperAdmin } = useAuth()
+  const [showCricApi,    setShowCricApi]    = useState(false)
+  const [searchQuery,    setSearchQuery]    = useState('')
+  const [searchResults,  setSearchResults]  = useState([])
+  const [searching,      setSearching]      = useState(false)
+  const [fetchingMatch,  setFetchingMatch]  = useState(false)
+  const [scrapeHints,    setScrapeHints]    = useState({})
+  const [scrapeWarnings, setScrapeWarnings] = useState([])
 
   // Populate form when editing an existing match
   useEffect(() => {
@@ -44,6 +55,8 @@ export default function MatchForm({ editMatch, onSubmit, onCancel, loading }) {
     } else {
       setForm(EMPTY)
     }
+    setScrapeHints({})
+    setScrapeWarnings([])
   }, [editMatch])
 
   // Fetch combined squad whenever team selection changes
@@ -82,17 +95,188 @@ export default function MatchForm({ editMatch, onSubmit, onCancel, loading }) {
     onSubmit(payload)
   }
 
+  const handleSearch = async () => {
+    if (!searchQuery.trim()) return
+    setSearching(true)
+    setSearchResults([])
+    try {
+      const results = await cricApiSearch(searchQuery)
+      setSearchResults(results)
+    } catch {
+      // show empty
+    } finally {
+      setSearching(false)
+    }
+  }
+
+  const handleLoadMatch = async (matchId) => {
+    setFetchingMatch(true)
+    try {
+      const data = await cricApiFetch(matchId)
+      // Auto-fill form fields
+      setForm(prev => ({
+        ...prev,
+        date:                  data.date            || prev.date,
+        venue:                 data.venue           || prev.venue,
+        team1:                 data.team1           || prev.team1,
+        team2:                 data.team2           || prev.team2,
+        team1Score:            data.team1Score      ?? prev.team1Score,
+        team1Wickets:          data.team1Wickets    ?? prev.team1Wickets,
+        team1Overs:            data.team1Overs      ?? prev.team1Overs,
+        team2Score:            data.team2Score      ?? prev.team2Score,
+        team2Wickets:          data.team2Wickets    ?? prev.team2Wickets,
+        team2Overs:            data.team2Overs      ?? prev.team2Overs,
+        tossWinner:            data.tossWinner      || prev.tossWinner,
+        tossDecision:          data.tossDecision    || prev.tossDecision,
+        winner:                data.winner          || prev.winner,
+        winMargin:             data.winMargin       || prev.winMargin,
+        winType:               data.winType         || prev.winType,
+        noResult:              data.noResult        ?? prev.noResult,
+        topScorerRuns:         data.topScorerRuns   ?? prev.topScorerRuns,
+        topWicketTakerWickets: data.topWicketTakerWickets ?? prev.topWicketTakerWickets,
+      }))
+      setScrapeHints({
+        playerOfMatchName:    data.playerOfMatchName    || '',
+        topScorerName:        data.topScorerName        || '',
+        topWicketTakerName:   data.topWicketTakerName   || '',
+      })
+      setScrapeWarnings(data.warnings || [])
+      setShowCricApi(false)
+      setSearchResults([])
+      setSearchQuery('')
+    } catch {
+      setScrapeWarnings(['Failed to load match data from CricAPI'])
+    } finally {
+      setFetchingMatch(false)
+    }
+  }
+
   const teamOptions = [form.team1, form.team2].filter(Boolean)
 
   return (
     <div style={{ maxWidth: 700, margin: '0 auto' }}>
-      <h2 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 28, letterSpacing: 2, color: '#f97316', marginBottom: 20 }}>
-        {editMatch ? 'Edit Match' : 'Add Match'}
-      </h2>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 10 }}>
+        <h2 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 28, letterSpacing: 2, color: '#f97316', margin: 0 }}>
+          {editMatch ? 'Edit Match' : 'Add Match'}
+        </h2>
+        {isSuperAdmin && (
+          <button
+            type="button"
+            onClick={() => setShowCricApi(true)}
+            style={{
+              padding: '8px 16px', borderRadius: 8,
+              border: '1px solid rgba(249,115,22,0.5)',
+              background: 'rgba(249,115,22,0.08)',
+              color: '#f97316', cursor: 'pointer',
+              fontWeight: 600, fontSize: 13,
+              fontFamily: 'DM Sans, sans-serif',
+              transition: 'all 0.2s',
+            }}
+          >
+            🏏 Load from CricAPI
+          </button>
+        )}
+      </div>
+
+      {/* CricAPI Modal */}
+      {showCricApi && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)',
+          backdropFilter: 'blur(4px)', zIndex: 200,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20,
+        }} onClick={() => setShowCricApi(false)}>
+          <div style={{
+            background: '#161b22', border: '1px solid #30363d', borderRadius: 16,
+            padding: 28, width: '100%', maxWidth: 540,
+            animation: 'fadeUp 0.2s ease',
+          }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, letterSpacing: 1, color: '#f97316' }}>
+                🏏 Load from CricAPI
+              </div>
+              <button onClick={() => setShowCricApi(false)} style={{ background: 'none', border: 'none', color: '#8b949e', fontSize: 20, cursor: 'pointer' }}>✕</button>
+            </div>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+              <input
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleSearch()}
+                placeholder="Search e.g. RCB vs KKR IPL 2025"
+                autoFocus
+                style={{
+                  flex: 1, background: '#0d1117', border: '1px solid #30363d',
+                  borderRadius: 8, padding: '9px 12px', color: '#e6edf3',
+                  fontSize: 13, outline: 'none',
+                }}
+              />
+              <button
+                onClick={handleSearch}
+                disabled={searching}
+                style={{
+                  padding: '9px 18px', borderRadius: 8, border: 'none',
+                  background: 'linear-gradient(135deg,#f97316,#dc2626)',
+                  color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 13,
+                  opacity: searching ? 0.7 : 1,
+                }}
+              >
+                {searching ? '…' : 'Search'}
+              </button>
+            </div>
+            {/* Results list */}
+            {searchResults.length > 0 && (
+              <div style={{ maxHeight: 300, overflowY: 'auto', border: '1px solid #21262d', borderRadius: 8 }}>
+                {searchResults.map((m, i) => (
+                  <div key={m.id} style={{
+                    padding: '12px 16px', borderTop: i > 0 ? '1px solid #21262d' : 'none',
+                    cursor: 'pointer', transition: 'background 0.15s',
+                  }}
+                    onMouseEnter={e => e.currentTarget.style.background = '#1c2128'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                    onClick={() => handleLoadMatch(m.id)}
+                  >
+                    <div style={{ fontWeight: 600, fontSize: 13, color: '#e6edf3' }}>{m.name}</div>
+                    <div style={{ fontSize: 11, color: '#8b949e', marginTop: 3 }}>
+                      {m.date} {m.status && <span style={{ marginLeft: 8, color: '#f97316' }}>{m.status}</span>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            {fetchingMatch && (
+              <div style={{ textAlign: 'center', padding: 20, color: '#8b949e', fontSize: 13 }}>
+                Loading match data…
+              </div>
+            )}
+            {searchResults.length === 0 && !searching && searchQuery && (
+              <div style={{ textAlign: 'center', padding: 20, color: '#8b949e', fontSize: 13 }}>
+                No IPL matches found. Try different search terms.
+              </div>
+            )}
+            <div style={{ fontSize: 11, color: '#8b949e', marginTop: 16, borderTop: '1px solid #21262d', paddingTop: 12 }}>
+              💡 Search by team names e.g. "Mumbai Indians" or match number e.g. "Match 1 IPL"
+            </div>
+          </div>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit}>
         {/* Match Info */}
         <SectionLabel>Match Info</SectionLabel>
+
+        {scrapeWarnings.length > 0 && (
+          <div style={{
+            background: 'rgba(234,179,8,0.08)', border: '1px solid rgba(234,179,8,0.3)',
+            borderRadius: 8, padding: '10px 14px', marginBottom: 16,
+          }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: '#eab308', marginBottom: 6 }}>
+              ⚠️ Some fields could not be auto-filled:
+            </div>
+            {scrapeWarnings.map((w, i) => (
+              <div key={i} style={{ fontSize: 11, color: '#ca8a04', marginTop: 3 }}>• {w}</div>
+            ))}
+          </div>
+        )}
+
         <div className="rg-1-1-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 2fr', gap: 12, marginBottom: 24 }}>
           <Input label="Match No." name="matchNo" type="number" value={form.matchNo} onChange={handle} placeholder="e.g. 1" />
           <Input label="Date *"    name="date"    type="date"   value={form.date}    onChange={handle} required />
@@ -171,26 +355,47 @@ export default function MatchForm({ editMatch, onSubmit, onCancel, loading }) {
           </div>
         )}
         <div className="rg-2col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 28 }}>
-          <PlayerCombobox
-            label="Player of the Match"
-            players={players}
-            value={form.playerOfMatchId}
-            onChange={id => set('playerOfMatchId', id)}
-          />
+          <div>
+            {scrapeHints.playerOfMatchName && (
+              <div style={{ fontSize: 11, color: '#f97316', background: 'rgba(249,115,22,0.12)', border: '1px solid rgba(249,115,22,0.3)', borderRadius: 6, padding: '3px 8px', marginBottom: 4, display: 'inline-block' }}>
+                🏏 ESPN: {scrapeHints.playerOfMatchName}
+              </div>
+            )}
+            <PlayerCombobox
+              label="Player of the Match"
+              players={players}
+              value={form.playerOfMatchId}
+              onChange={id => set('playerOfMatchId', id)}
+            />
+          </div>
           <div /> {/* spacer */}
-          <PlayerCombobox
-            label="Top Scorer"
-            players={players}
-            value={form.topScorerId}
-            onChange={id => set('topScorerId', id)}
-          />
+          <div>
+            {scrapeHints.topScorerName && (
+              <div style={{ fontSize: 11, color: '#f97316', background: 'rgba(249,115,22,0.12)', border: '1px solid rgba(249,115,22,0.3)', borderRadius: 6, padding: '3px 8px', marginBottom: 4, display: 'inline-block' }}>
+                🏏 ESPN: {scrapeHints.topScorerName}
+              </div>
+            )}
+            <PlayerCombobox
+              label="Top Scorer"
+              players={players}
+              value={form.topScorerId}
+              onChange={id => set('topScorerId', id)}
+            />
+          </div>
           <Input label="Runs Scored" name="topScorerRuns" type="number" value={form.topScorerRuns} onChange={handle} placeholder="e.g. 82" />
-          <PlayerCombobox
-            label="Top Wicket Taker"
-            players={players}
-            value={form.topWicketTakerId}
-            onChange={id => set('topWicketTakerId', id)}
-          />
+          <div>
+            {scrapeHints.topWicketTakerName && (
+              <div style={{ fontSize: 11, color: '#8b5cf6', background: 'rgba(139,92,246,0.12)', border: '1px solid rgba(139,92,246,0.3)', borderRadius: 6, padding: '3px 8px', marginBottom: 4, display: 'inline-block' }}>
+                ⚡ ESPN: {scrapeHints.topWicketTakerName}
+              </div>
+            )}
+            <PlayerCombobox
+              label="Top Wicket Taker"
+              players={players}
+              value={form.topWicketTakerId}
+              onChange={id => set('topWicketTakerId', id)}
+            />
+          </div>
           <Input label="Wickets Taken" name="topWicketTakerWickets" type="number" value={form.topWicketTakerWickets} onChange={handle} placeholder="e.g. 3" />
         </div>
 
