@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { getTeam } from '../services/constants'
+import { useTeamLogos } from '../context/TeamsContext'
 
 // ── Layout ─────────────────────────────────────────────────────────────────
 
@@ -241,14 +242,43 @@ export function PlayerCombobox({ label, players = [], value, onChange, hint = nu
   )
 }
 
+// ── Team Logo ───────────────────────────────────────────────────────────────
+// Shows the team's actual logo if one has been configured; falls back to a
+// coloured badge with the team abbreviation so layout is always stable.
+
+export function TeamLogo({ teamId, size = 28 }) {
+  const logos = useTeamLogos()
+  const team  = getTeam(teamId)
+  const url   = logos[teamId]
+
+  if (url) {
+    return (
+      <div style={{ width: size, height: size, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <img src={url} alt={teamId} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+      </div>
+    )
+  }
+
+  return (
+    <div style={{
+      width: size, height: size, flexShrink: 0, borderRadius: size * 0.18,
+      background: `linear-gradient(135deg, ${team.color}dd, ${team.color}99)`,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      fontSize: Math.max(7, Math.floor(size * 0.32)), fontWeight: 800,
+      fontFamily: "'Bebas Neue', sans-serif", color: '#fff', letterSpacing: 0.5,
+    }}>
+      {teamId}
+    </div>
+  )
+}
+
 // ── Team Chip ───────────────────────────────────────────────────────────────
 
 export function TeamChip({ teamId, score, wickets, overs, won, size = 'sm' }) {
-  const team = getTeam(teamId)
   const big = size === 'lg'
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, opacity: won ? 1 : 0.6 }}>
-      <div style={{ width: 4, height: big ? 32 : 24, borderRadius: 2, background: team.color, flexShrink: 0 }} />
+      <TeamLogo teamId={teamId} size={big ? 36 : 28} />
       <div>
         <div style={{ fontWeight: 700, fontSize: big ? 15 : 13, color: won ? 'var(--text-primary)' : 'var(--text-secondary)' }}>{teamId}</div>
         {score != null && (

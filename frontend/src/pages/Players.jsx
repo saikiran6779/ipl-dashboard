@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import toast from 'react-hot-toast'
-import { Card, Spinner, EmptyState, Button, Input, Select } from '../components/UI'
+import { Card, Spinner, EmptyState, Button, Input, Select, TeamLogo } from '../components/UI'
 import { getPlayers, createPlayer, deletePlayer } from '../services/api'
 import { TEAMS, getTeam } from '../services/constants'
 import { useAuth } from '../context/AuthContext'
@@ -271,7 +271,7 @@ export default function Players({ onOpenProfile }) {
                 return (
                     <div key={teamId} style={{ marginBottom: 28 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-                            <div style={{ width: 4, height: 20, borderRadius: 2, background: team.color }} />
+                            <TeamLogo teamId={teamId} size={24} />
                             <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, letterSpacing: 1.5, color: team.color }}>
                                 {teamId}
                             </div>

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Card, CardHeader, TeamChip, EmptyState, Spinner } from '../components/UI'
+import { Card, CardHeader, TeamChip, EmptyState, Spinner, TeamLogo } from '../components/UI'
 import { getTeam, formatDate } from '../services/constants'
 
 const TABS = [
@@ -277,7 +277,7 @@ export default function Dashboard({ stats, matches, loading, onOpenTeam }) {
                                                 {/* team */}
                                                 <td style={{ padding: '10px 12px' }}>
                                                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                                        <div style={{ width: 4, height: 28, borderRadius: 2, background: team.color, flexShrink: 0 }} />
+                                                        <TeamLogo teamId={row.teamId} size={30} />
                                                         <div>
                                                             <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--text-primary)' }}>{row.teamId}</div>
                                                             <div style={{ fontSize: 10, color: 'var(--text-secondary)' }}>{row.teamName}</div>
