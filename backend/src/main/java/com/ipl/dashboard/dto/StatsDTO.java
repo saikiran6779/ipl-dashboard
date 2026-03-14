@@ -12,6 +12,7 @@ public class StatsDTO {
         private int played;
         private int won;
         private int lost;
+        private int nr;
         private int points;
         private double nrr;
         private int runsFor;

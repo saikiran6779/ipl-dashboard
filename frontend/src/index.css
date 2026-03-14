@@ -1,22 +1,82 @@
 /* ── Google Fonts ─────────────────────────────────────────────────────── */
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800&display=swap');
 
+/* ── Theme Variables ──────────────────────────────────────────────────── */
+:root {
+  /* Dark theme (default) */
+  --bg-base:        #080c12;
+  --bg-card:        rgba(22, 27, 34, 0.92);
+  --bg-elevated:    #161b22;
+  --bg-subtle:      #0d1117;
+  --bg-hover:       #1c2128;
+  --bg-input:       #0d1117;
+  --bg-header:      rgba(8, 12, 18, 0.96);
+  --bg-dropdown:    #161b22;
+
+  --border:         rgba(48, 54, 61, 0.7);
+  --border-subtle:  #21262d;
+  --border-input:   #30363d;
+
+  --text-primary:   #e6edf3;
+  --text-secondary: #8b949e;
+  --text-muted:     #6e7681;
+
+  --scrollbar-track: #080c12;
+  --scrollbar-thumb: #2d333b;
+  --scrollbar-hover: #444c56;
+
+  --shadow-card: 0 4px 24px rgba(0,0,0,0.4);
+  --shadow-modal: 0 16px 48px rgba(0,0,0,0.6);
+
+  --glass-bg: rgba(22, 27, 34, 0.8);
+}
+
+[data-theme="light"] {
+  --bg-base:        #f0f2f5;
+  --bg-card:        rgba(255, 255, 255, 0.97);
+  --bg-elevated:    #ffffff;
+  --bg-subtle:      #f6f8fa;
+  --bg-hover:       #eef1f5;
+  --bg-input:       #ffffff;
+  --bg-header:      rgba(255, 255, 255, 0.97);
+  --bg-dropdown:    #ffffff;
+
+  --border:         rgba(200, 210, 220, 0.8);
+  --border-subtle:  #d0d7de;
+  --border-input:   #c6cdd4;
+
+  --text-primary:   #1a2332;
+  --text-secondary: #57606a;
+  --text-muted:     #8c959f;
+
+  --scrollbar-track: #f0f2f5;
+  --scrollbar-thumb: #c9d1d9;
+  --scrollbar-hover: #a8b1ba;
+
+  --shadow-card: 0 4px 24px rgba(0,0,0,0.08);
+  --shadow-modal: 0 16px 48px rgba(0,0,0,0.16);
+
+  --glass-bg: rgba(255, 255, 255, 0.85);
+}
+
+/* ── Reset ────────────────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  background: #080c12;
-  color: #e6edf3;
+  background: var(--bg-base);
+  color: var(--text-primary);
   font-family: 'DM Sans', sans-serif;
   min-height: 100vh;
+  transition: background 0.3s ease, color 0.3s ease;
 }
 
 /* ── Scrollbar ────────────────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
-::-webkit-scrollbar-track { background: #080c12; }
-::-webkit-scrollbar-thumb { background: #2d333b; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #444c56; }
+::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-hover); }
 
-select option { background: #161b22; color: #e6edf3; }
+select option { background: var(--bg-elevated); color: var(--text-primary); }
 input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
 
@@ -44,9 +104,14 @@ input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
   0%   { transform: translateX(0); }
   100% { transform: translateX(-50%); }
 }
+@keyframes theme-fade {
+  from { opacity: 0.7; }
+  to   { opacity: 1; }
+}
 
 .fade-up  { animation: fadeUp  0.4s cubic-bezier(0.16,1,0.3,1) both; }
 .slide-in { animation: slideIn 0.3s ease both; }
+.theme-transition { animation: theme-fade 0.25s ease both; }
 
 /* ── Live ticker strip ────────────────────────────────────────────────── */
 .ticker-wrap {
@@ -60,10 +125,10 @@ input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
 
 /* ── Glassmorphism card ───────────────────────────────────────────────── */
 .glass-card {
-  background: rgba(22, 27, 34, 0.8);
+  background: var(--glass-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(48, 54, 61, 0.6);
+  border: 1px solid var(--border);
 }
 
 /* ── Gradient text ────────────────────────────────────────────────────── */
@@ -73,6 +138,10 @@ input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+
+/* ── Theme-aware table rows ───────────────────────────────────────────── */
+.standings-row:hover { background: var(--bg-hover) !important; }
+.standings-playoff   { background: rgba(249,115,22,0.04) !important; }
 
 /* ── Responsive ───────────────────────────────────────────────────────── */
 .nav-mobile-btn { display: none; }

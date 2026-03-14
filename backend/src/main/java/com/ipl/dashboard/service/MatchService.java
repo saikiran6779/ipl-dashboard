@@ -127,6 +127,8 @@ public class MatchService {
             s2.setRunsAgainst(s2.getRunsAgainst() + r1); s2.setBallsAgainst(s2.getBallsAgainst() + b1);
 
             if (m.isNoResult()) {
+                s1.setNr(s1.getNr() + 1);
+                s2.setNr(s2.getNr() + 1);
                 s1.setPoints(s1.getPoints() + 1);
                 s2.setPoints(s2.getPoints() + 1);
             } else if (t1.equals(m.getWinner())) {
