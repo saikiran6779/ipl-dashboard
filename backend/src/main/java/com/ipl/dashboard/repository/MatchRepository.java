@@ -15,12 +15,12 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
     @Query("SELECT DISTINCT m.team1 FROM Match m UNION SELECT DISTINCT m.team2 FROM Match m")
     List<String> findAllTeams();
 
-    @Query("SELECT m FROM Match m WHERE m.topScorer IS NOT NULL AND m.topScorer != ''")
+    @Query("SELECT m FROM Match m WHERE m.topScorer IS NOT NULL")
     List<Match> findMatchesWithBattingData();
 
-    @Query("SELECT m FROM Match m WHERE m.topWicketTaker IS NOT NULL AND m.topWicketTaker != ''")
+    @Query("SELECT m FROM Match m WHERE m.topWicketTaker IS NOT NULL")
     List<Match> findMatchesWithBowlingData();
 
-    @Query("SELECT m FROM Match m WHERE m.playerOfMatch IS NOT NULL AND m.playerOfMatch != ''")
+    @Query("SELECT m FROM Match m WHERE m.playerOfMatch IS NOT NULL")
     List<Match> findMatchesWithMom();
 }
