@@ -10,7 +10,6 @@ const TEAL = '#0d9488'
 const ROLES      = ['BAT', 'BOWL', 'ALL', 'WK']
 const ROLE_LABELS = { BAT: 'Batter', BOWL: 'Bowler', ALL: 'All-rounder', WK: 'Wicket-keeper' }
 const ROLE_COLORS = { BAT: '#f97316', BOWL: '#8b5cf6', ALL: '#22c55e', WK: '#3b82f6' }
-const ROLE_ICONS  = { BAT: '🏏', BOWL: '🎯', ALL: '⚡', WK: '🧤' }
 const DISMISSALS  = ['not out', 'bowled', 'caught', 'lbw', 'run out', 'stumped', 'hit wicket', 'retired hurt']
 
 // ── Helpers ───────────────────────────────────────────────────────────────
@@ -108,8 +107,9 @@ function PlayerRow({ player, entry, onChange, sectionTab }) {
                     whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 160 }}>
                     {player.name}
                 </div>
-                <div title={ROLE_LABELS[player.role]} style={{ fontSize: 13, color: ROLE_COLORS[player.role], marginTop: 2, lineHeight: 1 }}>
-                    {ROLE_ICONS[player.role]}
+                <div title={ROLE_LABELS[player.role]} style={{ fontSize: 9, fontWeight: 700, letterSpacing: 0.5,
+                    color: ROLE_COLORS[player.role], marginTop: 3 }}>
+                    {player.role}
                 </div>
             </td>
 
@@ -392,7 +392,8 @@ function ScorecardView({ entries, teams }) {
                             >
                                 <td style={{ padding: '10px 12px' }}>
                                     <div style={{ fontWeight: 600, fontSize: 13 }}>{e.playerName}</div>
-                                    <div title={ROLE_LABELS[e.role]} style={{ fontSize: 13, color: ROLE_COLORS[e.role], lineHeight: 1 }}>{ROLE_ICONS[e.role]}</div>
+                                    <div title={ROLE_LABELS[e.role]} style={{ fontSize: 9, fontWeight: 700, letterSpacing: 0.5,
+                                        color: ROLE_COLORS[e.role], marginTop: 3 }}>{e.role}</div>
                                 </td>
                                 {sectionTab === 'batting' && (() => {
                                     const dis = fmtDismissal(e)

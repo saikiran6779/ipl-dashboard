@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react'
 import toast from 'react-hot-toast'
+import { GiCricketBat, GiCricket, GiTennisBall, GiGloves } from 'react-icons/gi'
 import { Spinner, Button } from '../components/UI'
 import { getProfile, updatePlayer } from '../services/api'
 import { getTeam, formatDate } from '../services/constants'
 
 const ROLE_LABELS = { BAT: 'Batter', BOWL: 'Bowler', ALL: 'All-rounder', WK: 'Wicket-keeper' }
 const ROLE_COLORS = { BAT: '#f97316', BOWL: '#8b5cf6', ALL: '#22c55e', WK: '#3b82f6' }
-const ROLE_ICONS  = { BAT: '🏏', BOWL: '🎯', ALL: '⚡', WK: '🧤' }
+const ROLE_ICON_COMPONENTS = { BAT: GiCricketBat, BOWL: GiTennisBall, ALL: GiCricket, WK: GiGloves }
 
 // ── Stat Pill ─────────────────────────────────────────────────────────────
 function StatPill({ label, value, color = 'var(--text-primary)', sub }) {
@@ -370,12 +371,14 @@ export default function PlayerProfile({ playerId, onBack, onOpenTeam }) {
               >
                 {profile.teamId}
               </span>
+                            {(() => { const RoleIcon = ROLE_ICON_COMPONENTS[profile.role]; return (
                             <span style={{ fontSize: 11, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 5,
                                 color: ROLE_COLORS[profile.role],
                                 background: ROLE_COLORS[profile.role] + '22', borderRadius: 6, padding: '3px 10px' }}>
-                <span style={{ fontSize: 14 }}>{ROLE_ICONS[profile.role]}</span>
-                {ROLE_LABELS[profile.role]}
-              </span>
+                              {RoleIcon && <RoleIcon size={16} />}
+                              {ROLE_LABELS[profile.role]}
+                            </span>
+                            )})()}
                             <span style={{ fontSize: 11, color: 'var(--text-secondary)',
                                 background: 'var(--bg-subtle)', borderRadius: 6, padding: '3px 10px', border: '1px solid var(--border-subtle)' }}>
                 {profile.matches} match{profile.matches !== 1 ? 'es' : ''}

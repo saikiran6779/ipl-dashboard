@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { getTeam } from '../services/constants'
 import { useTeamLogos } from '../context/TeamsContext'
 
-const ROLE_ICONS  = { BAT: '🏏', BOWL: '🎯', ALL: '⚡', WK: '🧤' }
+const ROLE_COLORS = { BAT: '#f97316', BOWL: '#8b5cf6', ALL: '#22c55e', WK: '#3b82f6' }
 const ROLE_LABELS = { BAT: 'Batter', BOWL: 'Bowler', ALL: 'All-rounder', WK: 'Wicket-keeper' }
 
 // ── Layout ─────────────────────────────────────────────────────────────────
@@ -226,9 +226,11 @@ export function PlayerCombobox({ label, players = [], value, onChange, hint = nu
               onMouseLeave={e => (e.currentTarget.style.background = p.id === value ? 'rgba(249,115,22,0.08)' : 'transparent')}
             >
               <span style={{ fontWeight: 600, color: 'var(--text-primary)', flex: 1 }}>{p.name}</span>
-              <span style={{ fontSize: 11, color: 'var(--text-secondary)', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 4 }}>
+              <span style={{ fontSize: 11, color: 'var(--text-secondary)', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 5 }}>
                 {p.teamId}
-                <span title={ROLE_LABELS[p.role]} style={{ fontSize: 13 }}>{ROLE_ICONS[p.role] ?? p.role}</span>
+                <span title={ROLE_LABELS[p.role]} style={{ fontSize: 9, fontWeight: 700, letterSpacing: 0.5,
+                  color: ROLE_COLORS[p.role], background: ROLE_COLORS[p.role] + '22',
+                  borderRadius: 3, padding: '1px 4px' }}>{p.role}</span>
               </span>
             </div>
           ))}
