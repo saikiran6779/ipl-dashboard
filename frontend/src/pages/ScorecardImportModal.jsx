@@ -22,6 +22,7 @@
  */
 
 import { useState, useRef, useCallback, useEffect } from 'react'
+import { ArrowLeft, Upload } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { parseScorecardFromJson } from '../services/cricsheet'
 import { resolvePlayerFromJson } from '../services/constants'
@@ -106,7 +107,7 @@ function BattingTable({ rows, resolutions, teamPlayers, onResolve, onSkip, onMov
   const tdS = (bold) => ({
     padding: '8px 10px', textAlign: 'center',
     fontSize: bold ? 15 : 12,
-    fontFamily: bold ? "'Bebas Neue',sans-serif" : 'inherit',
+    fontFamily: bold ? 'var(--font-heading)' : 'inherit',
     color: 'var(--text-primary)',
   })
   const moveBtn = (label, onClick, disabled) => (
@@ -210,7 +211,7 @@ function BowlingTable({ rows, resolutions, teamPlayers, onResolve, onSkip }) {
   const tdS = (bold) => ({
     padding: '8px 10px', textAlign: 'center',
     fontSize: bold ? 15 : 12,
-    fontFamily: bold ? "'Bebas Neue',sans-serif" : 'inherit',
+    fontFamily: bold ? 'var(--font-heading)' : 'inherit',
     color: 'var(--text-primary)',
   })
 
@@ -529,7 +530,7 @@ export default function ScorecardImportModal({
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         }}>
           <div>
-            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, letterSpacing: 1.5, color: TEAL }}>
+            <div style={{ fontFamily: 'var(--font-heading)', fontSize: 'var(--text-md)', letterSpacing: 1.5, color: TEAL }}>
               Import Scorecard from JSON
             </div>
             <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2 }}>
@@ -787,18 +788,19 @@ export default function ScorecardImportModal({
               onClick={() => setStep('upload')}
               style={{
                 background: 'none', border: '1px solid var(--border-input)', borderRadius: 8,
-                color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 12, fontWeight: 600,
-                padding: '7px 16px', fontFamily: 'Rajdhani,sans-serif',
+                color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 'var(--text-sm)', fontWeight: 600,
+                padding: '7px 16px', fontFamily: 'var(--font-body)',
+                display: 'flex', alignItems: 'center', gap: 5,
               }}
             >
-              ← Back
+              <ArrowLeft size={14} strokeWidth={2} /> Back
             </button>
             <Button
               disabled={!canImport}
               onClick={handleImport}
               style={{ background: canImport ? TEAL : undefined, border: 'none', color: '#fff' }}
             >
-              {`⬆ Import ${Object.values(resolutions).filter(r => !r.skipped && r.playerId).length} players`}
+              <Upload size={14} strokeWidth={2} style={{ marginRight: 5 }} />{`Import ${Object.values(resolutions).filter(r => !r.skipped && r.playerId).length} players`}
             </Button>
           </div>
         )}

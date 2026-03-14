@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { FileJson, AlertTriangle } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { Input, Select, SectionLabel, Button, PlayerCombobox } from '../components/UI'
 import { TEAMS, resolvePlayerFromJson } from '../services/constants'
@@ -194,7 +195,7 @@ export default function MatchForm({ editMatch, onSubmit, onCancel, loading }) {
       borderRadius: 20, padding: '2px 8px', whiteSpace: 'nowrap',
       maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', display: 'inline-block',
     }} title={text}>
-      {matched ? `✓ ${text}` : `📂 ${text}`}
+      {matched ? `✓ ${text}` : text}
     </span>
   )
 
@@ -204,7 +205,7 @@ export default function MatchForm({ editMatch, onSubmit, onCancel, loading }) {
 
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 10 }}>
-        <h2 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 28, letterSpacing: 2, color: '#f97316', margin: 0 }}>
+        <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: 'var(--text-xl)', letterSpacing: 2, color: '#f97316', margin: 0 }}>
           {editMatch ? 'Edit Match' : 'Add Match'}
         </h2>
         <input ref={fileInputRef} type="file" accept=".json" onChange={parseCricsheetJson} style={{ display: 'none' }} />
@@ -215,13 +216,14 @@ export default function MatchForm({ editMatch, onSubmit, onCancel, loading }) {
             padding: '8px 16px', borderRadius: 8,
             border: '1px solid rgba(13,148,136,0.5)',
             background: 'rgba(13,148,136,0.08)',
-            color: '#0d9488', cursor: 'pointer', fontWeight: 600, fontSize: 13,
-            fontFamily: 'Rajdhani, sans-serif', transition: 'all 0.2s',
+            color: '#0d9488', cursor: 'pointer', fontWeight: 600, fontSize: 'var(--text-sm)',
+            fontFamily: 'var(--font-body)', transition: 'all 0.2s',
+            display: 'flex', alignItems: 'center', gap: 6,
           }}
           onMouseEnter={e => { e.currentTarget.style.background = 'rgba(13,148,136,0.15)'; e.currentTarget.style.borderColor = '#0d9488' }}
           onMouseLeave={e => { e.currentTarget.style.background = 'rgba(13,148,136,0.08)'; e.currentTarget.style.borderColor = 'rgba(13,148,136,0.5)' }}
         >
-          📂 Load from JSON
+          <FileJson size={16} strokeWidth={2} /> Load from JSON
         </button>
       </div>
 
@@ -231,7 +233,7 @@ export default function MatchForm({ editMatch, onSubmit, onCancel, loading }) {
         <SectionLabel>Match Info</SectionLabel>
         {jsonWarnings.length > 0 && (
           <div style={{ background: 'rgba(217,119,6,0.1)', border: '1px solid rgba(217,119,6,0.4)', borderRadius: 8, padding: '10px 14px', marginBottom: 16 }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: '#d97706', marginBottom: 6 }}>⚠️ Some fields need manual input:</div>
+            <div style={{ fontSize: 'var(--text-sm)', fontWeight: 700, color: '#d97706', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 5 }}><AlertTriangle size={14} strokeWidth={2} /> Some fields need manual input:</div>
             {jsonWarnings.map((w, i) => <div key={i} style={{ fontSize: 11, color: '#d97706', marginTop: 3 }}>• {w}</div>)}
           </div>
         )}
@@ -253,10 +255,10 @@ export default function MatchForm({ editMatch, onSubmit, onCancel, loading }) {
                 onClick={() => setShowAddVenue(true)}
                 style={{
                   marginTop: 6, background: 'none', border: 'none',
-                  color: '#0d9488', cursor: 'pointer', fontSize: 12,
-                  fontWeight: 600, fontFamily: 'Rajdhani,sans-serif', padding: 0,
+                  color: '#0d9488', cursor: 'pointer', fontSize: 'var(--text-sm)',
+                  fontWeight: 600, fontFamily: 'var(--font-body)', padding: 0,
                 }}
-              >＋ Add new venue</button>
+              >+ Add new venue</button>
             )}
             {isAdmin && showAddVenue && (
               <div style={{
@@ -271,20 +273,20 @@ export default function MatchForm({ editMatch, onSubmit, onCancel, loading }) {
                     autoFocus placeholder="Stadium name *"
                     value={newVenueName} onChange={e => setNewVenueName(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && handleAddVenue()}
-                    style={{ flex: '2 1 140px', padding: '7px 10px', borderRadius: 7, fontSize: 12, border: '1px solid var(--border-input)', background: 'var(--bg-elevated)', color: 'var(--text-primary)', outline: 'none', fontFamily: 'Rajdhani,sans-serif' }}
+                    style={{ flex: '2 1 140px', padding: '7px 10px', borderRadius: 7, fontSize: 12, border: '1px solid var(--border-input)', background: 'var(--bg-elevated)', color: 'var(--text-primary)', outline: 'none', fontFamily: 'var(--font-body)' }}
                   />
                   <input
                     placeholder="City *"
                     value={newVenueCity} onChange={e => setNewVenueCity(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && handleAddVenue()}
-                    style={{ flex: '1 1 100px', padding: '7px 10px', borderRadius: 7, fontSize: 12, border: '1px solid var(--border-input)', background: 'var(--bg-elevated)', color: 'var(--text-primary)', outline: 'none', fontFamily: 'Rajdhani,sans-serif' }}
+                    style={{ flex: '1 1 100px', padding: '7px 10px', borderRadius: 7, fontSize: 12, border: '1px solid var(--border-input)', background: 'var(--bg-elevated)', color: 'var(--text-primary)', outline: 'none', fontFamily: 'var(--font-body)' }}
                   />
                 </div>
                 <div style={{ display: 'flex', gap: 6 }}>
-                  <button type="button" onClick={handleAddVenue} disabled={savingVenue} style={{ padding: '6px 14px', borderRadius: 7, border: 'none', background: '#0d9488', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 12, fontFamily: 'Rajdhani,sans-serif', opacity: savingVenue ? 0.7 : 1 }}>
+                  <button type="button" onClick={handleAddVenue} disabled={savingVenue} style={{ padding: '6px 14px', borderRadius: 7, border: 'none', background: '#0d9488', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 12, fontFamily: 'var(--font-body)', opacity: savingVenue ? 0.7 : 1 }}>
                     {savingVenue ? '…' : 'Add'}
                   </button>
-                  <button type="button" onClick={() => { setShowAddVenue(false); setNewVenueName(''); setNewVenueCity('') }} style={{ padding: '6px 10px', borderRadius: 7, border: '1px solid var(--border-input)', background: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 12, fontFamily: 'Rajdhani,sans-serif' }}>
+                  <button type="button" onClick={() => { setShowAddVenue(false); setNewVenueName(''); setNewVenueCity('') }} style={{ padding: '6px 10px', borderRadius: 7, border: '1px solid var(--border-input)', background: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 12, fontFamily: 'var(--font-body)' }}>
                     Cancel
                   </button>
                 </div>

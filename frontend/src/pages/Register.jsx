@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Sparkles, Rocket } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useAuth } from '../context/AuthContext'
 import { Input } from '../components/UI'
@@ -36,11 +37,11 @@ export default function Register({ onNavigate }) {
           background: 'linear-gradient(135deg,#22c55e,#16a34a)',
           borderRadius: 20, width: 68, height: 68,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 34, margin: '0 auto 16px',
+          margin: '0 auto 16px',
           boxShadow: '0 8px 32px rgba(34,197,94,0.4)',
-        }}>🎉</div>
+        }}><Sparkles size={34} strokeWidth={1.5} color="#fff" /></div>
         <div style={{
-          fontFamily: "'Bebas Neue', sans-serif", fontSize: 32, letterSpacing: 3,
+          fontFamily: 'var(--font-display)', fontSize: 'var(--text-xl)', letterSpacing: 3,
           background: 'linear-gradient(135deg, #22c55e, #16a34a)',
           WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
         }}>Join IPL 2025</div>
@@ -100,12 +101,13 @@ export default function Register({ onNavigate }) {
               borderRadius: 10, border: 'none',
               background: loading ? '#374151' : 'linear-gradient(135deg, #22c55e, #16a34a)',
               color: '#fff', cursor: loading ? 'not-allowed' : 'pointer',
-              fontWeight: 700, fontSize: 15, fontFamily: 'Rajdhani, sans-serif',
+              fontWeight: 700, fontSize: 'var(--text-base)', fontFamily: 'var(--font-body)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
               boxShadow: loading ? 'none' : '0 4px 20px rgba(34,197,94,0.35)',
               transition: 'all 0.2s', opacity: loading ? 0.7 : 1,
             }}
           >
-            {loading ? 'Creating account…' : '🚀 Create Account'}
+            {loading ? 'Creating account…' : <><Rocket size={16} strokeWidth={2} /> Create Account</>}
           </button>
         </form>
       </div>
@@ -116,7 +118,7 @@ export default function Register({ onNavigate }) {
           onClick={() => onNavigate('login')}
           style={{
             background: 'none', border: 'none', color: '#f97316', cursor: 'pointer',
-            fontFamily: 'Rajdhani, sans-serif', fontSize: 13, fontWeight: 700,
+            fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: 700,
           }}
         >
           Sign in →

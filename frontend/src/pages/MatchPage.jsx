@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { ArrowLeft, Pencil, Trash2, Coins, Trophy, Star, Target, Activity, FileJson, ClipboardList } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { TeamLogo, Spinner } from '../components/UI'
 import { getScorecard, deleteScorecard } from '../services/api'
@@ -58,13 +59,13 @@ function MatchHero({ match, onBack, onEdit, onDelete, isAdmin }) {
           onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
           onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
         >
-          ← All Matches
+          <ArrowLeft size={14} strokeWidth={2} /> All Matches
         </button>
 
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           {match.matchNo && (
             <div style={{
-              fontFamily: "'Bebas Neue',sans-serif", fontSize: 14, letterSpacing: 1.5,
+              fontFamily: 'var(--font-heading)', fontSize: 'var(--text-sm)', letterSpacing: 1.5,
               background: '#f97316', color: '#fff', borderRadius: 6, padding: '3px 10px',
             }}>M{match.matchNo}</div>
           )}
@@ -74,23 +75,23 @@ function MatchHero({ match, onBack, onEdit, onDelete, isAdmin }) {
               style={{
                 background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.2)',
                 borderRadius: 8, color: 'rgba(255,255,255,0.75)', cursor: 'pointer',
-                padding: '6px 13px', fontSize: 12, backdropFilter: 'blur(6px)',
-                transition: 'background 0.15s',
+                padding: '6px 13px', fontSize: 'var(--text-sm)', backdropFilter: 'blur(6px)',
+                transition: 'background 0.15s', display: 'flex', alignItems: 'center', gap: 5,
               }}
               onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
               onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
-            >✏️ Edit Match</button>
+            ><Pencil size={13} strokeWidth={2} /> Edit Match</button>
             <button
               onClick={onDelete}
               style={{
                 background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.35)',
                 borderRadius: 8, color: '#ef4444', cursor: 'pointer',
                 padding: '6px 12px', fontSize: 12, backdropFilter: 'blur(6px)',
-                transition: 'background 0.15s',
+                transition: 'background 0.15s', display: 'flex', alignItems: 'center',
               }}
               onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.28)'}
               onMouseLeave={e => e.currentTarget.style.background = 'rgba(239,68,68,0.15)'}
-            >🗑️</button>
+            ><Trash2 size={14} strokeWidth={2} /></button>
           </>}
         </div>
       </div>
@@ -108,7 +109,7 @@ function MatchHero({ match, onBack, onEdit, onDelete, isAdmin }) {
         </>}
         {match.tossWinner && <>
           <span style={{ color: 'rgba(255,255,255,0.25)' }}>·</span>
-          <span>🪙 {match.tossWinner} won toss · elected to {match.tossDecision}</span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Coins size={12} strokeWidth={2} />{match.tossWinner} won toss · elected to {match.tossDecision}</span>
         </>}
       </div>
 
@@ -122,12 +123,12 @@ function MatchHero({ match, onBack, onEdit, onDelete, isAdmin }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 18, justifyContent: 'flex-end' }}>
           <div style={{ textAlign: 'right' }}>
             <div style={{
-              fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, letterSpacing: 3,
+              fontFamily: 'var(--font-heading)', fontSize: 'var(--text-sm)', letterSpacing: 3,
               color: team1Won ? t1.color : 'rgba(255,255,255,0.35)', marginBottom: 4,
             }}>{t1.name}</div>
             {match.team1Score != null ? (
               <div style={{
-                fontFamily: "'Bebas Neue',sans-serif", fontSize: 54, lineHeight: 1,
+                fontFamily: 'var(--font-heading)', fontSize: 'var(--text-3xl)', lineHeight: 1,
                 color: team1Won ? '#fff' : 'rgba(255,255,255,0.38)', letterSpacing: 1,
               }}>
                 {match.team1Score}{match.team1Wickets != null ? `/${match.team1Wickets}` : ''}
@@ -154,7 +155,7 @@ function MatchHero({ match, onBack, onEdit, onDelete, isAdmin }) {
         {/* Centre: VS + winner */}
         <div style={{ textAlign: 'center' }}>
           <div style={{
-            fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, letterSpacing: 5,
+            fontFamily: 'var(--font-heading)', fontSize: 'var(--text-lg)', letterSpacing: 5,
             color: 'rgba(255,255,255,0.18)', marginBottom: 10,
           }}>VS</div>
 
@@ -165,9 +166,9 @@ function MatchHero({ match, onBack, onEdit, onDelete, isAdmin }) {
               borderRadius: 12, padding: '10px 14px',
               backdropFilter: 'blur(8px)',
             }}>
-              <div style={{ fontSize: 22, marginBottom: 3 }}>🏆</div>
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 3 }}><Trophy size={22} color={winTeam.color} strokeWidth={1.8} /></div>
               <div style={{
-                fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, letterSpacing: 2,
+                fontFamily: 'var(--font-heading)', fontSize: 'var(--text-md)', letterSpacing: 2,
                 color: winTeam.color, lineHeight: 1,
               }}>{match.winner}</div>
               {match.winMargin && (
@@ -199,12 +200,12 @@ function MatchHero({ match, onBack, onEdit, onDelete, isAdmin }) {
           </div>
           <div style={{ textAlign: 'left' }}>
             <div style={{
-              fontFamily: "'Bebas Neue',sans-serif", fontSize: 13, letterSpacing: 3,
+              fontFamily: 'var(--font-heading)', fontSize: 'var(--text-sm)', letterSpacing: 3,
               color: team2Won ? t2.color : 'rgba(255,255,255,0.35)', marginBottom: 4,
             }}>{t2.name}</div>
             {match.team2Score != null ? (
               <div style={{
-                fontFamily: "'Bebas Neue',sans-serif", fontSize: 54, lineHeight: 1,
+                fontFamily: 'var(--font-heading)', fontSize: 'var(--text-3xl)', lineHeight: 1,
                 color: team2Won ? '#fff' : 'rgba(255,255,255,0.38)', letterSpacing: 1,
               }}>
                 {match.team2Score}{match.team2Wickets != null ? `/${match.team2Wickets}` : ''}
@@ -228,18 +229,18 @@ function MatchHero({ match, onBack, onEdit, onDelete, isAdmin }) {
 function PerformerSpotlight({ match, onOpenProfile }) {
   const items = []
   if (match.playerOfMatchName) items.push({
-    icon: '⭐', label: 'Player of the Match',
+    Icon: Star, label: 'Player of the Match',
     name: match.playerOfMatchName, stat: null,
     id: match.playerOfMatchId, color: '#f59e0b',
   })
   if (match.topScorerName) items.push({
-    icon: '🏏', label: 'Top Scorer',
+    Icon: Activity, label: 'Top Scorer',
     name: match.topScorerName,
     stat: match.topScorerRuns != null ? `${match.topScorerRuns} runs` : null,
     id: match.topScorerId, color: '#f97316',
   })
   if (match.topWicketTakerName) items.push({
-    icon: '🎯', label: 'Best Bowling',
+    Icon: Target, label: 'Best Bowling',
     name: match.topWicketTakerName,
     stat: match.topWicketTakerWickets != null ? `${match.topWicketTakerWickets} wickets` : null,
     id: match.topWicketTakerId, color: '#8b5cf6',
@@ -278,8 +279,8 @@ function PerformerSpotlight({ match, onOpenProfile }) {
           <div style={{
             width: 48, height: 48, borderRadius: 14, flexShrink: 0,
             background: item.color + '18', border: `1px solid ${item.color}44`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22,
-          }}>{item.icon}</div>
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}><item.Icon size={22} strokeWidth={1.8} color={item.color} /></div>
           <div style={{ minWidth: 0 }}>
             <div style={{
               fontSize: 10, fontWeight: 700, textTransform: 'uppercase',
@@ -324,11 +325,11 @@ function PhaseBar({ label, subLabel, team1, team2, t1Runs, t1Balls, t2Runs, t2Ba
         <div key={side.id} style={{ marginBottom: i === 0 ? 14 : 0 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 }}>
             <span style={{ fontSize: 11, fontWeight: 700, color: side.info.color }}>{side.id}</span>
-            <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16, color: 'var(--text-primary)', letterSpacing: 0.5 }}>
+            <span style={{ fontFamily: 'var(--font-heading)', fontSize: 'var(--text-base)', color: 'var(--text-primary)', letterSpacing: 0.5 }}>
               {side.runs}
               <span style={{
-                fontSize: 10, color: 'var(--text-muted)',
-                fontFamily: 'Rajdhani,sans-serif', marginLeft: 5, fontWeight: 600,
+                fontSize: 'var(--text-xs)', color: 'var(--text-muted)',
+                fontFamily: 'var(--font-body)', marginLeft: 5, fontWeight: 600,
               }}>RR {fmt(side.runs, side.balls)}</span>
             </span>
           </div>
@@ -421,13 +422,13 @@ function HeadToHead({ match, allMatches }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
             <TeamLogo teamId={team1} size={42} />
             <div>
-              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 44, lineHeight: 1, color: t1.color }}>{t1Wins}</div>
+              <div style={{ fontFamily: 'var(--font-heading)', fontSize: 'var(--text-2xl)', lineHeight: 1, color: t1.color }}>{t1Wins}</div>
               <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8 }}>Wins</div>
             </div>
           </div>
 
           <div style={{ textAlign: 'center', padding: '0 8px' }}>
-            <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 20, letterSpacing: 2, color: 'var(--text-secondary)' }}>
+            <div style={{ fontFamily: 'var(--font-heading)', fontSize: 'var(--text-lg)', letterSpacing: 2, color: 'var(--text-secondary)' }}>
               {h2h.length}
             </div>
             <div style={{ fontSize: 9, color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>Matches</div>
@@ -436,7 +437,7 @@ function HeadToHead({ match, allMatches }) {
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 14, justifyContent: 'flex-end' }}>
             <div style={{ textAlign: 'right' }}>
-              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 44, lineHeight: 1, color: t2.color }}>{t2Wins}</div>
+              <div style={{ fontFamily: 'var(--font-heading)', fontSize: 'var(--text-2xl)', lineHeight: 1, color: t2.color }}>{t2Wins}</div>
               <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8 }}>Wins</div>
             </div>
             <TeamLogo teamId={team2} size={42} />
@@ -477,7 +478,7 @@ function HeadToHead({ match, allMatches }) {
                     borderRadius: 10, padding: '8px 13px', textAlign: 'center', minWidth: 76,
                   }}>
                     <div style={{
-                      fontFamily: "'Bebas Neue',sans-serif", fontSize: 15, letterSpacing: 1,
+                      fontFamily: 'var(--font-heading)', fontSize: 'var(--text-base)', letterSpacing: 1,
                       color: wTeam?.color ?? 'var(--text-muted)',
                     }}>
                       {m.noResult ? 'NR' : m.winner ?? '—'}
@@ -561,7 +562,7 @@ function VenueStats({ match, allMatches }) {
               border: '1px solid var(--border-subtle)', borderRadius: 10,
               padding: '12px 16px', textAlign: 'center',
             }}>
-              <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, color: s.color, lineHeight: 1 }}>{s.value}</div>
+              <div style={{ fontFamily: 'var(--font-heading)', fontSize: 'var(--text-xl)', color: s.color, lineHeight: 1 }}>{s.value}</div>
               <div style={{ fontSize: 9, color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8, marginTop: 5 }}>{s.label}</div>
             </div>
           ))}
@@ -616,7 +617,7 @@ function SectionHeader({ title, actions }) {
       marginBottom: 14,
     }}>
       <div style={{
-        fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, letterSpacing: 2,
+        fontFamily: 'var(--font-heading)', fontSize: 'var(--text-lg)', letterSpacing: 2,
         color: '#f97316',
       }}>{title}</div>
       {actions && <div style={{ display: 'flex', gap: 8 }}>{actions}</div>}
@@ -631,8 +632,9 @@ function ActionBtn({ onClick, color = 'var(--text-secondary)', bg = 'var(--bg-ho
       onClick={onClick}
       style={{
         padding: '6px 14px', background: bg, border: `1px solid ${border}`,
-        borderRadius: 8, color, cursor: 'pointer', fontSize: 12, fontWeight: 600,
-        fontFamily: 'Rajdhani,sans-serif', transition: 'background 0.15s',
+        borderRadius: 8, color, cursor: 'pointer', fontSize: 'var(--text-sm)', fontWeight: 600,
+        fontFamily: 'var(--font-body)', transition: 'background 0.15s',
+        display: 'flex', alignItems: 'center', gap: 5,
       }}
     >{children}</button>
   )
@@ -674,16 +676,16 @@ export default function MatchPage({ match, allMatches = [], onBack, onEdit, onDe
       <ActionBtn
         onClick={() => setImportModal(true)}
         color='#0d9488' bg='#0d948815' border='#0d948855'
-      >📂 Import JSON</ActionBtn>
+      ><FileJson size={14} strokeWidth={2} /> Import JSON</ActionBtn>
       <ActionBtn
         onClick={() => setEditModal(true)}
         color='#f97316' bg='rgba(249,115,22,0.08)' border='rgba(249,115,22,0.35)'
-      >✏️ Edit Scorecard</ActionBtn>
+      ><Pencil size={13} strokeWidth={2} /> Edit Scorecard</ActionBtn>
       {entries.length > 0 && (
         <ActionBtn
           onClick={handleDeleteScorecard}
           color='#ef4444' bg='rgba(239,68,68,0.08)' border='rgba(239,68,68,0.3)'
-        >🗑 Delete Scorecard</ActionBtn>
+        ><Trash2 size={13} strokeWidth={2} /> Delete Scorecard</ActionBtn>
       )}
     </>
   )
@@ -727,7 +729,7 @@ export default function MatchPage({ match, allMatches = [], onBack, onEdit, onDe
                 background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)',
                 borderRadius: 14, color: 'var(--text-secondary)',
               }}>
-                <div style={{ fontSize: 36, marginBottom: 10 }}>📋</div>
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 10, color: 'var(--text-muted)' }}><ClipboardList size={36} strokeWidth={1.2} /></div>
                 <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 6 }}>No scorecard yet</div>
                 {isAdmin
                   ? <div style={{ fontSize: 13 }}>Use <b>Import JSON</b> or <b>Edit Scorecard</b> above to add stats</div>
