@@ -2,13 +2,17 @@ import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
 import toast from 'react-hot-toast'
+import {
+  BarChart2, Shield, CalendarDays, MapPin, User, Crown,
+  Sun, Moon, LogOut, X, Menu, Swords, Plus,
+} from 'lucide-react'
 
 const NAV_ITEMS = [
-  { id: 'dashboard', label: 'Dashboard', emoji: '📊' },
-  { id: 'teams',     label: 'Teams',     emoji: '🛡️' },
-  { id: 'matches',   label: 'Matches',   emoji: '📋' },
-  { id: 'venues',    label: 'Venues',    emoji: '🏟️' },
-  { id: 'players',   label: 'Players',   emoji: '👤' },
+  { id: 'dashboard', label: 'Dashboard', Icon: BarChart2 },
+  { id: 'teams',     label: 'Teams',     Icon: Shield },
+  { id: 'matches',   label: 'Matches',   Icon: CalendarDays },
+  { id: 'venues',    label: 'Venues',    Icon: MapPin },
+  { id: 'players',   label: 'Players',   Icon: User },
 ]
 
 function useClickOutside(ref, handler) {
@@ -30,14 +34,17 @@ function ThemeToggle() {
         border: '1px solid var(--border-input)',
         background: 'var(--bg-hover)',
         color: 'var(--text-secondary)',
-        cursor: 'pointer', fontSize: 15,
+        cursor: 'pointer',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         transition: 'all 0.15s', flexShrink: 0,
       }}
       onMouseEnter={e => { e.currentTarget.style.borderColor = '#f97316'; e.currentTarget.style.color = '#f97316' }}
       onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-input)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
     >
-      {isDark ? '☀️' : '🌙'}
+      {isDark
+        ? <Sun size={16} strokeWidth={2} />
+        : <Moon size={16} strokeWidth={2} />
+      }
     </button>
   )
 }
@@ -66,21 +73,19 @@ function UserDropdown({ user, isSuperAdmin, setView, onLogout }) {
         onMouseEnter={e => e.currentTarget.style.borderColor = '#f97316'}
         onMouseLeave={e => { if (!open) e.currentTarget.style.borderColor = 'var(--border-input)' }}
       >
-        {/* Avatar circle */}
         <div style={{
           width: 26, height: 26, borderRadius: '50%',
           background: 'linear-gradient(135deg, #f97316, #dc2626)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 11, fontWeight: 800, color: '#fff', flexShrink: 0,
         }}>{initial}</div>
-        {/* Name - capped */}
         <span style={{
-          fontSize: 12, fontWeight: 600,
+          fontFamily: 'var(--font-body)',
+          fontSize: 'var(--text-base)', fontWeight: 600,
           color: 'var(--text-primary)',
           maxWidth: 90, overflow: 'hidden',
           textOverflow: 'ellipsis', whiteSpace: 'nowrap',
         }}>{user.name?.split(' ')[0]}</span>
-        {/* Chevron */}
         <svg width="10" height="10" viewBox="0 0 10 10" fill="none"
           style={{ color: 'var(--text-muted)', transition: 'transform 0.2s', transform: open ? 'rotate(180deg)' : 'none', flexShrink: 0 }}>
           <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -95,7 +100,6 @@ function UserDropdown({ user, isSuperAdmin, setView, onLogout }) {
           minWidth: 200, zIndex: 200,
           animation: 'fadeDown 0.15s ease both',
         }}>
-          {/* User info header */}
           <div style={{ padding: '14px 16px 12px', borderBottom: '1px solid var(--border-subtle)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <div style={{
@@ -106,19 +110,20 @@ function UserDropdown({ user, isSuperAdmin, setView, onLogout }) {
               }}>{initial}</div>
               <div style={{ minWidth: 0 }}>
                 <div style={{
-                  fontSize: 13, fontWeight: 700,
+                  fontFamily: 'var(--font-body)',
+                  fontSize: 'var(--text-base)', fontWeight: 700,
                   color: 'var(--text-primary)',
                   overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                 }}>{user.name}</div>
                 <div style={{
-                  fontSize: 10, fontWeight: 700, letterSpacing: 0.5,
+                  fontFamily: 'var(--font-body)',
+                  fontSize: 'var(--text-sm)', fontWeight: 700, letterSpacing: 0.5,
                   color: roleColor, marginTop: 2, textTransform: 'uppercase',
                 }}>{roleLabel}</div>
               </div>
             </div>
           </div>
 
-          {/* Menu items */}
           <div style={{ padding: '6px' }}>
             {isSuperAdmin && (
               <button
@@ -127,7 +132,7 @@ function UserDropdown({ user, isSuperAdmin, setView, onLogout }) {
                 onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
                 onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
               >
-                <span>👑</span>
+                <Crown size={18} strokeWidth={1.8} />
                 <span>Manage Users</span>
               </button>
             )}
@@ -137,7 +142,7 @@ function UserDropdown({ user, isSuperAdmin, setView, onLogout }) {
               onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.08)' }}
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
             >
-              <span>🚪</span>
+              <LogOut size={16} strokeWidth={2} />
               <span>Sign out</span>
             </button>
           </div>
@@ -151,7 +156,9 @@ const menuItemStyle = {
   width: '100%', padding: '9px 12px', borderRadius: 8,
   border: 'none', background: 'transparent',
   color: 'var(--text-primary)', cursor: 'pointer',
-  fontWeight: 600, fontSize: 13, fontFamily: 'Rajdhani, sans-serif',
+  fontWeight: 600,
+  fontFamily: 'var(--font-body)',
+  fontSize: 'var(--text-sm)',
   textAlign: 'left', display: 'flex', alignItems: 'center', gap: 10,
   transition: 'background 0.15s',
 }
@@ -168,21 +175,18 @@ export default function Header({ view, setView, onAddClick }) {
     setView('dashboard')
   }
 
-  // All nav items including super-admin if applicable
   const allNavItems = [
     ...NAV_ITEMS,
-    ...(isSuperAdmin ? [{ id: 'super-admin', label: 'Users', emoji: '👑' }] : []),
+    ...(isSuperAdmin ? [{ id: 'super-admin', label: 'Users', Icon: Crown }] : []),
   ]
 
   return (
     <header style={{ position: 'sticky', top: 0, zIndex: 100 }}>
-      {/* Top accent bar */}
       <div style={{
         height: 3,
         background: 'linear-gradient(90deg, #f97316 0%, #dc2626 35%, #8b5cf6 65%, #3b82f6 100%)',
       }} />
 
-      {/* Main bar */}
       <div style={{
         background: 'var(--bg-header)',
         backdropFilter: 'blur(20px)',
@@ -195,7 +199,7 @@ export default function Header({ view, setView, onAddClick }) {
           display: 'flex', alignItems: 'center', gap: 8, height: 58,
         }}>
 
-          {/* ── Logo ── */}
+          {/* Logo */}
           <div
             onClick={() => setView('dashboard')}
             style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', flexShrink: 0, marginRight: 8 }}
@@ -204,24 +208,28 @@ export default function Header({ view, setView, onAddClick }) {
               background: 'linear-gradient(135deg, #f97316, #dc2626)',
               borderRadius: 10, width: 34, height: 34,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 17, boxShadow: '0 3px 12px rgba(249,115,22,0.4)',
-            }}>🏏</div>
+              boxShadow: '0 3px 12px rgba(249,115,22,0.4)',
+            }}>
+              <Swords size={18} strokeWidth={1.8} color="#fff" />
+            </div>
             <div>
               <div style={{
-                fontFamily: "'Bebas Neue', sans-serif",
+                fontFamily: 'var(--font-display)',
                 fontSize: 19, letterSpacing: 3,
                 background: 'linear-gradient(135deg, #f97316, #dc2626)',
                 WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text', lineHeight: 1,
               }}>IPL 2025</div>
-              <div style={{ fontSize: 8, color: 'var(--text-muted)', letterSpacing: 2.5, textTransform: 'uppercase' }}>Season Dashboard</div>
+              <div style={{
+                fontFamily: 'var(--font-body)',
+                fontSize: 8, color: 'var(--text-muted)', letterSpacing: 2.5, textTransform: 'uppercase',
+              }}>Season Dashboard</div>
             </div>
           </div>
 
-          {/* Divider */}
           <div style={{ width: 1, height: 28, background: 'var(--border)', flexShrink: 0 }} />
 
-          {/* ── Desktop Nav ── */}
+          {/* Desktop Nav */}
           <nav className="nav-desktop" style={{ display: 'flex', gap: 1, alignItems: 'center', flex: 1 }}>
             {allNavItems.map(item => {
               const active = item.id === 'super-admin'
@@ -239,13 +247,16 @@ export default function Header({ view, setView, onAddClick }) {
                     background: active ? 'rgba(249,115,22,0.1)' : 'transparent',
                     color: active ? '#f97316' : 'var(--text-secondary)',
                     cursor: 'pointer', fontWeight: active ? 700 : 500,
-                    fontSize: 13, fontFamily: 'Rajdhani, sans-serif',
+                    fontFamily: 'var(--font-body)',
+                    fontSize: 'var(--text-base)',
                     transition: 'all 0.15s', whiteSpace: 'nowrap',
                     position: 'relative',
+                    display: 'flex', alignItems: 'center', gap: 6,
                   }}
                   onMouseEnter={e => { if (!active) { e.currentTarget.style.color = 'var(--text-primary)'; e.currentTarget.style.background = 'var(--bg-hover)' }}}
                   onMouseLeave={e => { if (!active) { e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.background = 'transparent' }}}
                 >
+                  <item.Icon size={18} strokeWidth={1.8} />
                   {item.label}
                   {active && (
                     <div style={{
@@ -260,7 +271,7 @@ export default function Header({ view, setView, onAddClick }) {
             })}
           </nav>
 
-          {/* ── Right side actions ── */}
+          {/* Right side actions */}
           <div className="nav-desktop" style={{ display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
             {isAdmin && (
               <button
@@ -269,19 +280,23 @@ export default function Header({ view, setView, onAddClick }) {
                   padding: '7px 16px', borderRadius: 8, border: 'none',
                   background: 'linear-gradient(135deg, #f97316, #dc2626)',
                   color: '#fff', cursor: 'pointer', fontWeight: 700,
-                  fontSize: 13, fontFamily: 'Rajdhani, sans-serif',
+                  fontFamily: 'var(--font-body)',
+                  fontSize: 'var(--text-sm)',
                   boxShadow: '0 2px 10px rgba(249,115,22,0.35)',
                   transition: 'opacity 0.15s, transform 0.15s',
                   whiteSpace: 'nowrap',
+                  display: 'flex', alignItems: 'center', gap: 6,
                 }}
                 onMouseEnter={e => { e.currentTarget.style.opacity = '0.9'; e.currentTarget.style.transform = 'translateY(-1px)' }}
                 onMouseLeave={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.transform = 'none' }}
-              >＋ Add Match</button>
+              >
+                <Plus size={14} strokeWidth={2} />
+                Add Match
+              </button>
             )}
 
             <ThemeToggle />
 
-            {/* Thin divider before auth */}
             <div style={{ width: 1, height: 24, background: 'var(--border)', flexShrink: 0 }} />
 
             {user ? (
@@ -299,8 +314,10 @@ export default function Header({ view, setView, onAddClick }) {
                     padding: '6px 14px', borderRadius: 8,
                     border: '1px solid var(--border-input)',
                     background: 'transparent', color: 'var(--text-primary)',
-                    cursor: 'pointer', fontWeight: 600, fontSize: 12,
-                    fontFamily: 'Rajdhani, sans-serif', transition: 'all 0.15s',
+                    cursor: 'pointer', fontWeight: 600,
+                    fontFamily: 'var(--font-body)',
+                    fontSize: 'var(--text-sm)',
+                    transition: 'all 0.15s',
                   }}
                   onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
                   onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
@@ -311,7 +328,8 @@ export default function Header({ view, setView, onAddClick }) {
                     padding: '6px 14px', borderRadius: 8, border: 'none',
                     background: 'linear-gradient(135deg, #f97316, #dc2626)',
                     color: '#fff', cursor: 'pointer', fontWeight: 700,
-                    fontSize: 12, fontFamily: 'Rajdhani, sans-serif',
+                    fontFamily: 'var(--font-body)',
+                    fontSize: 'var(--text-sm)',
                     boxShadow: '0 2px 8px rgba(249,115,22,0.3)',
                   }}
                 >Register</button>
@@ -319,7 +337,7 @@ export default function Header({ view, setView, onAddClick }) {
             )}
           </div>
 
-          {/* ── Mobile: theme + hamburger ── */}
+          {/* Mobile: theme + hamburger */}
           <div className="nav-mobile-btn" style={{ display: 'none', gap: 8, alignItems: 'center', marginLeft: 'auto' }}>
             <ThemeToggle />
             <button
@@ -329,16 +347,21 @@ export default function Header({ view, setView, onAddClick }) {
                 background: menuOpen ? 'rgba(249,115,22,0.1)' : 'var(--bg-hover)',
                 border: `1px solid ${menuOpen ? 'rgba(249,115,22,0.5)' : 'var(--border-input)'}`,
                 borderRadius: 8, color: menuOpen ? '#f97316' : 'var(--text-primary)',
-                cursor: 'pointer', fontSize: 18, width: 38, height: 38,
+                cursor: 'pointer', width: 38, height: 38,
                 transition: 'all 0.2s', flexShrink: 0,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}
-            >{menuOpen ? '✕' : '☰'}</button>
+            >
+              {menuOpen
+                ? <X size={20} strokeWidth={2} />
+                : <Menu size={20} strokeWidth={2} />
+              }
+            </button>
           </div>
         </div>
       </div>
 
-      {/* ── Mobile dropdown ── */}
+      {/* Mobile dropdown */}
       {menuOpen && (
         <div style={{
           background: 'var(--bg-header)',
@@ -353,12 +376,14 @@ export default function Header({ view, setView, onAddClick }) {
             return (
               <button key={item.id} onClick={() => handleNav(item.id)} style={{
                 padding: '11px 14px', borderRadius: 10, border: 'none', cursor: 'pointer',
-                fontWeight: active ? 700 : 600, fontSize: 14, fontFamily: 'Rajdhani, sans-serif',
+                fontWeight: active ? 700 : 600,
+                fontFamily: 'var(--font-body)',
+                fontSize: 'var(--text-base)',
                 textAlign: 'left', background: active ? 'rgba(249,115,22,0.1)' : 'transparent',
                 color: active ? '#f97316' : 'var(--text-primary)', transition: 'all 0.15s',
                 display: 'flex', alignItems: 'center', gap: 10,
               }}>
-                <span>{item.emoji}</span>
+                <item.Icon size={18} strokeWidth={1.8} />
                 <span>{item.label}</span>
               </button>
             )
@@ -367,10 +392,17 @@ export default function Header({ view, setView, onAddClick }) {
           {isAdmin && (
             <button onClick={() => { onAddClick(); setMenuOpen(false) }} style={{
               padding: '11px 14px', borderRadius: 10, border: 'none', cursor: 'pointer',
-              fontWeight: 700, fontSize: 14, fontFamily: 'Rajdhani, sans-serif', textAlign: 'left',
+              fontWeight: 700,
+              fontFamily: 'var(--font-body)',
+              fontSize: 'var(--text-base)',
+              textAlign: 'left',
               background: 'linear-gradient(135deg, #f97316, #dc2626)', color: '#fff',
               marginTop: 6, boxShadow: '0 4px 16px rgba(249,115,22,0.3)',
-            }}>＋ Add Match</button>
+              display: 'flex', alignItems: 'center', gap: 8,
+            }}>
+              <Plus size={14} strokeWidth={2} />
+              Add Match
+            </button>
           )}
 
           <div style={{ borderTop: '1px solid var(--border-subtle)', marginTop: 8, paddingTop: 10 }}>
@@ -384,17 +416,28 @@ export default function Header({ view, setView, onAddClick }) {
                     fontSize: 13, fontWeight: 800, color: '#fff', flexShrink: 0,
                   }}>{user.name?.[0]?.toUpperCase() || 'U'}</div>
                   <div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>{user.name}</div>
-                    <div style={{ fontSize: 10, fontWeight: 700, color: '#f97316', marginTop: 1, textTransform: 'uppercase', letterSpacing: 0.5 }}>{user.role}</div>
+                    <div style={{
+                      fontFamily: 'var(--font-body)',
+                      fontSize: 'var(--text-base)', fontWeight: 700, color: 'var(--text-primary)',
+                    }}>{user.name}</div>
+                    <div style={{
+                      fontFamily: 'var(--font-body)',
+                      fontSize: 'var(--text-sm)', fontWeight: 700, color: '#f97316',
+                      marginTop: 1, textTransform: 'uppercase', letterSpacing: 0.5,
+                    }}>{user.role}</div>
                   </div>
                 </div>
                 <button onClick={() => { handleLogout(); setMenuOpen(false) }} style={{
                   padding: '11px 14px', borderRadius: 10, border: 'none', cursor: 'pointer',
-                  fontWeight: 600, fontSize: 14, fontFamily: 'Rajdhani, sans-serif', textAlign: 'left',
+                  fontWeight: 600,
+                  fontFamily: 'var(--font-body)',
+                  fontSize: 'var(--text-base)',
+                  textAlign: 'left',
                   background: 'rgba(239,68,68,0.08)', color: '#ef4444', width: '100%',
                   display: 'flex', alignItems: 'center', gap: 10,
                 }}>
-                  <span>🚪</span><span>Sign out</span>
+                  <LogOut size={16} strokeWidth={2} />
+                  <span>Sign out</span>
                 </button>
               </>
             ) : (
@@ -402,12 +445,16 @@ export default function Header({ view, setView, onAddClick }) {
                 <button onClick={() => handleNav('login')} style={{
                   padding: '11px 14px', borderRadius: 10,
                   border: '1px solid var(--border-input)', cursor: 'pointer',
-                  fontWeight: 600, fontSize: 14, fontFamily: 'Rajdhani, sans-serif',
+                  fontWeight: 600,
+                  fontFamily: 'var(--font-body)',
+                  fontSize: 'var(--text-base)',
                   background: 'transparent', color: 'var(--text-primary)',
                 }}>Login</button>
                 <button onClick={() => handleNav('register')} style={{
                   padding: '11px 14px', borderRadius: 10, border: 'none', cursor: 'pointer',
-                  fontWeight: 700, fontSize: 14, fontFamily: 'Rajdhani, sans-serif',
+                  fontWeight: 700,
+                  fontFamily: 'var(--font-body)',
+                  fontSize: 'var(--text-base)',
                   background: 'linear-gradient(135deg, #f97316, #dc2626)', color: '#fff',
                 }}>Register</button>
               </div>

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { getTeam } from '../services/constants'
 import { useTeamLogos } from '../context/TeamsContext'
+import { X } from 'lucide-react'
 
 const ROLE_COLORS = { BAT: '#f97316', BOWL: '#8b5cf6', ALL: '#22c55e', WK: '#3b82f6' }
 const ROLE_LABELS = { BAT: 'Batter', BOWL: 'Bowler', ALL: 'All-rounder', WK: 'Wicket-keeper' }
@@ -30,15 +31,26 @@ export function CardHeader({ title, subtitle }) {
       display: 'flex', justifyContent: 'space-between', alignItems: 'center',
       background: 'var(--bg-subtle)',
     }}>
-      <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--text-primary)' }}>{title}</div>
-      {subtitle && <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{subtitle}</div>}
+      <div style={{
+        fontFamily: 'var(--font-heading)',
+        fontWeight: 700, fontSize: 'var(--text-md)', color: 'var(--text-primary)',
+      }}>{title}</div>
+      {subtitle && <div style={{
+        fontFamily: 'var(--font-body)',
+        fontSize: 'var(--text-sm)', color: 'var(--text-secondary)',
+      }}>{subtitle}</div>}
     </div>
   )
 }
 
 export function SectionLabel({ children }) {
   return (
-    <div style={{ fontSize: 11, fontWeight: 700, color: '#f97316', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+    <div style={{
+      fontFamily: 'var(--font-body)',
+      fontSize: 'var(--text-sm)', fontWeight: 700, color: '#f97316',
+      textTransform: 'uppercase', letterSpacing: 2, marginBottom: 12,
+      display: 'flex', alignItems: 'center', gap: 8,
+    }}>
       <div style={{ height: 1, width: 20, background: '#f97316', opacity: 0.5 }} />
       {children}
       <div style={{ height: 1, flex: 1, background: 'var(--border-subtle)' }} />
@@ -55,7 +67,8 @@ const baseInput = {
   borderRadius: 8,
   padding: '8px 12px',
   color: 'var(--text-primary)',
-  fontSize: 13,
+  fontFamily: 'var(--font-body)',
+  fontSize: 'var(--text-base)',
   outline: 'none',
   boxSizing: 'border-box',
   transition: 'border-color 0.2s',
@@ -93,7 +106,12 @@ export function Select({ label, hint = null, children, ...props }) {
 
 export function Label({ children }) {
   return (
-    <label style={{ display: 'block', fontSize: 10, fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>
+    <label style={{
+      display: 'block',
+      fontFamily: 'var(--font-body)',
+      fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--text-secondary)',
+      textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4,
+    }}>
       {children}
     </label>
   )
@@ -104,7 +122,8 @@ export function Label({ children }) {
 function HintBadge({ matched, text }) {
   return (
     <span style={{
-      fontSize: 10, fontWeight: 600,
+      fontFamily: 'var(--font-body)',
+      fontSize: 'var(--text-sm)', fontWeight: 600,
       color:      matched ? '#22c55e' : '#14b8a6',
       background: matched ? 'rgba(34,197,94,0.1)' : 'rgba(20,184,166,0.1)',
       border:     `1px solid ${matched ? 'rgba(34,197,94,0.3)' : 'rgba(20,184,166,0.3)'}`,
@@ -112,7 +131,7 @@ function HintBadge({ matched, text }) {
       maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
       display: 'inline-block', verticalAlign: 'middle',
     }} title={text}>
-      {matched ? '✓ auto' : `📂 ${text}`}
+      {matched ? 'auto' : text}
     </span>
   )
 }
@@ -120,7 +139,11 @@ function HintBadge({ matched, text }) {
 function LabelRow({ label, hint }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginBottom: 4, minHeight: 18 }}>
-      <label style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.1em', lineHeight: '18px' }}>
+      <label style={{
+        fontFamily: 'var(--font-body)',
+        fontSize: 'var(--text-sm)', fontWeight: 600, color: 'var(--text-secondary)',
+        textTransform: 'uppercase', letterSpacing: '0.1em', lineHeight: '18px',
+      }}>
         {label}
       </label>
       {hint && <HintBadge matched={hint.matched} text={hint.text} />}
@@ -145,8 +168,10 @@ export function Button({ children, variant = 'primary', onClick, type = 'button'
       disabled={disabled}
       style={{
         padding: '8px 18px', borderRadius: 8, cursor: disabled ? 'not-allowed' : 'pointer',
-        fontWeight: 600, fontSize: 13, transition: 'all 0.2s', opacity: disabled ? 0.5 : 1,
-        fontFamily: 'Rajdhani, sans-serif',
+        fontWeight: 600,
+        fontFamily: 'var(--font-body)',
+        fontSize: 'var(--text-sm)',
+        transition: 'all 0.2s', opacity: disabled ? 0.5 : 1,
         ...variants[variant], ...style,
       }}
     >
@@ -201,9 +226,12 @@ export function PlayerCombobox({ label, players = [], value, onChange, hint = nu
             style={{
               position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
               background: 'none', border: 'none', color: 'var(--text-secondary)',
-              cursor: 'pointer', fontSize: 14, padding: 0, lineHeight: 1,
+              cursor: 'pointer', padding: 0, lineHeight: 1,
+              display: 'flex', alignItems: 'center',
             }}
-          >✕</button>
+          >
+            <X size={16} strokeWidth={2} />
+          </button>
         )}
       </div>
       {open && filtered.length > 0 && (
@@ -217,7 +245,9 @@ export function PlayerCombobox({ label, players = [], value, onChange, hint = nu
               key={p.id}
               onMouseDown={() => handleSelect(p)}
               style={{
-                padding: '8px 12px', cursor: 'pointer', fontSize: 13,
+                padding: '8px 12px', cursor: 'pointer',
+                fontFamily: 'var(--font-body)',
+                fontSize: 'var(--text-base)',
                 borderTop: i > 0 ? '1px solid var(--border-subtle)' : 'none',
                 display: 'flex', gap: 8, alignItems: 'center',
                 background: p.id === value ? 'rgba(249,115,22,0.08)' : 'transparent',
@@ -225,12 +255,22 @@ export function PlayerCombobox({ label, players = [], value, onChange, hint = nu
               onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-hover)')}
               onMouseLeave={e => (e.currentTarget.style.background = p.id === value ? 'rgba(249,115,22,0.08)' : 'transparent')}
             >
-              <span style={{ fontWeight: 600, color: 'var(--text-primary)', flex: 1 }}>{p.name}</span>
-              <span style={{ fontSize: 11, color: 'var(--text-secondary)', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 5 }}>
+              <span style={{
+                fontFamily: 'var(--font-body)',
+                fontWeight: 600, color: 'var(--text-primary)', flex: 1,
+              }}>{p.name}</span>
+              <span style={{
+                fontFamily: 'var(--font-body)',
+                fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', flexShrink: 0,
+                display: 'flex', alignItems: 'center', gap: 5,
+              }}>
                 {p.teamId}
-                <span title={ROLE_LABELS[p.role]} style={{ fontSize: 9, fontWeight: 700, letterSpacing: 0.5,
+                <span title={ROLE_LABELS[p.role]} style={{
+                  fontFamily: 'var(--font-body)',
+                  fontSize: 'var(--text-sm)', fontWeight: 700, letterSpacing: 0.5,
                   color: ROLE_COLORS[p.role], background: ROLE_COLORS[p.role] + '22',
-                  borderRadius: 3, padding: '1px 4px' }}>{p.role}</span>
+                  borderRadius: 3, padding: '1px 4px',
+                }}>{p.role}</span>
               </span>
             </div>
           ))}
@@ -240,7 +280,9 @@ export function PlayerCombobox({ label, players = [], value, onChange, hint = nu
         <div style={{
           position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 200,
           background: 'var(--bg-dropdown)', border: '1px solid var(--border-input)', borderRadius: 8,
-          marginTop: 4, padding: '10px 12px', fontSize: 12, color: 'var(--text-secondary)',
+          marginTop: 4, padding: '10px 12px',
+          fontFamily: 'var(--font-body)',
+          fontSize: 'var(--text-base)', color: 'var(--text-secondary)',
           boxShadow: 'var(--shadow-modal)',
         }}>
           No players match "{query}"
@@ -251,8 +293,6 @@ export function PlayerCombobox({ label, players = [], value, onChange, hint = nu
 }
 
 // ── Team Logo ───────────────────────────────────────────────────────────────
-// Shows the team's actual logo if one has been configured; falls back to a
-// coloured badge with the team abbreviation so layout is always stable.
 
 export function TeamLogo({ teamId, size = 28 }) {
   const logos = useTeamLogos()
@@ -273,7 +313,7 @@ export function TeamLogo({ teamId, size = 28 }) {
       background: `linear-gradient(135deg, ${team.color}dd, ${team.color}99)`,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       fontSize: Math.max(7, Math.floor(size * 0.32)), fontWeight: 800,
-      fontFamily: "'Bebas Neue', sans-serif", color: '#fff', letterSpacing: 0.5,
+      fontFamily: 'var(--font-heading)', color: '#fff', letterSpacing: 0.5,
     }}>
       {teamId}
     </div>
@@ -288,14 +328,21 @@ export function TeamChip({ teamId, score, wickets, overs, won, size = 'sm' }) {
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, opacity: won ? 1 : 0.6 }}>
       <TeamLogo teamId={teamId} size={big ? 36 : 28} />
       <div>
-        <div style={{ fontWeight: 700, fontSize: big ? 15 : 13, color: won ? 'var(--text-primary)' : 'var(--text-secondary)' }}>{teamId}</div>
+        <div style={{
+          fontFamily: 'var(--font-heading)',
+          fontWeight: 700, fontSize: big ? 'var(--text-md)' : 'var(--text-base)',
+          color: won ? 'var(--text-primary)' : 'var(--text-secondary)',
+        }}>{teamId}</div>
         {score != null && (
-          <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: big ? 20 : 15, color: won ? '#f97316' : 'var(--text-secondary)', lineHeight: 1 }}>
+          <div style={{
+            fontFamily: 'var(--font-heading)',
+            fontSize: big ? 'var(--text-xl)' : 'var(--text-md)',
+            color: won ? '#f97316' : 'var(--text-secondary)', lineHeight: 1,
+          }}>
             {score}{wickets != null ? `/${wickets}` : ''}{overs ? ` (${overs})` : ''}
           </div>
         )}
       </div>
-      {won && <span style={{ fontSize: 13 }}>✅</span>}
     </div>
   )
 }
@@ -309,14 +356,27 @@ export function StatBar({ rank, name, value, label, max, color = '#f97316' }) {
         width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
         background: rank === 0 ? color : 'var(--bg-hover)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontWeight: 800, fontSize: 12, color: rank === 0 ? '#fff' : 'var(--text-secondary)',
+        fontWeight: 800,
+        fontFamily: 'var(--font-body)',
+        fontSize: 'var(--text-sm)',
+        color: rank === 0 ? '#fff' : 'var(--text-secondary)',
       }}>{rank + 1}</div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontWeight: 600, fontSize: 14, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'var(--text-primary)' }}>{name}</div>
+        <div style={{
+          fontFamily: 'var(--font-body)',
+          fontWeight: 600, fontSize: 'var(--text-base)',
+          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'var(--text-primary)',
+        }}>{name}</div>
       </div>
       <div style={{ textAlign: 'right', marginRight: 12 }}>
-        <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, color, lineHeight: 1 }}>{value}</div>
-        <div style={{ fontSize: 10, color: 'var(--text-secondary)' }}>{label}</div>
+        <div style={{
+          fontFamily: 'var(--font-heading)',
+          fontSize: 'var(--text-xl)', color, lineHeight: 1,
+        }}>{value}</div>
+        <div style={{
+          fontFamily: 'var(--font-body)',
+          fontSize: 'var(--text-sm)', color: 'var(--text-secondary)',
+        }}>{label}</div>
       </div>
       <div style={{ width: 80, background: 'var(--bg-subtle)', borderRadius: 4, height: 5, overflow: 'hidden', flexShrink: 0 }}>
         <div style={{ width: `${(value / max) * 100}%`, background: color, height: '100%', borderRadius: 4, transition: 'width 0.8s ease' }} />
@@ -326,13 +386,26 @@ export function StatBar({ rank, name, value, label, max, color = '#f97316' }) {
 }
 
 // ── Empty State ──────────────────────────────────────────────────────────────
+// Accepts icon as a React node (Lucide component) or string (legacy, renders as text)
 
-export function EmptyState({ icon = '📭', text, sub }) {
+export function EmptyState({ icon, text, sub }) {
   return (
     <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--text-secondary)' }}>
-      <div style={{ fontSize: 36, marginBottom: 10 }}>{icon}</div>
-      <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 4, color: 'var(--text-primary)' }}>{text}</div>
-      {sub && <div style={{ fontSize: 12 }}>{sub}</div>}
+      <div style={{ marginBottom: 10, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        {icon ? (
+          typeof icon === 'string'
+            ? <span style={{ fontSize: 36 }}>{icon}</span>
+            : icon
+        ) : null}
+      </div>
+      <div style={{
+        fontFamily: 'var(--font-heading)',
+        fontSize: 'var(--text-md)', fontWeight: 600, marginBottom: 4, color: 'var(--text-primary)',
+      }}>{text}</div>
+      {sub && <div style={{
+        fontFamily: 'var(--font-body)',
+        fontSize: 'var(--text-base)',
+      }}>{sub}</div>}
     </div>
   )
 }
@@ -352,7 +425,10 @@ export function Spinner({ size = 40, color = '#f97316', label = 'Loading...' }) 
             strokeLinecap="round" />
         </svg>
       </div>
-      {label && <div style={{ fontSize: 12, color: 'var(--text-secondary)', letterSpacing: 1 }}>{label}</div>}
+      {label && <div style={{
+        fontFamily: 'var(--font-body)',
+        fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', letterSpacing: 1,
+      }}>{label}</div>}
       <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
     </div>
   )
