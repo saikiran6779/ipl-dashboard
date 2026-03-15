@@ -4,9 +4,11 @@ import com.ipl.dashboard.dto.MatchDTO;
 import com.ipl.dashboard.dto.StatsDTO;
 import com.ipl.dashboard.model.Match;
 import com.ipl.dashboard.model.Player;
+import com.ipl.dashboard.model.Team;
 import com.ipl.dashboard.model.Venue;
 import com.ipl.dashboard.repository.MatchRepository;
 import com.ipl.dashboard.repository.PlayerRepository;
+import com.ipl.dashboard.repository.TeamRepository;
 import com.ipl.dashboard.repository.VenueRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,6 +24,7 @@ public class MatchService {
 
     private final MatchRepository  matchRepository;
     private final PlayerRepository playerRepository;
+    private final TeamRepository   teamRepository;
     private final VenueRepository  venueRepository;
 
     private static final Map<String, String> TEAM_NAMES = Map.ofEntries(
@@ -53,6 +56,14 @@ public class MatchService {
     }
 
     public MatchDTO createMatch(MatchDTO dto) {
+        if (dto.getTeam1CaptainId() == null) {
+            Player def = resolveDefaultCaptain(dto.getTeam1());
+            if (def != null) dto.setTeam1CaptainId(def.getId());
+        }
+        if (dto.getTeam2CaptainId() == null) {
+            Player def = resolveDefaultCaptain(dto.getTeam2());
+            if (def != null) dto.setTeam2CaptainId(def.getId());
+        }
         Match saved = matchRepository.save(toEntity(dto));
         return toDTO(saved);
     }
@@ -60,6 +71,14 @@ public class MatchService {
     public MatchDTO updateMatch(Long id, MatchDTO dto) {
         if (!matchRepository.existsById(id)) {
             throw new NoSuchElementException("Match not found: " + id);
+        }
+        if (dto.getTeam1CaptainId() == null) {
+            Player def = resolveDefaultCaptain(dto.getTeam1());
+            if (def != null) dto.setTeam1CaptainId(def.getId());
+        }
+        if (dto.getTeam2CaptainId() == null) {
+            Player def = resolveDefaultCaptain(dto.getTeam2());
+            if (def != null) dto.setTeam2CaptainId(def.getId());
         }
         Match entity = toEntity(dto);
         entity.setId(id);
@@ -240,6 +259,10 @@ public class MatchService {
                 .topWicketTakerId(m.getTopWicketTaker() != null ? m.getTopWicketTaker().getId() : null)
                 .topWicketTakerName(m.getTopWicketTaker() != null ? m.getTopWicketTaker().getName() : null)
                 .topWicketTakerWickets(m.getTopWicketTakerWickets())
+                .team1CaptainId(m.getTeam1Captain() != null ? m.getTeam1Captain().getId() : null)
+                .team1CaptainName(m.getTeam1Captain() != null ? m.getTeam1Captain().getName() : null)
+                .team2CaptainId(m.getTeam2Captain() != null ? m.getTeam2Captain().getId() : null)
+                .team2CaptainName(m.getTeam2Captain() != null ? m.getTeam2Captain().getName() : null)
                 .build();
     }
 
@@ -247,6 +270,8 @@ public class MatchService {
         Player mom          = resolvePlayer(dto.getPlayerOfMatchId());
         Player topScorer    = resolvePlayer(dto.getTopScorerId());
         Player topWktTaker  = resolvePlayer(dto.getTopWicketTakerId());
+        Player team1Captain = resolvePlayer(dto.getTeam1CaptainId());
+        Player team2Captain = resolvePlayer(dto.getTeam2CaptainId());
         Venue  venue        = dto.getVenueId() != null
                                 ? venueRepository.findById(dto.getVenueId()).orElse(null)
                                 : null;
@@ -261,11 +286,19 @@ public class MatchService {
                 .playerOfMatch(mom)
                 .topScorer(topScorer).topScorerRuns(dto.getTopScorerRuns())
                 .topWicketTaker(topWktTaker).topWicketTakerWickets(dto.getTopWicketTakerWickets())
+                .team1Captain(team1Captain)
+                .team2Captain(team2Captain)
                 .build();
     }
 
     private Player resolvePlayer(Long id) {
         if (id == null) return null;
         return playerRepository.findById(id).orElse(null);
+    }
+
+    private Player resolveDefaultCaptain(String teamId) {
+        return teamRepository.findById(teamId)
+                .map(Team::getCaptain)
+                .orElse(null);
     }
 }

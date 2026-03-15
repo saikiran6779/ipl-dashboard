@@ -24,4 +24,8 @@ public class Team {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "home_ground_id")
     private Venue homeGround;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "captain_id")
+    private Player captain;
 }

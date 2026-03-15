@@ -74,6 +74,14 @@ public class Match {
 
     private Integer topWicketTakerWickets;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "team1_captain_id")
+    private Player team1Captain;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "team2_captain_id")
+    private Player team2Captain;
+
     // ── Cascade: deleting a match removes all its scorecard rows ──────────
     @OneToMany(mappedBy = "match", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default

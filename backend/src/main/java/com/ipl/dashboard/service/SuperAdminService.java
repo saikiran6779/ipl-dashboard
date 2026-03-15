@@ -1,9 +1,11 @@
 package com.ipl.dashboard.service;
 
 import com.ipl.dashboard.dto.AuthDTO;
+import com.ipl.dashboard.model.Player;
 import com.ipl.dashboard.model.Role;
 import com.ipl.dashboard.model.Team;
 import com.ipl.dashboard.model.User;
+import com.ipl.dashboard.repository.PlayerRepository;
 import com.ipl.dashboard.repository.TeamRepository;
 import com.ipl.dashboard.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,8 +19,9 @@ import java.util.NoSuchElementException;
 @RequiredArgsConstructor
 public class SuperAdminService {
 
-    private final UserRepository userRepository;
-    private final TeamRepository teamRepository;
+    private final UserRepository  userRepository;
+    private final TeamRepository  teamRepository;
+    private final PlayerRepository playerRepository;
 
     // ── List all users ────────────────────────────────────────────────────────
 
@@ -64,6 +67,19 @@ public class SuperAdminService {
         Team team = teamRepository.findById(teamId.toUpperCase())
                 .orElseThrow(() -> new NoSuchElementException("Team not found: " + teamId));
         team.setLogoUrl(logoUrl == null || logoUrl.isBlank() ? null : logoUrl.strip());
+        teamRepository.save(team);
+    }
+
+    // ── Update team captain ───────────────────────────────────────────────────
+
+    @Transactional
+    public void updateTeamCaptain(String teamId, Long captainId) {
+        Team team = teamRepository.findById(teamId.toUpperCase())
+                .orElseThrow(() -> new NoSuchElementException("Team not found: " + teamId));
+        Player captain = captainId != null
+                ? playerRepository.findById(captainId).orElse(null)
+                : null;
+        team.setCaptain(captain);
         teamRepository.save(team);
     }
 

@@ -182,7 +182,7 @@ export function Button({ children, variant = 'primary', onClick, type = 'button'
 
 // ── Player Combobox ──────────────────────────────────────────────────────────
 
-export function PlayerCombobox({ label, players = [], value, onChange, hint = null }) {
+export function PlayerCombobox({ label, players = [], value, onChange, hint = null, placeholder }) {
   const [query,  setQuery]  = useState('')
   const [open,   setOpen]   = useState(false)
 
@@ -213,7 +213,7 @@ export function PlayerCombobox({ label, players = [], value, onChange, hint = nu
           onChange={e => { setQuery(e.target.value); setOpen(true) }}
           onFocus={() => { setQuery(''); setOpen(true) }}
           onBlur={() => setTimeout(() => setOpen(false), 150)}
-          placeholder={players.length ? 'Type to search…' : 'Select teams first'}
+          placeholder={placeholder ?? (players.length ? 'Type to search…' : 'Select teams first')}
           disabled={!players.length}
           style={{ ...baseInput, paddingRight: value != null ? 30 : 12 }}
           onFocusCapture={e => (e.target.style.borderColor = '#f97316')}

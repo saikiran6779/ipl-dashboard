@@ -252,7 +252,7 @@ function _inningsSummary(entries, battingTeam, teams) {
     return { score, wickets, overs }
 }
 
-export function ScorecardView({ entries, teams }) {
+export function ScorecardView({ entries, teams, captains = {} }) {
     const [teamTab,    setTeamTab]    = useState(teams[0])
     const [sectionTab, setSectionTab] = useState('batting')
 
@@ -435,7 +435,17 @@ export function ScorecardView({ entries, teams }) {
                             >
                                 {/* Player name cell */}
                                 <td style={{ padding: '12px 12px 10px 20px', minWidth: 160 }}>
-                                    <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--text-primary)' }}>{e.playerName}</div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 700, fontSize: 14, color: 'var(--text-primary)' }}>
+                                        {e.playerName}
+                                        {captains[teamTab] === e.playerId && (
+                                            <span style={{
+                                                fontSize: 9, fontWeight: 800, color: '#f59e0b',
+                                                background: 'rgba(245,158,11,0.15)',
+                                                border: '1px solid rgba(245,158,11,0.4)',
+                                                borderRadius: 4, padding: '1px 5px', letterSpacing: 0.5,
+                                            }}>C</span>
+                                        )}
+                                    </div>
                                     <div style={{
                                         fontSize: 9, fontWeight: 700, letterSpacing: 0.8,
                                         color: ROLE_COLORS[e.role], marginTop: 3, textTransform: 'uppercase',

@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react'
 import toast from 'react-hot-toast'
-import { getTeams, updateTeamLogo } from '../services/api'
-import { Card, CardHeader, Spinner } from '../components/UI'
+import { getTeams, getSquad, updateTeamLogo, updateTeamCaptain } from '../services/api'
+import { Card, CardHeader, Spinner, PlayerCombobox } from '../components/UI'
 
 export default function SuperAdminTeams() {
   const [teams,   setTeams]   = useState([])
   const [loading, setLoading] = useState(true)
   // logoUrls: { [teamId]: string } — tracks draft values before saving
   const [logoUrls,   setLogoUrls]   = useState({})
+  const [captainIds, setCaptainIds] = useState({})  // draft captainId per team
+  const [squads,     setSquads]     = useState({})  // players per team for combobox
   const [busy,       setBusy]       = useState(null)   // teamId being saved
   const [imgErrors,  setImgErrors]  = useState({})     // teamIds whose preview failed
 
@@ -16,9 +18,21 @@ export default function SuperAdminTeams() {
       .then(data => {
         setTeams(data)
         // seed draft values from current DB values
-        const initial = {}
-        data.forEach(t => { initial[t.id] = t.logoUrl ?? '' })
-        setLogoUrls(initial)
+        const initLogos    = {}
+        const initCaptains = {}
+        data.forEach(t => {
+          initLogos[t.id]    = t.logoUrl    ?? ''
+          initCaptains[t.id] = t.captainId  ?? null
+        })
+        setLogoUrls(initLogos)
+        setCaptainIds(initCaptains)
+        // Load squad for each team in parallel
+        Promise.all(data.map(t => getSquad(t.id).then(sq => ({ id: t.id, sq })).catch(() => ({ id: t.id, sq: [] }))))
+          .then(results => {
+            const map = {}
+            results.forEach(({ id, sq }) => { map[id] = sq })
+            setSquads(map)
+          })
       })
       .catch(() => toast.error('Failed to load teams'))
       .finally(() => setLoading(false))
@@ -27,28 +41,41 @@ export default function SuperAdminTeams() {
   const handleSave = async (teamId) => {
     setBusy(teamId)
     try {
-      await updateTeamLogo(teamId, logoUrls[teamId])
-      toast.success(`${teamId} logo updated`)
-      // reflect saved value back into teams list and clear any prior load error
-      setTeams(prev => prev.map(t => t.id === teamId ? { ...t, logoUrl: logoUrls[teamId] || null } : t))
+      await Promise.all([
+        updateTeamLogo(teamId, logoUrls[teamId]),
+        updateTeamCaptain(teamId, captainIds[teamId] ?? null),
+      ])
+      toast.success(`${teamId} updated`)
+      // reflect saved values back into teams list
+      const newCaptain = (squads[teamId] || []).find(p => p.id === captainIds[teamId]) || null
+      setTeams(prev => prev.map(t => t.id === teamId ? {
+        ...t,
+        logoUrl:     logoUrls[teamId] || null,
+        captainId:   captainIds[teamId] ?? null,
+        captainName: newCaptain?.name ?? null,
+      } : t))
       setImgErrors(prev => ({ ...prev, [teamId]: false }))
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Failed to update logo')
+      toast.error(err.response?.data?.error || 'Failed to update team')
     } finally {
       setBusy(null)
     }
   }
 
-  const isDirty = (teamId) => (logoUrls[teamId] ?? '') !== (teams.find(t => t.id === teamId)?.logoUrl ?? '')
+  const isDirty = (teamId) => {
+    const logoChanged    = (logoUrls[teamId]    ?? '') !== (teams.find(t => t.id === teamId)?.logoUrl    ?? '')
+    const captainChanged = (captainIds[teamId]  ?? null) !== (teams.find(t => t.id === teamId)?.captainId ?? null)
+    return logoChanged || captainChanged
+  }
 
   return (
     <div>
       <div style={{ marginBottom: 24 }}>
         <div style={{ fontFamily: 'var(--font-heading)', fontSize: 'var(--text-xl)', color: '#f97316', letterSpacing: 2, lineHeight: 1 }}>
-          Team Logos
+          Team Settings
         </div>
         <div style={{ color: 'var(--text-secondary)', fontSize: 13, marginTop: 4 }}>
-          Set or update the logo image URL for each team.
+          Set logo URL and default captain for each team.
         </div>
       </div>
 
@@ -56,14 +83,14 @@ export default function SuperAdminTeams() {
         <Spinner />
       ) : (
         <Card>
-          <CardHeader title={`Teams (${teams.length})`} subtitle="Paste a public image URL and click Save" />
+          <CardHeader title={`Teams (${teams.length})`} subtitle="Update logo URL and captain, then click Save" />
           <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
             {teams.map((team, i) => (
               <div
                 key={team.id}
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: '44px 80px 1fr auto',
+                  gridTemplateColumns: '44px 80px 1fr 1fr auto',
                   alignItems: 'center',
                   gap: 14,
                   padding: '14px 16px',
@@ -105,14 +132,29 @@ export default function SuperAdminTeams() {
                   style={{
                     width: '100%', padding: '7px 10px',
                     borderRadius: 7, fontSize: 12,
-                    border: `1px solid ${isDirty(team.id) ? 'rgba(249,115,22,0.5)' : 'var(--border-input)'}`,
+                    border: `1px solid var(--border-input)`,
                     background: 'var(--bg-input)', color: 'var(--text-primary)',
                     outline: 'none', fontFamily: 'monospace',
                     boxSizing: 'border-box',
                   }}
                   onFocus={e => (e.target.style.borderColor = '#f97316')}
-                  onBlur={e => (e.target.style.borderColor = isDirty(team.id) ? 'rgba(249,115,22,0.5)' : 'var(--border-input)')}
+                  onBlur={e => (e.target.style.borderColor = 'var(--border-input)')}
                 />
+
+                {/* Captain combobox */}
+                <div>
+                  <PlayerCombobox
+                    players={squads[team.id] || []}
+                    value={captainIds[team.id] ?? null}
+                    onChange={id => setCaptainIds(prev => ({ ...prev, [team.id]: id }))}
+                    placeholder="Select captain…"
+                  />
+                  {team.captainName && (captainIds[team.id] ?? null) === (team.captainId ?? null) && (
+                    <div style={{ fontSize: 10, color: 'var(--text-secondary)', marginTop: 3, paddingLeft: 2 }}>
+                      Current: {team.captainName}
+                    </div>
+                  )}
+                </div>
 
                 {/* Save button */}
                 <button
