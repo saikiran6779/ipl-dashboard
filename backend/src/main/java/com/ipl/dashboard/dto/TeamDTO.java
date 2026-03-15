@@ -15,4 +15,6 @@ public class TeamDTO {
     private String logoUrl;
     private Long   homeGroundId;
     private String homeGroundName;
+    private Long   captainId;
+    private String captainName;
 }

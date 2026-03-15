@@ -4,7 +4,7 @@ import toast from 'react-hot-toast'
 import { Input, Select, SectionLabel, Button, PlayerCombobox } from '../components/UI'
 import { TEAMS, resolvePlayerFromJson } from '../services/constants'
 import { parseCricsheetData, resolveVenueFromJson } from '../services/cricsheet'
-import { getSquad, getPlayers, getVenues, createVenue } from '../services/api'
+import { getSquad, getPlayers, getVenues, createVenue, getTeams } from '../services/api'
 import { useAuth } from '../context/AuthContext'
 
 const EMPTY = {
@@ -18,6 +18,7 @@ const EMPTY = {
   playerOfMatchId: null,
   topScorerId: null,    topScorerRuns: '',
   topWicketTakerId: null, topWicketTakerWickets: '',
+  team1CaptainId: null, team2CaptainId: null,
 }
 
 export default function MatchForm({ editMatch, onSubmit, onCancel, loading }) {
@@ -26,6 +27,7 @@ export default function MatchForm({ editMatch, onSubmit, onCancel, loading }) {
   const [players,    setPlayers]    = useState([])   // squad for selected teams (combobox options)
   const [allPlayers, setAllPlayers] = useState([])   // all players (for JSON auto-resolution)
   const [venues,     setVenues]     = useState([])   // all venues from API
+  const [teamsData,  setTeamsData]  = useState({})   // { [teamId]: { captainId } }
   const [jsonHints,     setJsonHints]     = useState({})
   const [jsonWarnings,  setJsonWarnings]  = useState([])
   const [showAddVenue,  setShowAddVenue]  = useState(false)
@@ -34,10 +36,15 @@ export default function MatchForm({ editMatch, onSubmit, onCancel, loading }) {
   const [savingVenue,   setSavingVenue]   = useState(false)
   const fileInputRef = useRef(null)
 
-  // Fetch all players + venues once on mount for JSON auto-resolution
+  // Fetch all players + venues + teams once on mount
   useEffect(() => {
     getPlayers().then(setAllPlayers).catch(() => {})
     getVenues().then(setVenues).catch(() => {})
+    getTeams().then(list => {
+      const map = {}
+      list.forEach(t => { map[t.id] = t })
+      setTeamsData(map)
+    }).catch(() => {})
   }, [])
 
   // Populate form when editing
@@ -58,6 +65,8 @@ export default function MatchForm({ editMatch, onSubmit, onCancel, loading }) {
         topScorerRuns:         editMatch.topScorerRuns         ?? '',
         topWicketTakerId:      editMatch.topWicketTakerId      ?? null,
         topWicketTakerWickets: editMatch.topWicketTakerWickets ?? '',
+        team1CaptainId:        editMatch.team1CaptainId        ?? null,
+        team2CaptainId:        editMatch.team2CaptainId        ?? null,
       })
     } else {
       setForm(EMPTY)
@@ -302,10 +311,23 @@ export default function MatchForm({ editMatch, onSubmit, onCancel, loading }) {
             <div key={prefix} style={{ background: 'var(--bg-subtle)', border: '1px solid var(--border-subtle)', borderRadius: 10, padding: 14 }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>{label}</div>
               <div style={{ marginBottom: 10 }}>
-                <Select label="Team *" name={prefix} value={form[prefix]} onChange={handle} required>
+                <Select label="Team *" name={prefix} value={form[prefix]} onChange={e => {
+                  handle(e)
+                  // Reset captain when team changes so backend can auto-fill from team default
+                  set(`${prefix}CaptainId`, null)
+                }} required>
                   <option value="">Select team</option>
                   {TEAMS.map(t => <option key={t.id} value={t.id}>{t.id} – {t.name}</option>)}
                 </Select>
+              </div>
+              <div style={{ marginBottom: 10 }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>Captain (optional override)</div>
+                <PlayerCombobox
+                  players={players.filter(p => p.teamId === form[prefix] || !p.teamId)}
+                  value={form[`${prefix}CaptainId`]}
+                  onChange={id => set(`${prefix}CaptainId`, id)}
+                  placeholder={form[prefix] && teamsData[form[prefix]]?.captainName ? `Default: ${teamsData[form[prefix]].captainName}` : 'Auto from team default'}
+                />
               </div>
               <div className="rg-3col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
                 <Input label="Runs"  name={`${prefix}Score`}   type="number"            value={form[`${prefix}Score`]}   onChange={handle} placeholder="0" />

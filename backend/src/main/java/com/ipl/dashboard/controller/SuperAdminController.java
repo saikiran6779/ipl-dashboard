@@ -38,4 +38,15 @@ public class SuperAdminController {
         superAdminService.updateTeamLogo(teamId, body.get("logoUrl"));
         return ResponseEntity.noContent().build();
     }
+
+    @PutMapping("/teams/{teamId}/captain")
+    public ResponseEntity<Void> updateTeamCaptain(
+            @PathVariable String teamId,
+            @RequestBody Map<String, Object> body) {
+        Long captainId = body.get("captainId") != null
+            ? Long.valueOf(body.get("captainId").toString())
+            : null;
+        superAdminService.updateTeamCaptain(teamId, captainId);
+        return ResponseEntity.noContent().build();
+    }
 }

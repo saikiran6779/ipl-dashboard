@@ -54,4 +54,9 @@ public class MatchDTO {
     private Long    topWicketTakerId;
     private String  topWicketTakerName;
     private Integer topWicketTakerWickets;
+
+    private Long   team1CaptainId;
+    private String team1CaptainName;
+    private Long   team2CaptainId;
+    private String team2CaptainName;
 }

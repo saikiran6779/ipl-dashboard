@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
 import { TEAMS, getTeam, formatDate } from '../services/constants'
-import { getSquad, getStats, getMatches } from '../services/api'
+import { getSquad, getStats, getMatches, getTeams } from '../services/api'
 import { Spinner, EmptyState } from '../components/UI'
 import { useTeamLogos } from '../context/TeamsContext'
-import { Trophy, Plane } from 'lucide-react'
+import { Trophy, Plane, Crown } from 'lucide-react'
 
 // ── Team Badge ─────────────────────────────────────────────────────────────
 function TeamBadge({ team, size = 72 }) {
@@ -261,7 +261,7 @@ function PlayerRow({ player, index, onOpenProfile }) {
 }
 
 // ── Team Detail View ───────────────────────────────────────────────────────
-function TeamDetail({ teamId, standing, rank, allMatches, onBack, onOpenProfile }) {
+function TeamDetail({ teamId, standing, rank, allMatches, onBack, onOpenProfile, captainName }) {
   const team = getTeam(teamId)
   const [squad, setSquad] = useState([])
   const [loadingSquad, setLoadingSquad] = useState(true)
@@ -453,6 +453,15 @@ function TeamDetail({ teamId, standing, rank, allMatches, onBack, onOpenProfile 
                     : `Rank #${rank !== null ? rank + 1 : '—'}`
                   }
                 </div>
+                {captainName && (
+                  <div style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 5, marginTop: 6,
+                    fontSize: 12, color: '#f59e0b', fontWeight: 600,
+                  }}>
+                    <Crown size={12} strokeWidth={2} color="#f59e0b" />
+                    {captainName}
+                  </div>
+                )}
                 <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
                   <div style={{ width: 18, height: 18, borderRadius: 4, background: team.color, boxShadow: `0 2px 8px ${team.color}66` }} title="Primary color" />
                   <div style={{ width: 18, height: 18, borderRadius: 4, background: team.accent, boxShadow: `0 2px 8px ${team.accent}44` }} title="Accent color" />
@@ -668,6 +677,15 @@ function TeamDetail({ teamId, standing, rank, allMatches, onBack, onOpenProfile 
 export default function Teams({ stats, matches, onOpenProfile, initialTeamId }) {
   const [selectedTeamId, setSelectedTeamId] = useState(initialTeamId || null)
   const [loading, setLoading] = useState(false)
+  const [teamsApiData, setTeamsApiData] = useState({})  // { [teamId]: { captainName } }
+
+  useEffect(() => {
+    getTeams().then(list => {
+      const map = {}
+      list.forEach(t => { map[t.id] = t })
+      setTeamsApiData(map)
+    }).catch(() => {})
+  }, [])
 
   const standingsMap = {}
   const rankMap = {}
@@ -690,6 +708,7 @@ export default function Teams({ stats, matches, onOpenProfile, initialTeamId }) 
         allMatches={matches}
         onBack={handleBack}
         onOpenProfile={onOpenProfile}
+        captainName={teamsApiData[selectedTeamId]?.captainName ?? null}
       />
     )
   }

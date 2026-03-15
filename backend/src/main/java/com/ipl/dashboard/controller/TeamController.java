@@ -38,6 +38,8 @@ public class TeamController {
                 .logoUrl(t.getLogoUrl())
                 .homeGroundId(t.getHomeGround() != null ? t.getHomeGround().getId() : null)
                 .homeGroundName(t.getHomeGround() != null ? t.getHomeGround().getName() : null)
+                .captainId(t.getCaptain() != null ? t.getCaptain().getId() : null)
+                .captainName(t.getCaptain() != null ? t.getCaptain().getName() : null)
                 .build();
     }
 }

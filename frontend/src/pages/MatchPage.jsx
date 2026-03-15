@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { ArrowLeft, Pencil, Trash2, Coins, Trophy, Star, Target, Activity, FileJson, ClipboardList } from 'lucide-react'
+import { ArrowLeft, Pencil, Trash2, Coins, Trophy, Star, Target, Activity, FileJson, ClipboardList, Crown } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { TeamLogo, Spinner } from '../components/UI'
 import { getScorecard, deleteScorecard } from '../services/api'
@@ -110,6 +110,14 @@ function MatchHero({ match, onBack, onEdit, onDelete, isAdmin }) {
         {match.tossWinner && <>
           <span style={{ color: 'rgba(255,255,255,0.25)' }}>·</span>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Coins size={12} strokeWidth={2} />{match.tossWinner} won toss · elected to {match.tossDecision}</span>
+        </>}
+        {match.team1CaptainName && <>
+          <span style={{ color: 'rgba(255,255,255,0.25)' }}>·</span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Crown size={11} strokeWidth={2} />{match.team1}: {match.team1CaptainName}</span>
+        </>}
+        {match.team2CaptainName && <>
+          <span style={{ color: 'rgba(255,255,255,0.25)' }}>·</span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Crown size={11} strokeWidth={2} />{match.team2}: {match.team2CaptainName}</span>
         </>}
       </div>
 
@@ -790,7 +798,7 @@ export default function MatchPage({ match, allMatches = [], onBack, onEdit, onDe
                 background: 'var(--bg-elevated)', border: '1px solid var(--border-subtle)',
                 borderRadius: 14, overflow: 'hidden', paddingBottom: 16,
               }}>
-                <ScorecardView entries={entries} teams={teams} />
+                <ScorecardView entries={entries} teams={teams} captains={{ [match.team1]: match.team1CaptainId, [match.team2]: match.team2CaptainId }} />
               </div>
             )}
           </>

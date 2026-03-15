@@ -94,7 +94,8 @@ export const resetPassword    = (data)          => api.post('/auth/reset-passwor
 export const getAllUsers      = ()                   => api.get('/super-admin/users').then(r => r.data)
 export const promoteUser     = (userId)              => api.put(`/super-admin/users/${userId}/promote`).then(r => r.data)
 export const demoteUser      = (userId)              => api.put(`/super-admin/users/${userId}/demote`).then(r => r.data)
-export const updateTeamLogo  = (teamId, logoUrl)     => api.put(`/super-admin/teams/${teamId}/logo`, { logoUrl })
+export const updateTeamLogo    = (teamId, logoUrl)    => api.put(`/super-admin/teams/${teamId}/logo`, { logoUrl })
+export const updateTeamCaptain = (teamId, captainId)  => api.put(`/super-admin/teams/${teamId}/captain`, { captainId })
 
 // ── Venues ────────────────────────────────────────────────────────────────────
 
