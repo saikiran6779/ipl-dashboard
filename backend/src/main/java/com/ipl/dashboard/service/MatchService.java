@@ -69,9 +69,13 @@ public class MatchService {
     }
 
     public MatchDTO updateMatch(Long id, MatchDTO dto) {
-        if (!matchRepository.existsById(id)) {
-            throw new NoSuchElementException("Match not found: " + id);
-        }
+        // Load the managed entity so Hibernate keeps the existing stats collection intact.
+        // DO NOT replace it with a builder-constructed entity: the builder initialises
+        // stats = new ArrayList<>(), and orphanRemoval = true would then delete every
+        // PlayerMatchStats row that belongs to this match.
+        Match existing = matchRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Match not found: " + id));
+
         if (dto.getTeam1CaptainId() == null) {
             Player def = resolveDefaultCaptain(dto.getTeam1());
             if (def != null) dto.setTeam1CaptainId(def.getId());
@@ -80,9 +84,37 @@ public class MatchService {
             Player def = resolveDefaultCaptain(dto.getTeam2());
             if (def != null) dto.setTeam2CaptainId(def.getId());
         }
-        Match entity = toEntity(dto);
-        entity.setId(id);
-        return toDTO(matchRepository.save(entity));
+
+        Venue venue = dto.getVenueId() != null
+                ? venueRepository.findById(dto.getVenueId()).orElse(null)
+                : null;
+
+        existing.setMatchNo(dto.getMatchNo());
+        existing.setDate(dto.getDate());
+        existing.setVenue(venue);
+        existing.setTeam1(dto.getTeam1());
+        existing.setTeam2(dto.getTeam2());
+        existing.setTeam1Score(dto.getTeam1Score());
+        existing.setTeam1Wickets(dto.getTeam1Wickets());
+        existing.setTeam1Overs(dto.getTeam1Overs());
+        existing.setTeam2Score(dto.getTeam2Score());
+        existing.setTeam2Wickets(dto.getTeam2Wickets());
+        existing.setTeam2Overs(dto.getTeam2Overs());
+        existing.setTossWinner(dto.getTossWinner());
+        existing.setTossDecision(dto.getTossDecision());
+        existing.setNoResult(dto.isNoResult());
+        existing.setWinner(dto.getWinner());
+        existing.setWinMargin(dto.getWinMargin());
+        existing.setWinType(dto.getWinType());
+        existing.setPlayerOfMatch(resolvePlayer(dto.getPlayerOfMatchId()));
+        existing.setTopScorer(resolvePlayer(dto.getTopScorerId()));
+        existing.setTopScorerRuns(dto.getTopScorerRuns());
+        existing.setTopWicketTaker(resolvePlayer(dto.getTopWicketTakerId()));
+        existing.setTopWicketTakerWickets(dto.getTopWicketTakerWickets());
+        existing.setTeam1Captain(resolvePlayer(dto.getTeam1CaptainId()));
+        existing.setTeam2Captain(resolvePlayer(dto.getTeam2CaptainId()));
+
+        return toDTO(matchRepository.save(existing));
     }
 
     public void deleteMatch(Long id) {
