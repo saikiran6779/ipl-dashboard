@@ -163,7 +163,7 @@ export default function App() {
             <div style={{ display: 'flex', gap: 4, marginBottom: 28, borderBottom: '1px solid var(--border-subtle)', paddingBottom: 0 }}>
               {[
                 { key: 'users', label: 'Users', Icon: Users },
-                { key: 'teams', label: 'Team Logos', Icon: Shield },
+                { key: 'teams', label: 'Teams', Icon: Shield },
               ].map(tab => (
                 <button
                   key={tab.key}
