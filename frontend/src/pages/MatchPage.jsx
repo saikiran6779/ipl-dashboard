@@ -693,12 +693,22 @@ export default function MatchPage({ match, allMatches = [], onBack, onEdit, onDe
   useEffect(() => {
     getScorecard(match.id)
       .then(setEntries)
-      .catch(() => {})
+      .catch(err => {
+        const msg = err.response?.data?.message || err.response?.data?.error || err.message || 'Unknown error'
+        console.error('[Scorecard] load failed:', err.response?.status, msg, err)
+        toast.error(`Scorecard load failed: ${msg}`)
+      })
       .finally(() => setLoading(false))
   }, [match.id])
 
   const reloadScorecard = () => {
-    getScorecard(match.id).then(setEntries).catch(() => {})
+    getScorecard(match.id)
+      .then(setEntries)
+      .catch(err => {
+        const msg = err.response?.data?.message || err.response?.data?.error || err.message || 'Unknown error'
+        console.error('[Scorecard] reload failed:', err.response?.status, msg, err)
+        toast.error(`Scorecard reload failed: ${msg}`)
+      })
   }
 
   const handleDeleteScorecard = async () => {
