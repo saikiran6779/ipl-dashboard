@@ -339,7 +339,7 @@ export default function ScorecardImportModal({
         const res = {}
         for (const name of allNames) {
           const player = resolvePlayerFromJson(name, allPlayers)
-          res[name] = { playerId: player?.id ?? null, skipped: false }
+          res[name] = { playerId: player?.id ?? null, skipped: false, substitute: false }
         }
 
         // Initial batting order = parse order (position 1 at index 0)
@@ -376,6 +376,16 @@ export default function ScorecardImportModal({
     setResolutions(r => ({ ...r, [cricsheetName]: { ...r[cricsheetName], skipped: true } }))
   }
 
+  const toggleSubstitute = (cricsheetName) => {
+    setResolutions(r => ({
+      ...r,
+      [cricsheetName]: {
+        ...r[cricsheetName],
+        substitute: !r[cricsheetName]?.substitute,
+      }
+    }))
+  }
+
   // ── Batting order: swap two adjacent rows for one innings ─────────────────
   const moveBatter = (innIdx, fromIdx, toIdx) => {
     setBattingOrders(prev => {
@@ -387,11 +397,11 @@ export default function ScorecardImportModal({
   }
 
   // ── Validation ────────────────────────────────────────────────────────────
-  const canImport = parsedData && Object.values(resolutions).every(r => r.skipped || r.playerId)
+  const canImport = parsedData && Object.values(resolutions).every(r => r.skipped || r.substitute || r.playerId)
 
   const { autoCount, unresolvedCount } = Object.values(resolutions).reduce(
     (acc, r) => {
-      if (r.skipped) return acc
+      if (r.skipped || r.substitute) return acc
       if (r.playerId) acc.autoCount++
       else acc.unresolvedCount++
       return acc
@@ -415,7 +425,7 @@ export default function ScorecardImportModal({
       // Reverse map: cricsheetName → playerId (skipped names excluded)
       const idByName = {}
       for (const [name, r] of Object.entries(resolutions)) {
-        if (!r.skipped && r.playerId) idByName[name] = r.playerId
+        if (!r.skipped && !r.substitute && r.playerId) idByName[name] = r.playerId
       }
 
       // Build a lookup: innIdx → { cricsheetName → 1-based position }
@@ -656,22 +666,48 @@ export default function ScorecardImportModal({
                       fontSize: 10, fontWeight: 700, color: '#ef4444',
                       textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 10,
                     }}>
-                      🧤 Fielders (appear only in dismissal data)
+                      {(() => {
+                        const subCount = fielderNames.filter(n => resolutions[n]?.substitute).length
+                        return `🧤 Fielders (appear only in dismissal data)${subCount > 0 ? ` · ${subCount} substitute` : ''}`
+                      })()}
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                       {fielderNames.map(name => {
                         const res = resolutions[name] || {}
                         return (
                           <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-                            <span style={{ fontSize: 12, color: 'var(--text-secondary)', minWidth: 160 }}>{name}</span>
-                            <PlayerResolver
-                              cricsheetName={name}
-                              resolvedId={res.playerId ?? null}
-                              teamPlayers={allPlayers}
-                              onChange={id => resolvePlayer(name, id)}
-                              skipped={res.skipped}
-                              onSkip={() => skipPlayer(name)}
-                            />
+                            {/* Cricsheet name */}
+                            <span style={{
+                              fontSize: 12, color: 'var(--text-secondary)', minWidth: 160,
+                              textDecoration: res.substitute ? 'line-through' : 'none',
+                              opacity: res.substitute ? 0.45 : 1,
+                            }}>{name}</span>
+                            {/* PlayerResolver — hidden when substitute is checked */}
+                            {!res.substitute && (
+                              <PlayerResolver
+                                cricsheetName={name}
+                                resolvedId={res.playerId ?? null}
+                                teamPlayers={allPlayers}
+                                onChange={id => resolvePlayer(name, id)}
+                                skipped={res.skipped}
+                                onSkip={() => skipPlayer(name)}
+                              />
+                            )}
+                            {/* Substitute checkbox */}
+                            <label style={{
+                              display: 'inline-flex', alignItems: 'center', gap: 5,
+                              cursor: 'pointer', userSelect: 'none',
+                              fontSize: 11, fontWeight: 600,
+                              color: res.substitute ? '#f97316' : 'var(--text-secondary)',
+                            }}>
+                              <input
+                                type="checkbox"
+                                checked={!!res.substitute}
+                                onChange={() => toggleSubstitute(name)}
+                                style={{ accentColor: '#f97316', cursor: 'pointer', width: 13, height: 13 }}
+                              />
+                              Substitute
+                            </label>
                           </div>
                         )
                       })}
@@ -800,7 +836,7 @@ export default function ScorecardImportModal({
               onClick={handleImport}
               style={{ background: canImport ? TEAL : undefined, border: 'none', color: '#fff' }}
             >
-              <Upload size={14} strokeWidth={2} style={{ marginRight: 5 }} />{`Import ${Object.values(resolutions).filter(r => !r.skipped && r.playerId).length} players`}
+              <Upload size={14} strokeWidth={2} style={{ marginRight: 5 }} />{`Import ${Object.values(resolutions).filter(r => !r.skipped && !r.substitute && r.playerId).length} players`}
             </Button>
           </div>
         )}
